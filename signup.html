@@ -1,0 +1,6402 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+MEDIAVERSE — Create Account
+</title>
+
+
+<!-- =====================================================
+     FONT AWESOME
+===================================================== -->
+
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+>
+
+
+<!-- =====================================================
+     EMAILJS
+===================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+</script>
+
+
+<!-- =====================================================
+     SUPABASE
+===================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+</script>
+
+
+<style>
+/* =====================================================
+   GOOGLE FONT
+===================================================== */
+
+@import url(
+    "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap"
+);
+
+
+/* =====================================================
+   ROOT
+===================================================== */
+
+:root{
+
+    --bg:#080914;
+
+    --bg-soft:#0e1020;
+
+    --glass:
+        rgba(18,20,37,.56);
+
+    --glass-strong:
+        rgba(20,23,43,.78);
+
+    --glass-light:
+        rgba(255,255,255,.055);
+
+    --border:
+        rgba(255,255,255,.10);
+
+    --border-bright:
+        rgba(255,255,255,.18);
+
+    --text:#f7f8ff;
+
+    --muted:#9399b2;
+
+    --cyan:#00e5ff;
+
+    --purple:#a855f7;
+
+    --pink:#ff4ecd;
+
+    --blue:#4d7cff;
+
+    --green:#35e69a;
+
+    --orange:#ff9f43;
+
+    --danger:#ff6b81;
+
+    --warning:#ffcc66;
+
+    --shadow:
+        0 25px 80px
+        rgba(0,0,0,.42);
+
+    --radius:24px;
+
+}
+
+
+/* =====================================================
+   RESET
+===================================================== */
+
+*{
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+}
+
+
+html{
+
+    min-height:100%;
+
+}
+
+
+body{
+
+    min-height:100vh;
+
+    font-family:
+        "Inter",
+        Arial,
+        sans-serif;
+
+    color:
+        var(--text);
+
+    background:
+
+        radial-gradient(
+            circle at 10% 0%,
+            rgba(168,85,247,.18),
+            transparent 25%
+        ),
+
+        radial-gradient(
+            circle at 95% 15%,
+            rgba(0,229,255,.14),
+            transparent 26%
+        ),
+
+        radial-gradient(
+            circle at 50% 100%,
+            rgba(255,78,205,.09),
+            transparent 35%
+        ),
+
+        var(--bg);
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    overflow-x:hidden;
+
+    padding:35px 25px;
+
+    transition:
+        background .45s ease,
+        color .45s ease;
+
+}
+
+
+/* =====================================================
+   SCROLLBAR
+===================================================== */
+
+::-webkit-scrollbar{
+
+    width:7px;
+
+}
+
+
+::-webkit-scrollbar-track{
+
+    background:
+        var(--bg);
+
+}
+
+
+::-webkit-scrollbar-thumb{
+
+    border-radius:20px;
+
+    background:
+        linear-gradient(
+            var(--purple),
+            var(--cyan)
+        );
+
+}
+
+
+/* =====================================================
+   AURORA GRID
+===================================================== */
+
+body::before{
+
+    content:"";
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:-5;
+
+    pointer-events:none;
+
+    background-image:
+
+        linear-gradient(
+            rgba(255,255,255,.025)
+            1px,
+            transparent
+            1px
+        ),
+
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,.025)
+            1px,
+            transparent
+            1px
+        );
+
+    background-size:
+        55px
+        55px;
+
+    opacity:.18;
+
+    mask-image:
+        radial-gradient(
+            ellipse at center,
+            black,
+            transparent 80%
+        );
+
+    -webkit-mask-image:
+        radial-gradient(
+            ellipse at center,
+            black,
+            transparent 80%
+        );
+
+}
+
+
+/* =====================================================
+   BACKGROUND GLOW
+===================================================== */
+
+.glow,
+
+.glow2{
+
+    position:fixed;
+
+    width:550px;
+
+    height:550px;
+
+    border-radius:50%;
+
+    filter:
+        blur(120px);
+
+    pointer-events:none;
+
+    z-index:-3;
+
+    opacity:.15;
+
+    animation:
+        floatOrb
+        16s
+        ease-in-out
+        infinite;
+
+}
+
+
+.glow{
+
+    top:-230px;
+
+    left:-180px;
+
+    background:
+        var(--purple);
+
+}
+
+
+.glow2{
+
+    right:-220px;
+
+    bottom:-240px;
+
+    background:
+        var(--cyan);
+
+    animation-delay:
+        -8s;
+
+}
+
+
+@keyframes floatOrb{
+
+    0%,
+    100%{
+
+        transform:
+            translate(0,0)
+            scale(1);
+
+    }
+
+    50%{
+
+        transform:
+            translate(80px,50px)
+            scale(1.18);
+
+    }
+
+}
+
+
+/* =====================================================
+   LIGHT THEME
+===================================================== */
+
+.light{
+
+    --bg:#eef1fb;
+
+    --bg-soft:#ffffff;
+
+    --glass:
+        rgba(255,255,255,.66);
+
+    --glass-strong:
+        rgba(255,255,255,.86);
+
+    --glass-light:
+        rgba(0,0,0,.035);
+
+    --border:
+        rgba(82,92,130,.14);
+
+    --border-bright:
+        rgba(82,92,130,.24);
+
+    --text:#141625;
+
+    --muted:#6f768d;
+
+    --shadow:
+        0 25px 80px
+        rgba(46,55,90,.14);
+
+    background:
+
+        radial-gradient(
+            circle at 10% 0%,
+            rgba(168,85,247,.13),
+            transparent 28%
+        ),
+
+        radial-gradient(
+            circle at 95% 15%,
+            rgba(0,229,255,.10),
+            transparent 30%
+        ),
+
+        radial-gradient(
+            circle at 50% 100%,
+            rgba(255,78,205,.08),
+            transparent 35%
+        ),
+
+        var(--bg);
+
+}
+
+
+.light body::before{
+
+    opacity:.10;
+
+}
+
+
+.light .glow{
+
+    opacity:.10;
+
+}
+
+
+.light .glow2{
+
+    opacity:.10;
+
+}
+
+
+/* =====================================================
+   WRAPPER
+===================================================== */
+
+.wrapper{
+
+    position:relative;
+
+    z-index:2;
+
+    width:100%;
+
+    max-width:1200px;
+
+    animation:
+        signupEntrance
+        .65s
+        cubic-bezier(.16,1,.3,1);
+
+}
+
+
+@keyframes signupEntrance{
+
+    from{
+
+        opacity:0;
+
+        transform:
+            translateY(28px)
+            scale(.98);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:
+            translateY(0)
+            scale(1);
+
+    }
+
+}
+
+
+/* =====================================================
+   THEME BUTTON
+===================================================== */
+
+.theme-btn{
+
+    position:absolute;
+
+    top:-68px;
+
+    right:0;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    min-height:43px;
+
+    padding:
+        0
+        17px;
+
+    border-radius:15px;
+
+    border:
+        1px
+        solid
+        var(--border);
+
+    color:
+        var(--text);
+
+    font-family:inherit;
+
+    font-size:11px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.075),
+            rgba(255,255,255,.025)
+        );
+
+    backdrop-filter:
+        blur(24px);
+
+    -webkit-backdrop-filter:
+        blur(24px);
+
+    box-shadow:
+        var(--shadow);
+
+    transition:
+        .25s
+        ease;
+
+}
+
+
+.theme-btn:hover{
+
+    transform:
+        translateY(-3px);
+
+    border-color:
+        rgba(0,229,255,.30);
+
+    color:white;
+
+    box-shadow:
+
+        0 12px 35px
+        rgba(0,0,0,.22),
+
+        0 0 22px
+        rgba(0,229,255,.08);
+
+}
+
+
+/* =====================================================
+   DESKTOP LAYOUT
+===================================================== */
+
+.desktop-layout{
+
+    display:grid;
+
+    grid-template-columns:
+        minmax(0,1fr)
+        500px;
+
+    gap:70px;
+
+    align-items:center;
+
+}
+
+
+/* =====================================================
+   HERO
+===================================================== */
+
+.hero{
+
+    position:relative;
+
+    padding:
+        35px
+        10px;
+
+}
+
+
+.hero h1{
+
+    font-family:
+        "Space Grotesk",
+        sans-serif;
+
+    font-size:
+        clamp(42px,5vw,65px);
+
+    font-weight:800;
+
+    line-height:1.05;
+
+    letter-spacing:-2px;
+
+    color:
+        var(--text);
+
+}
+
+
+.hero h1 span{
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--pink),
+            var(--purple),
+            var(--cyan)
+        );
+
+    background-size:
+        200%
+        200%;
+
+    -webkit-background-clip:text;
+
+    -webkit-text-fill-color:
+        transparent;
+
+    background-clip:text;
+
+    animation:
+        logoGradient
+        5s
+        ease
+        infinite;
+
+}
+
+
+@keyframes logoGradient{
+
+    0%,
+    100%{
+
+        background-position:
+            0%
+            50%;
+
+    }
+
+    50%{
+
+        background-position:
+            100%
+            50%;
+
+    }
+
+}
+
+
+.hero p{
+
+    max-width:540px;
+
+    margin-top:22px;
+
+    color:
+        var(--muted);
+
+    font-size:15px;
+
+    line-height:1.8;
+
+}
+
+
+.features{
+
+    margin-top:36px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:16px;
+
+}
+
+
+.feature{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+    color:
+        var(--text);
+
+    font-size:14px;
+
+    font-weight:600;
+
+}
+
+
+.feature i{
+
+    width:43px;
+
+    height:43px;
+
+    flex-shrink:0;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:14px;
+
+    color:white;
+
+    font-style:normal;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--purple),
+            var(--cyan)
+        );
+
+    box-shadow:
+
+        0 10px 28px
+        rgba(168,85,247,.20),
+
+        inset
+        0
+        1px
+        0
+        rgba(255,255,255,.25);
+
+}
+
+
+/* =====================================================
+   MAIN SIGNUP CARD
+===================================================== */
+
+.card{
+
+    position:relative;
+
+    overflow:hidden;
+
+    padding:
+        38px
+        35px
+        34px;
+
+    border-radius:
+        30px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.075),
+            rgba(255,255,255,.025)
+        );
+
+    border:
+        1px
+        solid
+        var(--border);
+
+    backdrop-filter:
+        blur(28px);
+
+    -webkit-backdrop-filter:
+        blur(28px);
+
+    box-shadow:
+        var(--shadow);
+
+}
+
+
+/* =====================================================
+   CARD TOP LIGHT
+===================================================== */
+
+.card::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:0;
+
+    left:0;
+
+    width:100%;
+
+    height:1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(0,229,255,.45),
+            rgba(168,85,247,.45),
+            transparent
+        );
+
+    opacity:.9;
+
+}
+
+
+/* =====================================================
+   CARD INNER GLOW
+===================================================== */
+
+.card::after{
+
+    content:"";
+
+    position:absolute;
+
+    width:260px;
+
+    height:260px;
+
+    top:-170px;
+
+    right:-110px;
+
+    border-radius:50%;
+
+    background:
+        var(--purple);
+
+    filter:
+        blur(90px);
+
+    opacity:.09;
+
+    pointer-events:none;
+
+}
+
+
+/* =====================================================
+   BRAND
+===================================================== */
+
+.card-title{
+
+    position:relative;
+
+    z-index:1;
+
+    text-align:center;
+
+    margin-bottom:28px;
+
+}
+
+
+.brand-logo{
+
+    font-family:
+        "Space Grotesk",
+        sans-serif;
+
+    font-size:
+        clamp(27px,5vw,34px);
+
+    font-weight:800;
+
+    letter-spacing:1px;
+
+    color:
+        var(--text);
+
+    text-shadow:
+        0 0 25px
+        rgba(255,255,255,.06);
+
+}
+
+
+.brand-logo span{
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--pink),
+            var(--purple),
+            var(--cyan)
+        );
+
+    background-size:
+        200%
+        200%;
+
+    -webkit-background-clip:text;
+
+    -webkit-text-fill-color:
+        transparent;
+
+    background-clip:text;
+
+    animation:
+        logoGradient
+        5s
+        ease
+        infinite;
+
+}
+
+
+.card-title p{
+
+    margin-top:8px;
+
+    color:
+        var(--muted);
+
+    font-size:12px;
+
+    line-height:1.6;
+
+}
+
+
+/* =====================================================
+   STEPS
+===================================================== */
+
+.steps{
+
+    position:relative;
+
+    z-index:1;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin:
+        0
+        0
+        30px;
+
+}
+
+
+.steps::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:18px;
+
+    left:12.5%;
+
+    right:12.5%;
+
+    height:2px;
+
+    border-radius:20px;
+
+    background:
+        rgba(255,255,255,.10);
+
+}
+
+
+.progress-line{
+
+    position:absolute;
+
+    z-index:1;
+
+    top:18px;
+
+    left:12.5%;
+
+    width:0;
+
+    height:2px;
+
+    max-width:75%;
+
+    border-radius:20px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--pink),
+            var(--purple),
+            var(--cyan)
+        );
+
+    box-shadow:
+
+        0 0 12px
+        rgba(168,85,247,.50),
+
+        0 0 24px
+        rgba(0,229,255,.16);
+
+    transition:
+        width .5s
+        cubic-bezier(.16,1,.3,1);
+
+}
+
+
+.step{
+
+    position:relative;
+
+    z-index:2;
+
+    width:25%;
+
+    text-align:center;
+
+}
+
+
+.circle{
+
+    width:38px;
+
+    height:38px;
+
+    margin:auto;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:50%;
+
+    border:
+        1px
+        solid
+        var(--border);
+
+    color:
+        var(--muted);
+
+    background:
+        rgba(255,255,255,.055);
+
+    font-size:13px;
+
+    font-weight:800;
+
+    box-shadow:
+
+        inset
+        0
+        1px
+        0
+        rgba(255,255,255,.05);
+
+    transition:
+        .3s
+        ease;
+
+}
+
+
+.step.active .circle{
+
+    color:white;
+
+    border-color:
+        rgba(0,229,255,.38);
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--purple),
+            var(--cyan)
+        );
+
+    box-shadow:
+
+        0 0 22px
+        rgba(0,229,255,.20),
+
+        0 0 28px
+        rgba(168,85,247,.25);
+
+}
+
+
+.step small{
+
+    display:block;
+
+    margin-top:8px;
+
+    color:
+        var(--muted);
+
+    font-size:10px;
+
+    font-weight:600;
+
+    transition:
+        .25s
+        ease;
+
+}
+
+
+.step.active small{
+
+    color:
+        var(--text);
+
+}
+
+
+/* =====================================================
+   PAGE
+===================================================== */
+
+.page{
+
+    position:relative;
+
+    z-index:1;
+
+    display:none;
+
+}
+
+
+.page.active{
+
+    display:block;
+
+    animation:
+        pageShow
+        .4s
+        cubic-bezier(.16,1,.3,1);
+
+}
+
+
+@keyframes pageShow{
+
+    from{
+
+        opacity:0;
+
+        transform:
+            translateY(15px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:
+            translateY(0);
+
+    }
+
+}
+
+
+/* =====================================================
+   LABEL
+===================================================== */
+
+label{
+
+    display:block;
+
+    margin:
+        17px
+        0
+        8px;
+
+    color:
+        var(--muted);
+
+    font-size:11px;
+
+    font-weight:600;
+
+}
+
+
+/* =====================================================
+   INPUT BOX
+===================================================== */
+
+.input-box{
+
+    position:relative;
+
+}
+
+
+.icon-input > i:not(.eye){
+
+    position:absolute;
+
+    top:50%;
+
+    left:17px;
+
+    z-index:2;
+
+    transform:
+        translateY(-50%);
+
+    color:
+        var(--cyan);
+
+    font-size:15px;
+
+    filter:
+        drop-shadow(
+            0 0 9px
+            rgba(0,229,255,.38)
+        );
+
+    transition:
+        .25s
+        ease;
+
+}
+
+
+/* =====================================================
+   INPUT
+===================================================== */
+
+input{
+
+    width:100%;
+
+    height:56px;
+
+    padding:
+        0
+        50px;
+
+    border-radius:16px;
+
+    outline:none;
+
+    border:
+        1px
+        solid
+        var(--border);
+
+    color:
+        var(--text);
+
+    font-family:inherit;
+
+    font-size:13px;
+
+    background:
+        rgba(255,255,255,.045);
+
+    box-shadow:
+
+        inset
+        0
+        1px
+        0
+        rgba(255,255,255,.025);
+
+    transition:
+        border-color .25s ease,
+        background .25s ease,
+        box-shadow .25s ease,
+        transform .25s ease;
+
+}
+
+
+.light input{
+
+    background:
+        rgba(255,255,255,.62);
+
+}
+
+
+input:hover{
+
+    border-color:
+        var(--border-bright);
+
+    background:
+        rgba(255,255,255,.06);
+
+}
+
+
+input:focus{
+
+    border-color:
+        rgba(0,229,255,.50);
+
+    background:
+        rgba(0,229,255,.025);
+
+    box-shadow:
+
+        0 0 0 4px
+        rgba(0,229,255,.055),
+
+        0 0 25px
+        rgba(0,229,255,.06),
+
+        inset
+        0
+        1px
+        0
+        rgba(255,255,255,.04);
+
+}
+
+
+.input-box:focus-within
+i:not(.eye){
+
+    color:
+        var(--purple);
+
+    filter:
+        drop-shadow(
+            0 0 12px
+            rgba(168,85,247,.65)
+        );
+
+}
+
+
+input::placeholder{
+
+    color:
+        #747b91;
+
+}
+
+
+input:focus::placeholder{
+
+    opacity:.65;
+
+}
+
+
+input[readonly]{
+
+    cursor:pointer;
+
+}
+
+
+.icon-input input{
+
+    padding-left:50px;
+
+    padding-right:50px;
+
+}
+
+
+/* =====================================================
+   NAME
+===================================================== */
+
+.name-row{
+
+    display:grid;
+
+    grid-template-columns:
+        1fr
+        1fr;
+
+    gap:12px;
+
+}
+
+
+.full-name-box{
+
+    margin-top:14px;
+
+}
+
+
+/* =====================================================
+   PASSWORD EYE
+===================================================== */
+
+.icon-input .eye{
+
+    position:absolute;
+
+    top:50%;
+
+    right:16px;
+
+    z-index:5;
+
+    transform:
+        translateY(-50%);
+
+    color:
+        #aeb4c8;
+
+    font-size:15px;
+
+    cursor:pointer;
+
+    transition:
+        .25s
+        ease;
+
+}
+
+
+.icon-input .eye:hover{
+
+    color:
+        var(--cyan);
+
+    transform:
+        translateY(-50%)
+        scale(1.08);
+
+}
+
+
+/* =====================================================
+   EMAIL OTP ROW
+===================================================== */
+
+.email-otp-row{
+
+    display:grid;
+
+    grid-template-columns:
+        minmax(0,1fr)
+        118px;
+
+    gap:12px;
+
+    align-items:start;
+
+    width:100%;
+
+}
+
+
+.email-area{
+
+    width:100%;
+
+}
+
+
+.email-area .input-box{
+
+    width:100%;
+
+}
+
+
+.email-area input{
+
+    width:100%;
+
+    height:54px;
+
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+#emailStatus,
+
+#usernameStatus,
+
+#otpStatus,
+
+#errorBox,
+
+#passwordError{
+
+    position:relative;
+
+    z-index:1;
+
+    min-height:18px;
+
+    margin-top:8px;
+
+    padding-left:3px;
+
+    font-size:11px;
+
+    line-height:1.55;
+
+}
+
+
+#usernameStatus{
+
+    margin-bottom:3px;
+
+}
+
+
+.email-checking,
+
+.username-checking{
+
+    color:
+        var(--warning);
+
+}
+
+
+.email-available,
+
+.username-available,
+
+.success{
+
+    color:
+        var(--green)
+        !important;
+
+}
+
+
+.email-taken,
+
+.username-taken{
+
+    color:
+        var(--danger);
+
+}
+
+
+#errorBox,
+
+#passwordError{
+
+    color:
+        var(--danger);
+
+}
+
+
+/* =====================================================
+   GET CODE BUTTON
+===================================================== */
+
+.get-code{
+
+    position:relative;
+
+    width:100%;
+
+    height:54px;
+
+    overflow:hidden;
+
+    border:
+        1px
+        solid
+        rgba(255,255,255,.12);
+
+    border-radius:16px;
+
+    color:white;
+
+    font-family:inherit;
+
+    font-size:11px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--purple),
+            var(--cyan)
+        );
+
+    box-shadow:
+
+        0 12px 28px
+        rgba(168,85,247,.22);
+
+    transition:
+        .25s
+        ease;
+
+}
+
+
+.get-code:hover:not(:disabled){
+
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+
+        0 16px 35px
+        rgba(168,85,247,.30),
+
+        0 0 22px
+        rgba(0,229,255,.10);
+
+}
+
+
+.get-code:disabled{
+
+    opacity:.60;
+
+    cursor:not-allowed;
+
+}
+
+
+/* =====================================================
+   OTP
+===================================================== */
+
+.otp-container{
+
+    margin-top:4px;
+
+}
+
+
+.otp-boxes{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    gap:10px;
+
+    width:100%;
+
+}
+
+
+.otp-digit{
+
+    flex:1;
+
+    width:0;
+
+    height:55px;
+
+    padding:0
+    !important;
+
+    text-align:center;
+
+    font-size:19px;
+
+    font-weight:800;
+
+    border-radius:15px;
+
+}
+
+
+.otp-digit:focus{
+
+    transform:
+        translateY(-3px);
+
+}
+
+
+/* =====================================================
+   BUTTONS
+===================================================== */
+
+.buttons{
+
+    position:relative;
+
+    z-index:1;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:12px;
+
+    margin-top:20px;
+
+    width:100%;
+
+}
+
+
+.buttons button{
+
+    position:relative;
+
+    flex:1;
+
+    height:53px;
+
+    overflow:hidden;
+
+    border-radius:17px;
+
+    border:
+        1px
+        solid
+        var(--border);
+
+    font-family:inherit;
+
+    font-size:12px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    color:
+        var(--text);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.075),
+            rgba(255,255,255,.025)
+        );
+
+    transition:
+        .25s
+        ease;
+
+}
+
+
+.buttons button:hover:not(:disabled){
+
+    transform:
+        translateY(-3px);
+
+    border-color:
+        rgba(0,229,255,.25);
+
+    box-shadow:
+
+        0 14px 30px
+        rgba(0,0,0,.20);
+
+}
+
+
+.buttons button:active:not(:disabled){
+
+    transform:
+        translateY(-1px)
+        scale(.99);
+
+}
+
+
+.buttons .next{
+
+    color:white;
+
+    border:none;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--purple),
+            var(--cyan)
+        );
+
+    background-size:
+        180%
+        180%;
+
+    box-shadow:
+
+        0 12px 30px
+        rgba(168,85,247,.25);
+
+}
+
+
+.buttons .next::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:0;
+
+    left:-120%;
+
+    width:70%;
+
+    height:100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.25),
+            transparent
+        );
+
+    transform:
+        skewX(-25deg);
+
+    transition:
+        .7s
+        ease;
+
+}
+
+
+.buttons .next:hover:not(:disabled)::before{
+
+    left:140%;
+
+}
+
+
+.buttons .next:hover:not(:disabled){
+
+    background-position:
+        100%
+        50%;
+
+    box-shadow:
+
+        0 18px 42px
+        rgba(168,85,247,.34),
+
+        0 0 25px
+        rgba(0,229,255,.10);
+
+}
+
+
+.buttons button:disabled{
+
+    opacity:.60;
+
+    cursor:not-allowed;
+
+}
+
+
+/* =====================================================
+   REVIEW
+===================================================== */
+
+.review-card{
+
+    position:relative;
+
+    overflow:hidden;
+
+    padding:22px;
+
+    border-radius:22px;
+
+    background:
+        rgba(255,255,255,.035);
+
+    border:
+        1px
+        solid
+        var(--border);
+
+}
+
+
+.review-card h2{
+
+    margin-bottom:20px;
+
+    text-align:center;
+
+    color:
+        var(--text);
+
+    font-family:
+        "Space Grotesk",
+        sans-serif;
+
+    font-size:20px;
+
+}
+
+
+.review-card h2 i{
+
+    margin-right:6px;
+
+    color:
+        var(--green);
+
+}
+
+
+.review-item{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    min-width:0;
+
+    overflow:hidden;
+
+    padding:13px;
+
+    margin-bottom:10px;
+
+    border-radius:15px;
+
+    background:
+        rgba(255,255,255,.045);
+
+    border:
+        1px
+        solid
+        var(--border);
+
+    transition:
+        .25s
+        ease;
+
+}
+
+
+.review-item:hover{
+
+    transform:
+        translateY(-2px);
+
+    border-color:
+        rgba(0,229,255,.20);
+
+}
+
+
+.review-item > i{
+
+    width:36px;
+
+    height:36px;
+
+    flex-shrink:0;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:12px;
+
+    color:white;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--purple),
+            var(--cyan)
+        );
+
+}
+
+
+.review-item span{
+
+    min-width:0;
+
+    overflow-wrap:anywhere;
+
+    word-break:break-word;
+
+    white-space:normal;
+
+    color:
+        var(--text);
+
+    font-size:11px;
+
+    line-height:1.6;
+
+}
+
+
+.review-item b{
+
+    font-weight:700;
+
+}
+
+
+#reviewError{
+
+    min-height:20px;
+
+    margin-top:15px;
+
+    padding:11px;
+
+    border-radius:13px;
+
+    text-align:center;
+
+    font-size:11px;
+
+    line-height:1.5;
+
+    color:
+        var(--green);
+
+    background:
+        rgba(53,230,154,.06);
+
+    border:
+        1px
+        solid
+        rgba(53,230,154,.14);
+
+}
+
+
+/* =====================================================
+   DATE PICKER
+===================================================== */
+
+.custom-date{
+
+    position:relative;
+
+}
+
+
+#dob{
+
+    cursor:pointer;
+
+}
+
+
+/* =====================================================
+   CALENDAR
+===================================================== */
+
+.calendar{
+
+    display:none;
+
+    position:absolute;
+
+    left:0;
+
+    right:0;
+
+    bottom:68px;
+
+    z-index:100;
+
+    padding:16px;
+
+    border-radius:20px;
+
+    background:
+        var(--glass-strong);
+
+    border:
+        1px
+        solid
+        var(--border);
+
+    backdrop-filter:
+        blur(28px);
+
+    -webkit-backdrop-filter:
+        blur(28px);
+
+    box-shadow:
+        var(--shadow);
+
+}
+
+
+.calendar.show{
+
+    display:block;
+
+    animation:
+        calendarShow
+        .25s
+        ease;
+
+}
+
+
+@keyframes calendarShow{
+
+    from{
+
+        opacity:0;
+
+        transform:
+            translateY(8px)
+            scale(.98);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:
+            translateY(0)
+            scale(1);
+
+    }
+
+}
+
+
+.calendar-head{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:8px;
+
+}
+
+
+.calendar-head button{
+
+    width:38px;
+
+    height:38px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    flex-shrink:0;
+
+    border:none;
+
+    border-radius:12px;
+
+    color:white;
+
+    cursor:pointer;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--purple),
+            var(--cyan)
+        );
+
+    transition:
+        .2s
+        ease;
+
+}
+
+
+.calendar-head button:hover{
+
+    transform:
+        scale(1.07);
+
+}
+
+
+/* =====================================================
+   DATE SELECT
+===================================================== */
+
+.date-control{
+
+    display:flex;
+
+    flex:1;
+
+    gap:8px;
+
+    align-items:center;
+
+    padding:5px;
+
+    border-radius:15px;
+
+    background:
+        rgba(255,255,255,.04);
+
+    border:
+        1px
+        solid
+        var(--border);
+
+}
+
+
+.date-control select{
+
+    min-width:0;
+
+    width:50%;
+
+    height:38px;
+
+    padding:
+        0
+        10px;
+
+    border:
+        1px
+        solid
+        var(--border);
+
+    border-radius:11px;
+
+    outline:none;
+
+    color:
+        var(--text);
+
+    font-family:inherit;
+
+    font-size:11px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    background:
+        rgba(255,255,255,.06);
+
+}
+
+
+.light .date-control select{
+
+    background:
+        rgba(255,255,255,.85);
+
+}
+
+
+.date-control option{
+
+    background:
+        #141624;
+
+    color:white;
+
+}
+
+
+/* =====================================================
+   CALENDAR DAYS
+===================================================== */
+
+.week,
+
+.days{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(7,1fr);
+
+    gap:6px;
+
+    text-align:center;
+
+}
+
+
+.week{
+
+    margin-top:16px;
+
+}
+
+
+.week div{
+
+    color:
+        var(--muted);
+
+    font-size:10px;
+
+    font-weight:700;
+
+}
+
+
+.days{
+
+    margin-top:8px;
+
+}
+
+
+.days button{
+
+    height:34px;
+
+    border:none;
+
+    border-radius:50%;
+
+    color:
+        var(--text);
+
+    font-family:inherit;
+
+    font-size:11px;
+
+    cursor:pointer;
+
+    background:
+        transparent;
+
+    transition:
+        .2s
+        ease;
+
+}
+
+
+.days button:hover:not(:disabled){
+
+    color:white;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--purple),
+            var(--cyan)
+        );
+
+    box-shadow:
+        0 0 15px
+        rgba(168,85,247,.30);
+
+}
+
+
+.days button:disabled{
+
+    opacity:0;
+
+    cursor:default;
+
+}
+
+
+/* =====================================================
+   LOGIN LINK
+===================================================== */
+
+.login-link{
+
+    position:relative;
+
+    z-index:1;
+
+    margin-top:20px;
+
+    text-align:center;
+
+    color:
+        var(--muted);
+
+    font-size:11px;
+
+}
+
+
+.login-link a{
+
+    position:relative;
+
+    margin-left:4px;
+
+    color:
+        var(--cyan);
+
+    font-weight:700;
+
+    text-decoration:none;
+
+    transition:
+        .25s
+        ease;
+
+}
+
+
+.login-link a::after{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+
+    bottom:-4px;
+
+    width:100%;
+
+    height:1px;
+
+    transform:
+        scaleX(0);
+
+    transform-origin:
+        right;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--purple),
+            var(--cyan)
+        );
+
+    transition:
+        transform
+        .25s
+        ease;
+
+}
+
+
+.login-link a:hover{
+
+    color:white;
+
+    text-shadow:
+
+        0 0 12px
+        rgba(0,229,255,.45);
+
+}
+
+
+.login-link a:hover::after{
+
+    transform:
+        scaleX(1);
+
+    transform-origin:
+        left;
+
+}
+
+
+/* =====================================================
+   TABLET RESPONSIVE
+===================================================== */
+
+@media(max-width:900px){
+
+    body{
+
+        padding:
+            80px
+            15px
+            25px;
+
+    }
+
+
+    .desktop-layout{
+
+        display:block;
+
+    }
+
+
+    .hero{
+
+        display:none;
+
+    }
+
+
+    .wrapper{
+
+        max-width:520px;
+
+    }
+
+
+    .theme-btn{
+
+        top:-60px;
+
+        right:0;
+
+    }
+
+
+    .card{
+
+        width:100%;
+
+    }
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media(max-width:600px){
+
+    body{
+
+        padding:
+            70px
+            12px
+            18px;
+
+        align-items:flex-start;
+
+    }
+
+
+    .wrapper{
+
+        max-width:440px;
+
+    }
+
+
+    .theme-btn{
+
+        top:-55px;
+
+        min-height:38px;
+
+        padding:
+            0
+            13px;
+
+        font-size:10px;
+
+    }
+
+
+    .card{
+
+        padding:
+            30px
+            22px
+            26px;
+
+        border-radius:
+            26px;
+
+    }
+
+
+    .card-title{
+
+        margin-bottom:24px;
+
+    }
+
+
+    .brand-logo{
+
+        font-size:29px;
+
+    }
+
+
+    .steps{
+
+        margin-bottom:26px;
+
+    }
+
+
+    .circle{
+
+        width:34px;
+
+        height:34px;
+
+        font-size:11px;
+
+    }
+
+
+    .steps::before,
+
+    .progress-line{
+
+        top:16px;
+
+    }
+
+
+    .step small{
+
+        font-size:9px;
+
+    }
+
+
+    input{
+
+        height:53px;
+
+        font-size:12px;
+
+    }
+
+
+    .email-area input{
+
+        height:53px;
+
+    }
+
+
+    .get-code{
+
+        height:53px;
+
+    }
+
+
+    .buttons button{
+
+        height:52px;
+
+    }
+
+
+    .calendar{
+
+        bottom:65px;
+
+    }
+
+}
+
+
+/* =====================================================
+   SMALL MOBILE
+===================================================== */
+
+@media(max-width:500px){
+
+    .name-row{
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .email-otp-row{
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .get-code{
+
+        width:100%;
+
+    }
+
+
+    .otp-boxes{
+
+        gap:6px;
+
+    }
+
+
+    .otp-digit{
+
+        height:48px;
+
+        font-size:17px;
+
+        border-radius:13px;
+
+    }
+
+
+    .calendar{
+
+        bottom:64px;
+
+    }
+
+
+    .date-control{
+
+        gap:5px;
+
+    }
+
+
+    .date-control select{
+
+        font-size:10px;
+
+    }
+
+}
+
+
+/* =====================================================
+   EXTRA SMALL MOBILE
+===================================================== */
+
+@media(max-width:420px){
+
+    body{
+
+        padding:
+            66px
+            9px
+            14px;
+
+    }
+
+
+    .card{
+
+        padding:
+            27px
+            17px
+            23px;
+
+        border-radius:
+            23px;
+
+    }
+
+
+    .brand-logo{
+
+        font-size:27px;
+
+    }
+
+
+    .steps{
+
+        margin-left:-3px;
+
+        margin-right:-3px;
+
+    }
+
+
+    .step small{
+
+        font-size:8px;
+
+    }
+
+
+    .circle{
+
+        width:32px;
+
+        height:32px;
+
+    }
+
+
+    .steps::before,
+
+    .progress-line{
+
+        top:15px;
+
+    }
+
+
+    .review-card{
+
+        padding:16px;
+
+    }
+
+
+    .review-item{
+
+        padding:11px;
+
+        gap:10px;
+
+    }
+
+
+    .review-item > i{
+
+        width:32px;
+
+        height:32px;
+
+    }
+
+}
+
+
+/* =====================================================
+   REDUCE MOTION
+===================================================== */
+
+@media(
+    prefers-reduced-motion:reduce
+){
+
+    *{
+
+        scroll-behavior:auto !important;
+
+        animation-duration:
+            .01ms !important;
+
+        animation-iteration-count:
+            1 !important;
+
+        transition-duration:
+            .01ms !important;
+
+    }
+
+}
+
+/* =====================================================
+   IMPROVED LIGHT MODE VISIBILITY FIX
+===================================================== */
+
+.light{
+
+    --bg:#f3f6fc;
+
+    --bg-soft:#ffffff;
+
+    --glass:
+        rgba(255,255,255,.92);
+
+    --glass-strong:
+        rgba(255,255,255,.98);
+
+    --glass-light:
+        rgba(31,41,55,.045);
+
+    --border:
+        rgba(71,85,105,.22);
+
+    --border-bright:
+        rgba(71,85,105,.36);
+
+    --text:#111827;
+
+    --muted:#4b5563;
+
+    --shadow:
+        0 25px 70px
+        rgba(51,65,85,.14);
+
+}
+
+
+/* =====================================================
+   MAIN CARD
+===================================================== */
+
+.light .card{
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.96),
+            rgba(247,249,255,.88)
+        );
+
+    border-color:
+        rgba(71,85,105,.18);
+
+}
+
+
+/* =====================================================
+   THEME BUTTON
+===================================================== */
+
+.light .theme-btn{
+
+    color:#1f2937;
+
+    background:
+        rgba(255,255,255,.90);
+
+    border-color:
+        rgba(71,85,105,.22);
+
+}
+
+
+.light .theme-btn:hover{
+
+    color:#111827;
+
+    background:
+        #ffffff;
+
+}
+
+
+/* =====================================================
+   INPUTS
+===================================================== */
+
+.light input{
+
+    color:#111827;
+
+    background:
+        rgba(255,255,255,.96);
+
+    border-color:
+        rgba(71,85,105,.24);
+
+    box-shadow:
+
+        0 3px 10px
+        rgba(15,23,42,.025),
+
+        inset
+        0
+        1px
+        0
+        rgba(255,255,255,.8);
+
+}
+
+
+.light input:hover{
+
+    background:
+        #ffffff;
+
+    border-color:
+        rgba(71,85,105,.38);
+
+}
+
+
+.light input:focus{
+
+    color:#111827;
+
+    background:
+        #ffffff;
+
+    border-color:
+        rgba(0,180,205,.60);
+
+    box-shadow:
+
+        0 0 0 4px
+        rgba(0,229,255,.12),
+
+        0 8px 22px
+        rgba(0,229,255,.06);
+
+}
+
+
+.light input::placeholder{
+
+    color:#7b8497;
+
+    opacity:1;
+
+}
+
+
+/* =====================================================
+   LABELS
+===================================================== */
+
+.light label{
+
+    color:#4b5563;
+
+}
+
+
+/* =====================================================
+   INPUT ICONS
+===================================================== */
+
+.light .icon-input > i:not(.eye){
+
+    color:#009fbd;
+
+}
+
+
+.light .icon-input .eye{
+
+    color:#64748b;
+
+}
+
+
+.light .icon-input .eye:hover{
+
+    color:#008da8;
+
+}
+
+
+/* =====================================================
+   EMAIL / USERNAME STATUS
+===================================================== */
+
+.light #emailStatus,
+.light #usernameStatus,
+.light #otpStatus,
+.light #errorBox,
+.light #passwordError{
+
+    font-weight:600;
+
+}
+
+
+.light .email-checking,
+.light .username-checking{
+
+    color:#b45309;
+
+}
+
+
+.light .email-available,
+.light .username-available,
+.light .success{
+
+    color:#047857 !important;
+
+}
+
+
+.light .email-taken,
+.light .username-taken,
+.light #errorBox,
+.light #passwordError{
+
+    color:#dc2626;
+
+}
+
+
+/* =====================================================
+   REVIEW CARD
+===================================================== */
+
+.light .review-card{
+
+    background:
+        rgba(255,255,255,.82);
+
+    border-color:
+        rgba(71,85,105,.18);
+
+}
+
+
+.light .review-card h2{
+
+    color:#111827;
+
+}
+
+
+.light .review-item{
+
+    background:
+        rgba(248,250,252,.96);
+
+    border-color:
+        rgba(71,85,105,.16);
+
+    box-shadow:
+        0 3px 12px
+        rgba(15,23,42,.025);
+
+}
+
+
+.light .review-item:hover{
+
+    background:
+        #ffffff;
+
+    border-color:
+        rgba(0,180,205,.30);
+
+}
+
+
+.light .review-item span{
+
+    color:#1f2937;
+
+}
+
+
+.light .review-item b{
+
+    color:#111827;
+
+}
+
+
+/* =====================================================
+   REVIEW MESSAGE
+===================================================== */
+
+.light #reviewError{
+
+    color:#047857;
+
+    background:
+        rgba(16,185,129,.08);
+
+    border-color:
+        rgba(16,185,129,.24);
+
+}
+
+
+/* =====================================================
+   STEPS
+===================================================== */
+
+.light .steps::before{
+
+    background:
+        rgba(71,85,105,.20);
+
+}
+
+
+.light .circle{
+
+    color:#475569;
+
+    background:
+        rgba(255,255,255,.92);
+
+    border-color:
+        rgba(71,85,105,.24);
+
+    box-shadow:
+
+        0 4px 12px
+        rgba(15,23,42,.04);
+
+}
+
+
+.light .step small{
+
+    color:#64748b;
+
+}
+
+
+.light .step.active small{
+
+    color:#1f2937;
+
+}
+
+
+/* =====================================================
+   BUTTONS
+===================================================== */
+
+.light .buttons button:not(.next){
+
+    color:#1f2937;
+
+    background:
+        rgba(255,255,255,.94);
+
+    border-color:
+        rgba(71,85,105,.22);
+
+}
+
+
+.light .buttons button:not(.next):hover:not(:disabled){
+
+    color:#111827;
+
+    background:
+        #ffffff;
+
+    border-color:
+        rgba(0,180,205,.35);
+
+}
+
+
+.light .get-code{
+
+    border-color:
+        rgba(99,102,241,.20);
+
+}
+
+
+/* =====================================================
+   LOGIN LINK
+===================================================== */
+
+.light .login-link{
+
+    color:#4b5563;
+
+}
+
+
+.light .login-link a{
+
+    color:#008eaa;
+
+}
+
+
+.light .login-link a:hover{
+
+    color:#6d28d9;
+
+}
+
+
+/* =====================================================
+   CALENDAR
+===================================================== */
+
+.light .calendar{
+
+    background:
+        rgba(255,255,255,.98);
+
+    border-color:
+        rgba(71,85,105,.20);
+
+}
+
+
+.light .date-control{
+
+    background:
+        rgba(248,250,252,.95);
+
+    border-color:
+        rgba(71,85,105,.18);
+
+}
+
+
+.light .date-control select{
+
+    color:#1f2937;
+
+    background:
+        #ffffff;
+
+    border-color:
+        rgba(71,85,105,.22);
+
+}
+
+
+.light .date-control option{
+
+    color:#111827;
+
+    background:
+        #ffffff;
+
+}
+
+
+.light .week div{
+
+    color:#64748b;
+
+}
+
+
+.light .days button{
+
+    color:#1f2937;
+
+}
+
+
+.light .days button:hover:not(:disabled){
+
+    color:white;
+
+}
+
+
+/* =====================================================
+   OTP BOX
+===================================================== */
+
+.light .otp-digit{
+
+    color:#111827;
+
+    background:
+        #ffffff;
+
+}
+
+
+/* =====================================================
+   CUSTOM DATE
+===================================================== */
+
+.light #dob{
+
+    color:#111827;
+
+}
+
+
+/* =====================================================
+   SCROLLBAR
+===================================================== */
+
+.light ::-webkit-scrollbar-track{
+
+    background:
+        #eef2f7;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="glow"></div>
+
+<div class="glow2"></div>
+
+
+<div class="wrapper">
+
+
+<!-- =====================================================
+     THEME
+===================================================== -->
+
+<button
+    class="theme-btn"
+    id="themeBtn"
+    type="button"
+    onclick="toggleTheme()"
+>
+    ☀️ Light Theme
+</button>
+
+
+<div class="desktop-layout">
+
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<div class="hero">
+
+<h1>
+
+Welcome To
+
+<span>MEDIA</span>VERSE
+
+</h1>
+
+
+<p>
+
+Create your account with a secure and modern
+MEDIAVERSE onboarding experience.
+
+</p>
+
+
+<div class="features">
+
+<div class="feature">
+
+<i>✓</i>
+
+Secure Account
+
+</div>
+
+
+<div class="feature">
+
+<i>⚡</i>
+
+Fast Experience
+
+</div>
+
+
+<div class="feature">
+
+<i>★</i>
+
+Premium Design
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     SIGNUP CARD
+===================================================== -->
+
+<div class="card">
+
+
+<div class="card-title">
+
+<div class="brand-logo">
+
+𝑀𝐸𝐷𝐼𝐴<span>ꪜ𝐸𝑅𝑆𝐸</span>
+
+</div>
+
+<p>
+Build your secure digital identity
+</p>
+
+</div>
+
+
+<!-- =====================================================
+     STEPS
+===================================================== -->
+
+<div class="steps">
+
+<div
+    class="progress-line"
+    id="progressLine">
+</div>
+
+
+<div class="step active">
+
+<div class="circle">
+1
+</div>
+
+<small>
+Personal
+</small>
+
+</div>
+
+
+<div class="step">
+
+<div class="circle">
+2
+</div>
+
+<small>
+Account
+</small>
+
+</div>
+
+
+<div class="step">
+
+<div class="circle">
+3
+</div>
+
+<small>
+Finish
+</small>
+
+</div>
+
+
+<div class="step">
+
+<div class="circle">
+4
+</div>
+
+<small>
+Review
+</small>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     PAGE 1 — PERSONAL
+===================================================== -->
+
+<div class="page active">
+
+
+<div class="name-row">
+
+
+<div class="input-box icon-input">
+
+<i class="fa-solid fa-user"></i>
+
+<input
+    id="firstName"
+    type="text"
+    maxlength="13"
+    placeholder="First Name"
+    oninput="
+        filterName(this);
+        makeFullName();
+    "
+>
+
+</div>
+
+
+<div class="input-box icon-input">
+
+<i class="fa-solid fa-user-tie"></i>
+
+<input
+    id="lastName"
+    type="text"
+    maxlength="13"
+    placeholder="Last Name"
+    oninput="
+        filterName(this);
+        makeFullName();
+    "
+>
+
+</div>
+
+</div>
+
+
+<div class="input-box icon-input full-name-box">
+
+<i class="fa-solid fa-id-card"></i>
+
+<input
+    id="fullName"
+    readonly
+    placeholder="Auto generated full name"
+>
+
+</div>
+
+
+<label>
+Date Of Birth
+</label>
+
+
+<div class="custom-date icon-input">
+
+<i class="fa-solid fa-calendar-days"></i>
+
+<input
+    id="dob"
+    type="text"
+    readonly
+    placeholder="Select your birthday"
+    onclick="openCalendar()"
+>
+
+</div>
+
+
+<!-- CALENDAR -->
+
+<div
+    class="calendar"
+    id="calendar"
+>
+
+
+<div class="calendar-head">
+
+
+<button
+    type="button"
+    onclick="prevMonth()"
+>
+◀
+</button>
+
+
+<div class="date-control">
+
+<select
+    id="yearSelect"
+    onchange="changeYear()"
+>
+</select>
+
+
+<select
+    id="monthSelect"
+    onchange="changeMonth()"
+>
+</select>
+
+</div>
+
+
+<button
+    type="button"
+    onclick="nextMonth()"
+>
+▶
+</button>
+
+
+</div>
+
+
+<div class="week">
+
+<div>Su</div>
+<div>Mo</div>
+<div>Tu</div>
+<div>We</div>
+<div>Th</div>
+<div>Fr</div>
+<div>Sa</div>
+
+</div>
+
+
+<div
+    class="days"
+    id="days"
+></div>
+
+
+</div>
+
+
+<div id="errorBox"></div>
+
+
+<div class="buttons">
+
+<button
+    type="button"
+    class="next"
+    onclick="nextPage()"
+>
+Next
+</button>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     PAGE 2 — EMAIL + OTP
+===================================================== -->
+
+<div class="page">
+
+
+<label>
+Gmail
+</label>
+
+
+<div class="email-otp-row">
+
+
+    <div class="email-area">
+
+        <div class="input-box icon-input">
+
+            <i class="fa-solid fa-envelope"></i>
+
+            <input
+                id="email"
+                type="email"
+                autocomplete="email"
+                placeholder="Enter your Gmail"
+                oninput="
+                    handleEmailInput(this);
+                    handleVerifiedEmailChange();
+                "
+            >
+
+        </div>
+
+
+        <div id="emailStatus"></div>
+
+    </div>
+
+
+    <button
+        type="button"
+        class="get-code"
+        onclick="sendSignupOTP()"
+    >
+        Get Code
+    </button>
+
+
+</div>
+
+
+<label>
+6-Digit OTP
+</label>
+
+
+<div class="otp-container">
+
+
+<div class="otp-boxes">
+
+
+<input
+    class="otp-digit"
+    maxlength="1"
+    inputmode="numeric"
+    autocomplete="one-time-code"
+    type="text"
+    oninput="otpInput(this,0)"
+>
+
+
+<input
+    class="otp-digit"
+    maxlength="1"
+    inputmode="numeric"
+    type="text"
+    oninput="otpInput(this,1)"
+>
+
+
+<input
+    class="otp-digit"
+    maxlength="1"
+    inputmode="numeric"
+    type="text"
+    oninput="otpInput(this,2)"
+>
+
+
+<input
+    class="otp-digit"
+    maxlength="1"
+    inputmode="numeric"
+    type="text"
+    oninput="otpInput(this,3)"
+>
+
+
+<input
+    class="otp-digit"
+    maxlength="1"
+    inputmode="numeric"
+    type="text"
+    oninput="otpInput(this,4)"
+>
+
+
+<input
+    class="otp-digit"
+    maxlength="1"
+    inputmode="numeric"
+    type="text"
+    oninput="otpInput(this,5)"
+>
+
+</div>
+
+</div>
+
+
+<div id="otpStatus"></div>
+
+
+<div class="buttons">
+
+
+<button
+    type="button"
+    onclick="previousPage()"
+>
+Back
+</button>
+
+
+<button
+    type="button"
+    class="next"
+    onclick="nextPage()"
+>
+Next
+</button>
+
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     PAGE 3 — ACCOUNT
+===================================================== -->
+
+<div class="page">
+
+
+<label>
+Username
+</label>
+
+
+<div class="input-box icon-input">
+
+<i class="fa-solid fa-at"></i>
+
+<input
+    id="username"
+    type="text"
+    autocomplete="username"
+    maxlength="20"
+    placeholder="Create username"
+    oninput="handleUsernameInput(this)"
+>
+
+</div>
+
+<div id="usernameStatus"></div>
+
+<label>
+Password
+</label>
+
+
+<div class="input-box icon-input">
+
+<i class="fa-solid fa-lock"></i>
+
+<input
+    id="password"
+    type="password"
+    autocomplete="new-password"
+    maxlength="32"
+    placeholder="Create password"
+>
+
+
+<i
+    class="fa-solid fa-eye eye"
+    onclick="
+        togglePassword(
+            'password',
+            this
+        )
+    "
+></i>
+
+</div>
+
+
+<label>
+Confirm Password
+</label>
+
+
+<div class="input-box icon-input">
+
+<i class="fa-solid fa-lock"></i>
+
+<input
+    id="confirmPassword"
+    type="password"
+    autocomplete="new-password"
+    maxlength="32"
+    placeholder="Confirm password"
+>
+
+
+<i
+    class="fa-solid fa-eye eye"
+    onclick="
+        togglePassword(
+            'confirmPassword',
+            this
+        )
+    "
+></i>
+
+</div>
+
+
+<div id="passwordError"></div>
+
+
+<div class="buttons">
+
+
+<button
+    type="button"
+    onclick="previousPage()"
+>
+Back
+</button>
+
+
+<button
+    type="button"
+    class="next"
+    onclick="nextPage()"
+>
+Next
+</button>
+
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     PAGE 4 — REVIEW
+===================================================== -->
+
+<div class="page">
+
+
+<div class="review-card">
+
+
+<h2>
+
+<i class="fa-solid fa-circle-check"></i>
+
+Review Information
+
+</h2>
+
+
+<div class="review-item">
+
+<i class="fa-solid fa-user"></i>
+
+<span>
+
+<b>Name:</b>
+
+<span id="reviewName"></span>
+
+</span>
+
+</div>
+
+
+<div class="review-item">
+
+<i class="fa-solid fa-calendar"></i>
+
+<span>
+
+<b>Date of Birth:</b>
+
+<span id="reviewDob"></span>
+
+</span>
+
+</div>
+
+
+<div class="review-item">
+
+<i class="fa-solid fa-envelope"></i>
+
+<span>
+
+<b>Email:</b>
+
+<span id="reviewEmail"></span>
+
+</span>
+
+</div>
+
+
+<div class="review-item">
+
+<i class="fa-solid fa-at"></i>
+
+<span>
+
+<b>Username:</b>
+
+<span id="reviewUsername"></span>
+
+</span>
+
+</div>
+
+
+<div id="reviewError">
+
+✓ Please check all information before finishing.
+
+</div>
+
+
+<div class="buttons">
+
+
+<button
+    type="button"
+    onclick="previousPage()"
+>
+Back
+</button>
+
+
+<button
+    type="button"
+    class="next"
+    onclick="finalSubmit()"
+>
+Finish
+</button>
+
+
+</div>
+
+
+</div>
+
+</div>
+
+
+<div class="login-link">
+
+Already have an account?
+
+<a href="index.html">
+Login
+</a>
+
+</div>
+
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     EMAILJS ENGINE
+===================================================== -->
+
+<script src="./Login and register/emailjs.js"></script>
+<script src="./Login and register/supabase.js"></script>
+
+
+<!-- MEDIAVERSE NETWORK SECURITY -->
+<script src="network-security.js"></script>
+<script>
+
+/* =====================================================
+   PAGE SYSTEM
+===================================================== */
+
+let currentPage = 0;
+
+
+const pages =
+    document.querySelectorAll(".page");
+
+
+const steps =
+    document.querySelectorAll(".step");
+
+
+/* =====================================================
+   NAME FILTER
+===================================================== */
+
+/* =====================================================
+   NAME FILTER
+   MAX 13 CHARACTERS
+===================================================== */
+
+function filterName(input){
+
+    let value = input.value;
+
+
+    /* Remove numbers */
+
+    value = value.replace(
+        /[0-9০-৯]/g,
+        ""
+    );
+
+
+    /* Allow English + Bangla + spaces */
+
+    value = value.replace(
+        /[^A-Za-z\u0980-\u09FF\s]/g,
+        ""
+    );
+
+
+    /* Remove multiple spaces */
+
+    value = value.replace(
+        /\s+/g,
+        " "
+    );
+
+
+    /* Maximum 13 characters */
+
+    value = value.substring(0, 13);
+
+
+    input.value = value;
+
+}
+
+
+/* =====================================================
+   FULL NAME
+===================================================== */
+
+function makeFullName(){
+
+    const first =
+        document
+        .getElementById("firstName")
+        .value
+        .trim();
+
+
+    const last =
+        document
+        .getElementById("lastName")
+        .value
+        .trim();
+
+
+    document
+    .getElementById("fullName")
+    .value =
+        (first + " " + last)
+        .trim();
+
+}
+
+
+/* =====================================================
+   AGE CHECK
+===================================================== */
+
+function checkAge(){
+
+    const value =
+        document
+        .getElementById("dob")
+        .value;
+
+
+    if(!value){
+
+        return false;
+
+    }
+
+
+    const parts =
+        value.split("-");
+
+
+    const birth =
+        new Date(
+            Number(parts[0]),
+            Number(parts[1]) - 1,
+            Number(parts[2])
+        );
+
+
+    const today =
+        new Date();
+
+
+    let age =
+        today.getFullYear()
+        -
+        birth.getFullYear();
+
+
+    const monthDiff =
+        today.getMonth()
+        -
+        birth.getMonth();
+
+
+    const dayDiff =
+        today.getDate()
+        -
+        birth.getDate();
+
+
+    if(
+        monthDiff < 0 ||
+        (
+            monthDiff === 0 &&
+            dayDiff < 0
+        )
+    ){
+
+        age--;
+
+    }
+
+
+    return age >= 18;
+
+}
+
+
+/* =====================================================
+   UPDATE PAGE
+===================================================== */
+
+function updatePage(){
+
+    pages.forEach(
+        page =>
+        page.classList.remove("active")
+    );
+
+
+    steps.forEach(
+        step =>
+        step.classList.remove("active")
+    );
+
+
+    if(pages[currentPage]){
+
+        pages[currentPage]
+        .classList.add("active");
+
+    }
+
+
+    if(steps[currentPage]){
+
+        steps[currentPage]
+        .classList.add("active");
+
+    }
+
+
+    const progress =
+        document
+        .getElementById("progressLine");
+
+
+    if(currentPage === 0){
+
+        progress.style.width =
+            "0%";
+
+    }
+
+    else if(currentPage === 1){
+
+        progress.style.width =
+            "33%";
+
+    }
+
+    else if(currentPage === 2){
+
+        progress.style.width =
+            "66%";
+
+    }
+
+    else if(currentPage === 3){
+
+        progress.style.width =
+            "calc(100% - 70px)";
+
+    }
+
+
+    /* -------------------------------------------------
+       REVIEW
+    ------------------------------------------------- */
+
+    if(currentPage === 3){
+
+        document
+        .getElementById("reviewName")
+        .textContent =
+            document
+            .getElementById("fullName")
+            .value;
+
+
+        document
+        .getElementById("reviewDob")
+        .textContent =
+            document
+            .getElementById("dob")
+            .value;
+
+
+        document
+        .getElementById("reviewEmail")
+        .textContent =
+            document
+            .getElementById("email")
+            .value;
+
+
+        document
+        .getElementById("reviewUsername")
+        .textContent =
+            document
+            .getElementById("username")
+            .value;
+
+    }
+
+}
+
+
+/* =====================================================
+   NEXT PAGE
+===================================================== */
+
+function nextPage(){
+
+    /* -----------------------------------------------
+       PAGE 1
+    ------------------------------------------------ */
+
+    if(currentPage === 0){
+
+        const first =
+            document
+            .getElementById("firstName")
+            .value
+            .trim();
+
+
+        const last =
+            document
+            .getElementById("lastName")
+            .value
+            .trim();
+
+
+        const dob =
+            document
+            .getElementById("dob")
+            .value;
+
+
+        const error =
+            document
+            .getElementById("errorBox");
+
+
+        let errors = [];
+
+
+        if(first === ""){
+
+            errors.push(
+                "❌ Please type first name"
+            );
+
+        }
+
+
+        if(last === ""){
+
+            errors.push(
+                "❌ Please type last name"
+            );
+
+        }
+
+
+        if(dob === ""){
+
+            errors.push(
+                "❌ Please select date of birth"
+            );
+
+        }
+
+
+        if(errors.length){
+
+            error.innerHTML =
+                errors.join("<br>");
+
+            return;
+
+        }
+
+
+        /* NAME TYPE */
+
+        const english =
+            /^[A-Za-z ]+$/;
+
+
+        const bangla =
+            /^[\u0980-\u09FF ]+$/;
+
+
+        const sameLanguage =
+
+            (
+                english.test(first) &&
+                english.test(last)
+            )
+
+            ||
+
+            (
+                bangla.test(first) &&
+                bangla.test(last)
+            );
+
+
+        if(!sameLanguage){
+
+            error.innerHTML =
+                "❌ First Name and Last Name must use the same language";
+
+            return;
+
+        }
+
+
+        if(first.length < 2){
+
+            error.innerHTML =
+                "❌ First Name minimum 2 characters";
+
+            return;
+
+        }
+
+
+        if(last.length < 2){
+
+            error.innerHTML =
+                "❌ Last Name minimum 2 characters";
+
+            return;
+
+        }
+
+
+        /* MIXED CASE CHECK */
+
+        if(
+            /^[A-Z ]+$/.test(first) ||
+            /^[A-Z ]+$/.test(last)
+        ){
+
+            error.innerHTML =
+                "❌ Name cannot be written completely in uppercase";
+
+            return;
+
+        }
+
+
+        if(
+            /^[a-z ]+$/.test(first) ||
+            /^[a-z ]+$/.test(last)
+        ){
+
+            error.innerHTML =
+                "❌ Name cannot be written completely in lowercase";
+
+            return;
+
+        }
+
+
+        /* AGE */
+
+        if(!checkAge()){
+
+            error.innerHTML =
+                "❌ You must be 18 years or older";
+
+            return;
+
+        }
+
+
+        error.innerHTML =
+            "✓ Personal information valid";
+
+
+        error.classList.add("success");
+
+
+        setTimeout(() => {
+
+            currentPage = 1;
+
+            updatePage();
+
+        },500);
+
+
+        return;
+
+    }
+
+
+    /* -----------------------------------------------
+       PAGE 2 — EMAIL + OTP
+    ------------------------------------------------ */
+
+    if(currentPage === 1){
+
+        const email =
+            document
+            .getElementById("email")
+            .value
+            .trim();
+
+
+        const status =
+            document
+            .getElementById("otpStatus");
+
+
+        const gmailRegex =
+            /^[A-Za-z0-9._%+-]+@gmail\.com$/;
+
+
+        if(email === ""){
+
+            status.innerHTML =
+                "❌ Please enter Gmail address";
+
+            status.classList.remove(
+                "success"
+            );
+
+            return;
+
+        }
+
+
+        if(!gmailRegex.test(email)){
+
+            status.innerHTML =
+                "❌ Only valid Gmail address (@gmail.com) is allowed";
+
+            status.classList.remove(
+                "success"
+            );
+
+            return;
+
+        }
+
+
+        // =============================================
+        // FIXED: Using window. for global state
+        // =============================================
+        if(
+            window.emailIsAvailable === false
+            ||
+            window.checkedEmail !== email.toLowerCase()
+        ){
+
+            status.innerHTML =
+                "❌ Please confirm that this Gmail is available first";
+
+            status.classList.remove(
+                "success"
+            );
+
+            return;
+
+        }
+
+        if(
+            typeof isEmailVerified !==
+            "function" ||
+            !isEmailVerified()
+        ){
+
+            status.innerHTML =
+                "❌ Please verify your Gmail with the OTP first";
+
+            status.classList.remove(
+                "success"
+            );
+
+            return;
+
+        }
+
+
+        currentPage = 2;
+
+        updatePage();
+
+        return;
+
+    }
+
+
+    /* -----------------------------------------------
+       PAGE 3 — ACCOUNT
+    ------------------------------------------------ */
+
+    if(currentPage === 2){
+
+        if(!validateAccount()){
+
+            return;
+
+        }
+
+
+        currentPage = 3;
+
+        updatePage();
+
+        return;
+
+    }
+
+}
+
+
+/* =====================================================
+   BACK
+===================================================== */
+
+function previousPage(){
+
+    currentPage--;
+
+
+    if(currentPage < 0){
+
+        currentPage = 0;
+
+    }
+
+
+    updatePage();
+
+}
+
+
+/* =====================================================
+   PASSWORD TOGGLE
+===================================================== */
+
+function togglePassword(id,icon){
+
+    const input =
+        document
+        .getElementById(id);
+
+
+    if(input.type === "password"){
+
+        input.type = "text";
+
+        icon.classList.remove(
+            "fa-eye"
+        );
+
+        icon.classList.add(
+            "fa-eye-slash"
+        );
+
+    }
+
+    else{
+
+        input.type = "password";
+
+        icon.classList.remove(
+            "fa-eye-slash"
+        );
+
+        icon.classList.add(
+            "fa-eye"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   USERNAME FILTER
+===================================================== */
+
+function filterUsername(input){
+
+    let value = input.value;
+
+    // English letters, numbers, underscore and dot only
+    value = value.replace(
+        /[^A-Za-z0-9_.]/g,
+        ""
+    );
+
+    // Username must start with English letter
+    value = value.replace(
+        /^[^A-Za-z]+/,
+        ""
+    );
+
+    // Maximum 20 characters
+    value = value.substring(0, 20);
+
+    input.value = value;
+}
+
+
+/* =====================================================
+   PART 5.1
+   LIVE USERNAME AVAILABILITY CHECK
+===================================================== */
+
+let usernameCheckTimer = null;
+
+
+/* =====================================================
+   HANDLE USERNAME INPUT
+===================================================== */
+
+function handleUsernameInput(input){
+
+    /* Existing username filter */
+
+    filterUsername(input);
+
+
+    const username =
+        input.value
+        .trim()
+        .toLowerCase();
+
+
+    const status =
+        document
+        .getElementById(
+            "usernameStatus"
+        );
+
+
+    /* Reset previous check */
+
+    window.usernameIsAvailable = false;
+    window.checkedUsername = "";
+
+
+    clearTimeout(
+        usernameCheckTimer
+    );
+
+
+    /* Empty username */
+
+    if(username === ""){
+
+        status.innerHTML = "";
+
+        status.className = "";
+
+        return;
+
+    }
+
+
+    /* Too short */
+
+    if(username.length < 5){
+
+        status.innerHTML =
+            "Username must contain at least 5 characters";
+
+        status.className =
+            "username-taken";
+
+        return;
+
+    }
+
+
+    /* Checking */
+
+    status.innerHTML =
+        '<i class="fa-solid fa-spinner fa-spin"></i> Checking username...';
+
+
+    status.className =
+        "username-checking";
+
+
+    /* Wait 500ms before database request */
+
+    usernameCheckTimer =
+        setTimeout(
+
+            async function(){
+
+                await checkUsernameAvailability(
+                    username
+                );
+
+            },
+
+            500
+
+        );
+
+}
+
+
+/* =====================================================
+   CHECK USERNAME IN SUPABASE
+===================================================== */
+
+async function checkUsernameAvailability(username){
+
+    const status =
+        document
+        .getElementById(
+            "usernameStatus"
+        );
+
+
+    try{
+
+
+        /* Get current username */
+
+        const currentUsername =
+            document
+            .getElementById(
+                "username"
+            )
+            .value
+            .trim()
+            .toLowerCase();
+
+
+        /* User changed input */
+
+        if(currentUsername !== username){
+
+            return;
+
+        }
+
+
+        /* Check Supabase */
+
+        const result =
+            await checkMediaverseUsername(
+                username
+            );
+
+
+        /* Check again after database response */
+
+        const latestUsername =
+            document
+            .getElementById(
+                "username"
+            )
+            .value
+            .trim()
+            .toLowerCase();
+
+
+        if(latestUsername !== username){
+
+            return;
+
+        }
+
+
+        /* Database error */
+
+        if(!result.success){
+
+            throw new Error(
+                result.message ||
+                "Unable to check username"
+            );
+
+        }
+
+
+        /* Username taken */
+
+        if(result.exists){
+
+            window.usernameIsAvailable = false;
+            window.checkedUsername = "";
+
+
+            status.innerHTML =
+                '<i class="fa-solid fa-circle-xmark"></i> Username already taken';
+
+
+            status.className =
+                "username-taken";
+
+
+            return;
+
+        }
+
+
+        /* Username available */
+
+        window.usernameIsAvailable = true;
+        window.checkedUsername = username;
+
+
+        status.innerHTML =
+            '<i class="fa-solid fa-circle-check"></i> Username available';
+
+
+        status.className =
+            "username-available";
+
+
+    }
+
+
+    catch(error){
+
+
+        console.error(
+            "USERNAME CHECK ERROR:",
+            error
+        );
+
+
+        window.usernameIsAvailable = false;
+        window.checkedUsername = "";
+
+
+        status.innerHTML =
+            '<i class="fa-solid fa-triangle-exclamation"></i> Unable to check username';
+
+
+        status.className =
+            "username-taken";
+
+    }
+
+}
+
+
+/* =====================================================
+   PART 5.2
+   LIVE EMAIL AVAILABILITY CHECK
+===================================================== */
+
+let emailCheckTimer = null;
+
+
+/* =====================================================
+   HANDLE EMAIL INPUT
+===================================================== */
+
+function handleEmailInput(input){
+
+    const email =
+        input.value
+        .trim()
+        .toLowerCase();
+
+
+    const status =
+        document
+        .getElementById(
+            "emailStatus"
+        );
+
+
+    /* Reset old check */
+
+    window.emailIsAvailable = false;
+    window.checkedEmail = "";
+
+
+    clearTimeout(
+        emailCheckTimer
+    );
+
+
+    /* Empty */
+
+    if(email === ""){
+
+        status.innerHTML =
+            "";
+
+        status.className =
+            "";
+
+        return;
+
+    }
+
+
+    /* Gmail format */
+
+    const gmailRegex =
+        /^[A-Za-z0-9._%+-]+@gmail\.com$/;
+
+
+    if(!gmailRegex.test(email)){
+
+        status.innerHTML =
+            "Please enter a valid Gmail address";
+
+        status.className =
+            "email-taken";
+
+        return;
+
+    }
+
+
+    /* Checking */
+
+    status.innerHTML =
+        '<i class="fa-solid fa-spinner fa-spin"></i> Checking email...';
+
+
+    status.className =
+        "email-checking";
+
+
+    /* Debounce */
+
+    emailCheckTimer =
+        setTimeout(
+
+            async function(){
+
+                await checkEmailAvailability(
+                    email
+                );
+
+            },
+
+            500
+
+        );
+
+}
+
+
+/* =====================================================
+   CHECK EMAIL IN SUPABASE
+===================================================== */
+
+async function checkEmailAvailability(email){
+
+    const status =
+        document
+        .getElementById(
+            "emailStatus"
+        );
+
+
+    try{
+
+        /* Current input */
+
+        const currentEmail =
+            document
+            .getElementById(
+                "email"
+            )
+            .value
+            .trim()
+            .toLowerCase();
+
+
+        /* Email changed */
+
+        if(currentEmail !== email){
+
+            return;
+
+        }
+
+
+        /* Supabase check */
+
+        const result =
+            await checkMediaverseEmail(
+                email
+            );
+
+
+        /* Check again */
+
+        const latestEmail =
+            document
+            .getElementById(
+                "email"
+            )
+            .value
+            .trim()
+            .toLowerCase();
+
+
+        if(latestEmail !== email){
+
+            return;
+
+        }
+
+
+        /* Database error */
+
+        if(!result.success){
+
+            throw new Error(
+                result.message ||
+                "Unable to check email"
+            );
+
+        }
+
+
+        /* Already exists */
+
+        if(result.exists){
+
+            window.emailIsAvailable = false;
+            window.checkedEmail = "";
+
+
+            status.innerHTML =
+                '<i class="fa-solid fa-circle-xmark"></i> This Gmail is already registered';
+
+
+            status.className =
+                "email-taken";
+
+
+            return;
+
+        }
+
+
+        /* Available */
+
+        window.emailIsAvailable = true;
+        window.checkedEmail = email;
+
+
+        status.innerHTML =
+            '<i class="fa-solid fa-circle-check"></i> Gmail is available';
+
+
+        status.className =
+            "email-available";
+
+
+    }
+
+
+    catch(error){
+
+        console.error(
+            "EMAIL CHECK ERROR:",
+            error
+        );
+
+
+        window.emailIsAvailable = false;
+        window.checkedEmail = "";
+
+
+        status.innerHTML =
+            '<i class="fa-solid fa-triangle-exclamation"></i> Unable to check email';
+
+
+        status.className =
+            "email-taken";
+
+    }
+
+}
+
+/* =====================================================
+   ACCOUNT VALIDATION
+===================================================== */
+
+function validateAccount(){
+
+    const username =
+        document
+        .getElementById("username")
+        .value
+        .trim();
+
+
+    const password =
+        document
+        .getElementById("password")
+        .value;
+
+
+    const confirmPassword =
+        document
+        .getElementById("confirmPassword")
+        .value;
+
+
+    const error =
+        document
+        .getElementById("passwordError");
+
+
+    let errors = [];
+
+
+    /* EMPTY */
+
+    if(username === ""){
+
+        errors.push(
+            "❌ Please type username"
+        );
+
+    }
+
+
+    if(password === ""){
+
+        errors.push(
+            "❌ Please type password"
+        );
+
+    }
+
+
+    if(confirmPassword === ""){
+
+        errors.push(
+            "❌ Please confirm password"
+        );
+
+    }
+
+
+    if(errors.length){
+
+        error.innerHTML =
+            errors.join("<br>");
+
+        error.classList.remove(
+            "success"
+        );
+
+        return false;
+
+    }
+
+
+    /* USERNAME */
+
+const usernameRegex =
+    /^[A-Za-z][A-Za-z0-9_.]{4,19}$/;
+
+
+    if(username.length < 5){
+
+        errors.push(
+            "❌ Username minimum 5 characters required"
+        );
+
+    }
+
+
+    if(!usernameRegex.test(username)){
+
+        errors.push(
+            "❌ Username only allows English letters, numbers, underscore (_) and dot (.)"
+        );
+
+    }
+
+
+    if(/^[0-9]+$/.test(username)){
+
+        errors.push(
+            "❌ Username cannot contain only numbers"
+        );
+
+    }
+
+
+    if(/(.)\1\1/.test(username)){
+
+        errors.push(
+            "❌ Same character cannot repeat 3 times"
+        );
+
+    }
+
+
+    if(/[0-9]{5,}/.test(username)){
+
+        errors.push(
+            "❌ Too many numbers are not allowed"
+        );
+
+    }
+
+
+    const blockedUsernames = [
+
+        "admin",
+        "administrator",
+        "root",
+        "test",
+        "user",
+        "guest",
+        "official",
+        "support"
+
+    ];
+
+
+    if(
+        blockedUsernames
+        .includes(
+            username.toLowerCase()
+        )
+    ){
+
+        errors.push(
+            "❌ This username is reserved"
+        );
+
+    }
+
+
+    /* BRAND WORDS */
+
+    const blockedPatterns = [
+
+        /media/i,
+        /mediaverse/i,
+        /chat/i
+
+    ];
+
+
+    blockedPatterns.forEach(
+        pattern => {
+
+            if(pattern.test(username)){
+
+                errors.push(
+                    "❌ This username is reserved"
+                );
+
+            }
+
+        }
+    );
+
+
+    // =============================================
+    // FIXED: Using window. for global state
+    // =============================================
+    if(
+        window.usernameIsAvailable === false
+        ||
+        window.checkedUsername !== username.toLowerCase()
+    ){
+
+        errors.push(
+            "❌ Please wait and confirm that your username is available"
+        );
+
+    }
+
+    /* PASSWORD LENGTH */
+
+    if(password.length < 8){
+
+        errors.push(
+            "❌ Password minimum 8 characters required"
+        );
+
+    }
+
+
+    if(password.length > 32){
+
+        errors.push(
+            "❌ Password maximum 32 characters allowed"
+        );
+
+    }
+
+
+    /* PASSWORD CHARACTER TYPES */
+
+    if(!/[A-Z]/.test(password)){
+
+        errors.push(
+            "❌ Password must contain uppercase letter"
+        );
+
+    }
+
+
+    if(!/[a-z]/.test(password)){
+
+        errors.push(
+            "❌ Password must contain lowercase letter"
+        );
+
+    }
+
+
+    if(!/[0-9]/.test(password)){
+
+        errors.push(
+            "❌ Password must contain number"
+        );
+
+    }
+
+
+    if(
+        !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+    ){
+
+        errors.push(
+            "❌ Password must contain special character"
+        );
+
+    }
+
+
+    if(/\s/.test(password)){
+
+        errors.push(
+            "❌ Password cannot contain spaces"
+        );
+
+    }
+
+
+    if(/(.)\1\1/.test(password)){
+
+        errors.push(
+            "❌ Same character cannot repeat 3 times"
+        );
+
+    }
+
+
+    if(
+        password.toLowerCase() ===
+        username.toLowerCase()
+    ){
+
+        errors.push(
+            "❌ Password cannot be same as username"
+        );
+
+    }
+
+
+    const weakPasswords = [
+
+        "password",
+        "12345678",
+        "qwerty123",
+        "admin123",
+        "password123",
+        "abcdef123"
+
+    ];
+
+
+    if(
+        weakPasswords.includes(
+            password.toLowerCase()
+        )
+    ){
+
+        errors.push(
+            "❌ This password is too common"
+        );
+
+    }
+
+
+    if(password !== confirmPassword){
+
+        errors.push(
+            "❌ Confirm password does not match"
+        );
+
+    }
+
+
+    if(errors.length){
+
+        error.innerHTML =
+            errors.join("<br>");
+
+        error.classList.remove(
+            "success"
+        );
+
+        return false;
+
+    }
+
+
+    error.innerHTML =
+        "✓ Account information valid";
+
+
+    error.classList.add(
+        "success"
+    );
+
+
+    return true;
+
+}
+
+
+/* =====================================================
+   THEME
+===================================================== */
+
+function toggleTheme(){
+
+    document.body
+    .classList
+    .toggle("light");
+
+
+    const button =
+        document
+        .getElementById("themeBtn");
+
+
+    if(
+        document.body
+        .classList
+        .contains("light")
+    ){
+
+        button.innerHTML =
+            "🌙 Dark Theme";
+
+    }
+
+    else{
+
+        button.innerHTML =
+            "☀️ Light Theme";
+
+    }
+
+}
+
+
+/* =====================================================
+   DATE PICKER
+===================================================== */
+
+let calendarDate =
+    new Date();
+
+
+function openCalendar(){
+
+    const calendar =
+        document
+        .getElementById("calendar");
+
+
+    calendar
+    .classList
+    .toggle("show");
+
+
+    loadDateSelectors();
+
+    renderCalendar();
+
+}
+
+
+function loadDateSelectors(){
+
+    const yearSelect =
+        document
+        .getElementById("yearSelect");
+
+
+    const monthSelect =
+        document
+        .getElementById("monthSelect");
+
+
+    yearSelect.innerHTML = "";
+
+
+    const currentYear =
+        new Date()
+        .getFullYear();
+
+
+    for(
+        let year = 1950;
+        year <= currentYear;
+        year++
+    ){
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+
+        option.value =
+            year;
+
+
+        option.text =
+            year;
+
+
+        if(
+            year ===
+            calendarDate
+            .getFullYear()
+        ){
+
+            option.selected =
+                true;
+
+        }
+
+
+        yearSelect.appendChild(
+            option
+        );
+
+    }
+
+
+    const months = [
+
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+
+    ];
+
+
+    monthSelect.innerHTML = "";
+
+
+    months.forEach(
+        (month,index) => {
+
+            const option =
+                document
+                .createElement(
+                    "option"
+                );
+
+
+            option.value =
+                index;
+
+
+            option.text =
+                month;
+
+
+            if(
+                index ===
+                calendarDate
+                .getMonth()
+            ){
+
+                option.selected =
+                    true;
+
+            }
+
+
+            monthSelect
+            .appendChild(
+                option
+            );
+
+        }
+    );
+
+}
+
+
+function changeYear(){
+
+    calendarDate
+    .setFullYear(
+
+        Number(
+            document
+            .getElementById(
+                "yearSelect"
+            )
+            .value
+        )
+
+    );
+
+
+    renderCalendar();
+
+}
+
+
+function changeMonth(){
+
+    calendarDate
+    .setMonth(
+
+        Number(
+            document
+            .getElementById(
+                "monthSelect"
+            )
+            .value
+        )
+
+    );
+
+
+    renderCalendar();
+
+}
+
+
+function renderCalendar(){
+
+    const year =
+        calendarDate
+        .getFullYear();
+
+
+    const month =
+        calendarDate
+        .getMonth();
+
+
+    const firstDay =
+        new Date(
+            year,
+            month,
+            1
+        ).getDay();
+
+
+    const totalDays =
+        new Date(
+            year,
+            month + 1,
+            0
+        ).getDate();
+
+
+    const days =
+        document
+        .getElementById("days");
+
+
+    days.innerHTML = "";
+
+
+    for(
+        let i = 0;
+        i < firstDay;
+        i++
+    ){
+
+        const blank =
+            document
+            .createElement("button");
+
+
+        blank.disabled =
+            true;
+
+
+        days.appendChild(
+            blank
+        );
+
+    }
+
+
+    for(
+        let day = 1;
+        day <= totalDays;
+        day++
+    ){
+
+        const button =
+            document
+            .createElement(
+                "button"
+            );
+
+
+        button.type =
+            "button";
+
+
+        button.textContent =
+            day;
+
+
+        button.onclick =
+            function(){
+
+                document
+                .getElementById("dob")
+                .value =
+
+                    year +
+                    "-" +
+                    String(
+                        month + 1
+                    ).padStart(
+                        2,
+                        "0"
+                    ) +
+                    "-" +
+                    String(day)
+                    .padStart(
+                        2,
+                        "0"
+                    );
+
+
+                document
+                .getElementById(
+                    "calendar"
+                )
+                .classList
+                .remove("show");
+
+            };
+
+
+        days.appendChild(
+            button
+        );
+
+    }
+
+}
+
+
+function prevMonth(){
+
+    calendarDate
+    .setMonth(
+        calendarDate
+        .getMonth() - 1
+    );
+
+
+    loadDateSelectors();
+
+    renderCalendar();
+
+}
+
+
+function nextMonth(){
+
+    calendarDate
+    .setMonth(
+        calendarDate
+        .getMonth() + 1
+    );
+
+
+    loadDateSelectors();
+
+    renderCalendar();
+
+}
+
+
+/* =====================================================
+   FINAL SUBMIT
+   PART 4 — SUPABASE ACCOUNT CREATION
+===================================================== */
+
+async function finalSubmit(){
+
+    /* -----------------------------------------------
+       ACCOUNT VALIDATION
+    ------------------------------------------------ */
+
+    if(!validateAccount()){
+
+        currentPage = 2;
+
+        updatePage();
+
+        return;
+
+    }
+
+
+    /* -----------------------------------------------
+       EMAIL OTP CHECK
+    ------------------------------------------------ */
+
+    if(
+
+        typeof isEmailVerified !==
+        "function"
+
+        ||
+
+        !isEmailVerified()
+
+    ){
+
+        currentPage = 1;
+
+        updatePage();
+
+
+        const status =
+            document
+            .getElementById(
+                "otpStatus"
+            );
+
+
+        status.innerHTML =
+            "❌ Please verify your Gmail before creating your account";
+
+
+        status.classList.remove(
+            "success"
+        );
+
+
+        return;
+
+    }
+
+
+    /* -----------------------------------------------
+       GET ALL PERSONAL DATA
+    ------------------------------------------------ */
+
+    const firstName =
+        document
+        .getElementById(
+            "firstName"
+        )
+        .value
+        .trim();
+
+
+    const lastName =
+        document
+        .getElementById(
+            "lastName"
+        )
+        .value
+        .trim();
+
+
+    const fullName =
+        document
+        .getElementById(
+            "fullName"
+        )
+        .value
+        .trim();
+
+
+    const dob =
+        document
+        .getElementById(
+            "dob"
+        )
+        .value;
+
+
+    const email =
+        document
+        .getElementById(
+            "email"
+        )
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const username =
+        document
+        .getElementById(
+            "username"
+        )
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const password =
+        document
+        .getElementById(
+            "password"
+        )
+        .value;
+
+
+    /* -----------------------------------------------
+       REVIEW MESSAGE
+    ------------------------------------------------ */
+
+    const reviewError =
+        document
+        .getElementById(
+            "reviewError"
+        );
+
+
+    /* -----------------------------------------------
+       FINISH BUTTON
+    ------------------------------------------------ */
+
+    const finishButton =
+        document.querySelector(
+            ".page.active .next"
+        );
+
+
+    if(finishButton){
+
+        finishButton.disabled =
+            true;
+
+
+        finishButton.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
+
+    }
+
+
+    reviewError.innerHTML =
+        "Creating your secure MEDIAVERSE account...";
+
+
+    reviewError.classList.remove(
+        "success"
+    );
+
+
+    try{
+
+
+        /* -------------------------------------------
+           CREATE ACCOUNT
+        ------------------------------------------- */
+
+        const result =
+            await createMediaverseAccount({
+
+                firstName:
+                    firstName,
+
+
+                lastName:
+                    lastName,
+
+
+                fullName:
+                    fullName,
+
+
+                dob:
+                    dob,
+
+
+                email:
+                    email,
+
+
+                username:
+                    username,
+
+
+                password:
+                    password
+
+            });
+
+
+        /* -------------------------------------------
+           FAILED
+        ------------------------------------------- */
+
+        if(!result.success){
+
+            throw new Error(
+                result.message
+            );
+
+        }
+
+
+        /* -------------------------------------------
+           SUCCESS
+        ------------------------------------------- */
+
+        reviewError.innerHTML =
+            "✓ MEDIAVERSE account created successfully!";
+
+
+        reviewError.classList.add(
+            "success"
+        );
+
+
+        /* -------------------------------------------
+           CLEAR PASSWORD
+        ------------------------------------------- */
+
+        document
+        .getElementById(
+            "password"
+        )
+        .value = "";
+
+
+        document
+        .getElementById(
+            "confirmPassword"
+        )
+        .value = "";
+
+
+        /* -------------------------------------------
+           REDIRECT LOGIN
+        ------------------------------------------- */
+
+        setTimeout(
+
+            function(){
+
+                window.location.href =
+                    "login.html";
+
+            },
+
+            1800
+
+        );
+
+
+    }
+
+
+    catch(error){
+
+
+        console.error(
+            "FINAL SIGNUP ERROR:",
+            error
+        );
+
+
+        reviewError.innerHTML =
+
+            "❌ " +
+
+            (
+                error.message ||
+
+                "Account creation failed."
+            );
+
+
+        reviewError.classList.remove(
+            "success"
+        );
+
+
+        /* -------------------------------------------
+           RE-ENABLE BUTTON
+        ------------------------------------------- */
+
+        if(finishButton){
+
+            finishButton.disabled =
+                false;
+
+
+            finishButton.innerHTML =
+                "Finish";
+
+        }
+
+    }
+
+}
+</script>
+
+
+</body>
+
+</html>
