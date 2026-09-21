@@ -852,6 +852,21 @@ html.mv-network-lock,body.mv-network-lock{overflow:hidden!important;}
 .comment-reaction-popup .reaction-choice{width:36px;height:36px;}
 .comment-reaction-popup .reaction-choice .reaction-emoji.reaction-image{width:26px!important;height:26px!important;font-size:26px!important;}
 
+/* Reply popup below flip + inside box guard */
+.comment-reaction-popup.popup-below{
+  bottom:auto !important;
+  top:calc(100% + 10px);
+  transform-origin:top left;
+  transform:translateY(-10px) scale(.75);
+}
+.comment-reaction-popup.popup-below.show{
+  transform:translateY(0) scale(1);
+}
+.reply-list .comment-reaction-popup{
+  max-width:calc(100% - 8px);
+  box-sizing:border-box;
+}
+
 /* Comment media composer */
 .comment-media-input{display:none!important;}
 .comment-media-btn{width:42px;height:42px;flex:0 0 42px;border:none;border-radius:14px;display:grid;place-items:center;cursor:pointer;color:#dbe8ff;background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.10);transition:transform .18s ease,background .18s ease;}
@@ -1000,7 +1015,7 @@ html[data-mv-theme="light"] body .grid-bg{filter:invert(1);opacity:.08;}
 .chip-close{width:18px;height:18px;border:none;cursor:pointer;border-radius:50%;background:rgba(255,255,255,.10);color:#cfd3e3;display:grid;place-items:center;font-size:9px;padding:0;transition:.2s;}
 .chip-close:hover{background:rgba(255,95,130,.28);color:#fff;}
 
-/* Text area - bg strip now OUTSIDE (no more overlap with caption) */
+/* Text area */
 .composer-text-area{position:relative;border-radius:18px;overflow:hidden;transition:background .3s ease, box-shadow .3s ease;}
 .composer-input{display:block;width:100%;min-height:120px;border:none;outline:none;resize:none;padding:14px 16px;color:var(--text);font-family:inherit;font-size:15px;line-height:1.65;background:transparent;position:relative;z-index:2;transition:color .25s ease;}
 .composer-input::placeholder{color:#747b91;transition:color .25s ease;}
@@ -1117,6 +1132,44 @@ html[data-mv-theme="light"] body .grid-bg{filter:invert(1);opacity:.08;}
 .wp-swatch{width:100%;height:100%;display:block;}
 .wp-check{position:absolute;top:8px;right:8px;z-index:2;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--purple),var(--cyan));color:#fff;font-size:10px;opacity:0;transform:scale(.6);transition:.2s;box-shadow:0 4px 12px rgba(0,0,0,.4);}
 .wp-card.active .wp-check{opacity:1;transform:scale(1);}
+
+/* ===== DRAFT CONFIRM DIALOG ===== */
+.draft-confirm-modal{width:min(100%,460px);padding:22px;}
+.draft-confirm-icon{
+  width:58px;height:58px;display:grid;place-items:center;
+  margin:2px auto 14px;border-radius:18px;color:var(--cyan);font-size:22px;
+  background:linear-gradient(135deg,rgba(0,229,255,.15),rgba(168,85,247,.10));
+  border:1px solid rgba(0,229,255,.20);
+}
+.draft-confirm-modal h2{
+  text-align:center;font-family:"Space Grotesk",sans-serif;font-size:18px;
+}
+.draft-confirm-modal p{
+  text-align:center;margin-top:7px;color:var(--muted);font-size:11.5px;line-height:1.65;
+}
+.draft-confirm-actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;}
+.draft-btn{
+  flex:1;min-width:110px;border:none;cursor:pointer;padding:12px 10px;border-radius:12px;
+  font-family:inherit;font-weight:700;font-size:11.5px;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  transition:transform .2s ease,background .2s ease,box-shadow .2s ease;
+}
+.draft-btn i{font-size:11px;}
+.draft-discard{color:#ff8a9a;background:rgba(255,95,130,.10);border:1px solid rgba(255,95,130,.22);}
+.draft-discard:hover{background:rgba(255,95,130,.20);transform:translateY(-1px);}
+.draft-keep{color:#c8ccda;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);}
+.draft-keep:hover{background:rgba(255,255,255,.11);color:#fff;transform:translateY(-1px);}
+.draft-save{color:#fff;background:linear-gradient(135deg,var(--purple),var(--cyan));border:1px solid transparent;}
+.draft-save:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(168,85,247,.32);}
+@media (max-width:520px){
+  .draft-confirm-modal{padding:18px 16px 20px;}
+  .draft-confirm-actions{flex-direction:column;gap:7px;}
+  .draft-btn{width:100%;min-width:0;padding:13px 12px;font-size:12px;}
+}
+@media (max-width:360px){
+  .draft-confirm-actions{gap:6px;}
+  .draft-btn{padding:11px 8px;font-size:11px;}
+}
 
 /* Responsive */
 @media (max-width:1200px){.app{grid-template-columns:230px minmax(0,1fr) 280px;}}
@@ -1696,7 +1749,7 @@ one decision at a time. 💜</div>
       <div class="composer-chips" id="composerChips"></div>
 
       <div class="composer-text-area" id="composerTextArea">
-        <textarea class="composer-input" id="postInput" placeholder="What are you creating, thinking or feeling?" maxlength="5000"></textarea>
+        <textarea class="composer-input" id="postInput" placeholder="What are you creating, thinking or feeling?" maxlength="10000"></textarea>
       </div>
 
       <div class="composer-bg-section">
@@ -1710,7 +1763,7 @@ one decision at a time. 💜</div>
         <div class="composer-bg-strip" id="composerBgStrip"></div>
       </div>
 
-      <div class="composer-char-counter" id="charCounter"><span id="charCountNum">0</span> / 5000</div>
+      <div class="composer-char-counter" id="charCounter"><span id="charCountNum">0</span> / 10000</div>
 
       <div class="composer-media" id="composerMedia"></div>
     </div>
@@ -1822,6 +1875,7 @@ one decision at a time. 💜</div>
       <button class="wp-cat" data-cat="mesh" type="button"><i class="fa-solid fa-braille"></i> Mesh</button>
       <button class="wp-cat" data-cat="cosmic" type="button"><i class="fa-solid fa-star"></i> Cosmic</button>
       <button class="wp-cat" data-cat="nature" type="button"><i class="fa-solid fa-leaf"></i> Nature</button>
+      <button class="wp-cat" data-cat="theme" type="button"><i class="fa-solid fa-palette"></i> Theme</button>
     </div>
     <div class="sub-modal-body" style="padding-top:0;">
       <div class="wp-grid" id="wpGrid"></div>
@@ -1904,6 +1958,20 @@ one decision at a time. 💜</div>
     <div class="delete-confirm-actions">
       <button class="delete-cancel" id="cancelDeletePost" type="button">Cancel</button>
       <button class="delete-confirm" id="confirmDeletePost" type="button">Delete signal</button>
+    </div>
+  </div>
+</div>
+
+<!-- DRAFT CONFIRM -->
+<div class="overlay" id="composerDraftOverlay">
+  <div class="modal glass draft-confirm-modal">
+    <div class="draft-confirm-icon"><i class="fa-regular fa-floppy-disk"></i></div>
+    <h2>Save this signal?</h2>
+    <p>You have unsaved content. Choose what to do before closing.</p>
+    <div class="draft-confirm-actions">
+      <button class="draft-btn draft-discard" id="draftDiscard" type="button"><i class="fa-regular fa-trash-can"></i> Discard</button>
+      <button class="draft-btn draft-keep" id="draftKeep" type="button"><i class="fa-solid fa-pen"></i> Keep editing</button>
+      <button class="draft-btn draft-save" id="draftSave" type="button"><i class="fa-regular fa-floppy-disk"></i> Save draft</button>
     </div>
   </div>
 </div>
@@ -2073,7 +2141,7 @@ one decision at a time. 💜</div>
 </div>
 <div class="overlay" id="mvPostEditOverlay">
   <div class="modal glass mv-post-edit-modal"><div class="sub-modal-head"><div><h2>Edit signal</h2><div class="mv-small-note">Your signal stays in the same post with an Edited label.</div></div><button class="close" id="mvPostEditClose" type="button"><i class="fa-solid fa-xmark"></i></button></div>
-    <div class="mv-edit-body"><textarea id="mvPostEditText" class="post-input" maxlength="5000" placeholder="Edit your signal..."></textarea>
+    <div class="mv-edit-body"><textarea id="mvPostEditText" class="post-input" maxlength="10000" placeholder="Edit your signal..."></textarea>
       <div class="mv-edit-row"><button type="button" class="mv-edit-pill" id="mvEditPrivacy"><i class="fa-solid fa-earth-americas"></i><span>Public</span></button><span class="mv-edit-pill muted"><i class="fa-solid fa-shield-halved"></i><span>Media stays attached</span></span></div>
       <div class="mv-edit-meta" id="mvEditMeta"></div>
     </div><div class="modal-foot"><button class="rf-back" id="mvPostEditCancel" type="button">Cancel</button><button class="publish" id="mvPostEditSave" type="button">Save changes</button></div>
@@ -2194,6 +2262,13 @@ const editTimeWarn=document.getElementById('editTimeWarn');
 const editHistoryOverlay=document.getElementById('editHistoryOverlay');
 const closeEditHistoryBtn=document.getElementById('closeEditHistory');
 const editHistoryList=document.getElementById('editHistoryList');
+
+/* ==== NEW: DRAFT DIALOG ELEMENTS ==== */
+const composerDraftOverlay=document.getElementById('composerDraftOverlay');
+const draftDiscardBtn=document.getElementById('draftDiscard');
+const draftKeepBtn=document.getElementById('draftKeep');
+const draftSaveBtn=document.getElementById('draftSave');
+let savedComposerDraft=null;
 
 let toastTimer=null;
 let currentReportPost=null;
@@ -2359,7 +2434,7 @@ const BG_THEMES=[
   {id:'rose', style:'linear-gradient(135deg,#ee9ca7 0%,#ffdde1 100%)'}
 ];
 
-/* ===== WALLPAPERS with categories ===== */
+/* ===== WALLPAPERS with categories (incl. Theme from home10) ===== */
 const WALLPAPERS={
   gradient:[
     {id:'w-grad-1', name:'Neon Sunset', style:'linear-gradient(160deg,#ff6a88 0%,#ff99ac 40%,#ffb199 100%)'},
@@ -2392,6 +2467,19 @@ const WALLPAPERS={
     {id:'w-nat-4', name:'Tropical', style:'linear-gradient(135deg,#11998e 0%,#35e69a 50%,#ffd43b 100%)'},
     {id:'w-nat-5', name:'Desert', style:'linear-gradient(180deg,#ffd89b 0%,#ff9f43 50%,#b84d1e 100%)'},
     {id:'w-nat-6', name:'Spring Meadow', style:'linear-gradient(135deg,#35e69a 0%,#ffd43b 50%,#ff9a5a 100%)'}
+  ],
+  theme:[
+    {id:'t-aesthetic', name:'Aesthetic', style:"linear-gradient(rgba(8,10,22,.16),rgba(8,10,22,.28)),url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=85') center/cover"},
+    {id:'t-nature',    name:'Nature',    style:"linear-gradient(rgba(8,10,22,.10),rgba(8,10,22,.30)),url('https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1400&q=85') center/cover"},
+    {id:'t-ocean',     name:'Ocean',     style:"linear-gradient(rgba(4,14,28,.08),rgba(4,14,28,.28)),url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=85') center/cover"},
+    {id:'t-mountain',  name:'Mountain',  style:"linear-gradient(rgba(8,10,22,.08),rgba(8,10,22,.30)),url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1400&q=85') center/cover"},
+    {id:'t-forest',    name:'Forest',    style:"linear-gradient(rgba(5,10,8,.10),rgba(5,10,8,.35)),url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1400&q=85') center/cover"},
+    {id:'t-flowers',   name:'Flowers',   style:"linear-gradient(rgba(10,10,20,.08),rgba(10,10,20,.25)),url('https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=1400&q=85') center/cover"},
+    {id:'t-night-lake',name:'Night Lake',style:"linear-gradient(rgba(2,5,18,.08),rgba(2,5,18,.35)),url('https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1400&q=85') center/cover"},
+    {id:'t-sunrise',   name:'Sunrise',   style:"linear-gradient(rgba(30,10,15,.06),rgba(30,10,15,.28)),url('https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1400&q=85') center/cover"},
+    {id:'t-glasswave', name:'Glass Wave',style:'radial-gradient(circle at 15% 20%,rgba(0,229,255,.34),transparent 32%),radial-gradient(circle at 85% 80%,rgba(168,85,247,.34),transparent 34%),linear-gradient(135deg,#10152d,#1b1638)'},
+    {id:'t-prism',     name:'Prism',     style:'linear-gradient(120deg,#172554 0%,#312e81 32%,#7c3aed 58%,#0e7490 100%)'},
+    {id:'t-nebula',    name:'Nebula',    style:'radial-gradient(circle at 25% 25%,#ff4ecd 0 4%,transparent 18%),radial-gradient(circle at 75% 65%,#00e5ff 0 5%,transparent 20%),linear-gradient(145deg,#080914,#24113c 55%,#061d2c)'}
   ]
 };
 function findWallpaperById(id){
@@ -2433,8 +2521,7 @@ const themeSwitch=document.getElementById('themeSwitch');
 function renderBgStrip(){
   const mode=composerState.themeMode;
   if(mode==='wallpaper'){
-    // Show first 8 wallpapers across categories + "More" button
-    const all=[...WALLPAPERS.gradient,...WALLPAPERS.mesh,...WALLPAPERS.cosmic,...WALLPAPERS.nature].slice(0,8);
+    const all=[...WALLPAPERS.gradient,...WALLPAPERS.mesh,...WALLPAPERS.cosmic,...WALLPAPERS.nature,...WALLPAPERS.theme].slice(0,8);
     elComposerBgStrip.innerHTML=`<div class="composer-theme-strip">
       ${all.map(w=>`<button class="bg-swatch ${composerState.wallpaper===w.id?'active':''}" data-wallpaper="${w.id}" style="background:${w.style}" type="button" title="${escapeHTML(w.name)}"></button>`).join('')}
       <button class="bg-swatch" data-open-wallpaper="1" type="button" title="All wallpapers" style="background:linear-gradient(135deg,rgba(0,229,255,.20),rgba(168,85,247,.24));border-color:rgba(0,229,255,.35);font-size:14px;"><i class="fa-solid fa-expand"></i></button>
@@ -2592,13 +2679,13 @@ elComposerMedia.addEventListener('click',e=>{
 });
 
 /* ---------- Char counter ---------- */
-const MAX_CHARS=5000;
+const MAX_CHARS=10000;
 function updateCharCounter(){
   const len=postInput.value.length;
   if(charCountNum) charCountNum.textContent=len;
   if(charCounter){
-    charCounter.classList.toggle('warn',len>4000 && len<=4800);
-    charCounter.classList.toggle('danger',len>4800);
+    charCounter.classList.toggle('warn',len>8000 && len<=9600);
+    charCounter.classList.toggle('danger',len>9600);
   }
 }
 
@@ -2614,7 +2701,7 @@ postInput.addEventListener('input',()=>{
   updateCharCounter();
 });
 
-/* ---------- Reset / open / close ---------- */
+/* ---------- Reset / open / close with draft ---------- */
 function resetComposer(){
   composerState.bg='none';
   composerState.media.forEach(m=>{try{URL.revokeObjectURL(m.url);}catch(e){}});
@@ -2635,14 +2722,84 @@ function resetComposer(){
   updatePublishState();
   updateCharCounter();
 }
-function openPostModal(){
-  resetComposer();
-  postOverlay.classList.add('show');
-  setTimeout(()=>postInput.focus(),180);
+function hasComposerContent(){
+  const hasText=postInput.value.trim().length>0;
+  const hasMedia=composerState.media.length>0;
+  const hasMeta=!!(composerState.feeling||composerState.lifeUpdate||composerState.location||composerState.tagged.length||composerState.onlyWho.length);
+  const hasBg=(composerState.bg&&composerState.bg!=='none')||(composerState.wallpaper&&composerState.wallpaper!=='none');
+  return hasText||hasMedia||hasMeta||hasBg;
 }
-function closePostModal(){
+function forceClosePostModal(){
   postOverlay.classList.remove('show');
   elPrivacyMenu.classList.remove('show');
+  composerDraftOverlay.classList.remove('show');
+}
+function closePostModal(){
+  if(hasComposerContent()){
+    composerDraftOverlay.classList.add('show');
+    return;
+  }
+  forceClosePostModal();
+}
+function saveComposerDraftAndClose(){
+  savedComposerDraft={
+    text:postInput.value,
+    bg:composerState.bg,
+    wallpaper:composerState.wallpaper,
+    themeMode:composerState.themeMode,
+    feeling:composerState.feeling?{...composerState.feeling}:null,
+    lifeUpdate:composerState.lifeUpdate?{...composerState.lifeUpdate}:null,
+    location:composerState.location?{...composerState.location}:null,
+    tagged:[...composerState.tagged],
+    privacy:composerState.privacy,
+    onlyWho:[...composerState.onlyWho]
+  };
+  forceClosePostModal();
+  showToast('Draft saved ✦');
+}
+function restoreComposerDraft(){
+  if(!savedComposerDraft) return false;
+  const d=savedComposerDraft;
+  postInput.value=d.text||'';
+  composerState.bg=d.bg||'none';
+  composerState.wallpaper=d.wallpaper||'none';
+  composerState.themeMode=d.themeMode||'color';
+  composerState.feeling=d.feeling;
+  composerState.lifeUpdate=d.lifeUpdate;
+  composerState.location=d.location;
+  composerState.tagged=d.tagged||[];
+  composerState.privacy=d.privacy||'public';
+  composerState.onlyWho=d.onlyWho||[];
+  applyBgTheme();
+  renderComposerChips();
+  renderComposerMedia();
+  applyPrivacyUI();
+  updatePublishState();
+  updateCharCounter();
+  return true;
+}
+draftDiscardBtn?.addEventListener('click',()=>{
+  savedComposerDraft=null;
+  composerState.media.forEach(m=>{try{URL.revokeObjectURL(m.url);}catch(e){}});
+  forceClosePostModal();
+  showToast('Draft discarded');
+});
+draftKeepBtn?.addEventListener('click',()=>{
+  composerDraftOverlay.classList.remove('show');
+  setTimeout(()=>postInput.focus(),120);
+});
+draftSaveBtn?.addEventListener('click',saveComposerDraftAndClose);
+composerDraftOverlay?.addEventListener('click',e=>{
+  if(e.target===composerDraftOverlay) composerDraftOverlay.classList.remove('show');
+});
+
+function openPostModal(){
+  resetComposer();
+  if(savedComposerDraft){
+    restoreComposerDraft();
+  }
+  postOverlay.classList.add('show');
+  setTimeout(()=>postInput.focus(),180);
 }
 openPost.addEventListener('click',openPostModal);
 quickCreate.addEventListener('click',openPostModal);
@@ -3041,7 +3198,8 @@ function publishComposerPost(){
     createPostFromComposer(snapshot);
     publishPost.disabled=false;
     publishPost.innerHTML=oldLabel;
-    closePostModal();
+    savedComposerDraft=null;
+    forceClosePostModal();
     showToast('Your signal has entered the Mediaverse ✦');
   },420);
 }
@@ -3762,9 +3920,13 @@ function startCommentHold(btn){
     commentHoldTriggered = true;
     const comment = btn.closest('.comment');
     const popup = comment.querySelector(':scope > .comment-body > .comment-reaction-popup');
-    document.querySelectorAll('.comment-reaction-popup.show').forEach(p=>{ if(p!==popup) p.classList.remove('show'); });
+    document.querySelectorAll('.comment-reaction-popup.show').forEach(p=>{ if(p!==popup) p.classList.remove('show','popup-below'); });
     document.querySelectorAll('.reaction-popup.show').forEach(p=>p.classList.remove('show'));
-    if(popup) popup.classList.add('show');
+    if(popup){
+      popup.classList.add('show');
+      /* একবার position adjust — observer ছাড়াই */
+      setTimeout(()=>clampPopup(popup), 60);
+    }
     if(navigator.vibrate) navigator.vibrate(15);
   }, 430);
 }
@@ -4103,7 +4265,6 @@ document.addEventListener("click",e=>{
     const isOpen=menu.classList.contains("show");
     closeAllPostMenus(menu);
     closeAllCommentMenus();
-    // Reset z-index for all other posts
     document.querySelectorAll('.post.menu-open').forEach(p=>{ if(p!==post) p.classList.remove('menu-open'); });
     if(isOpen){
       menu.classList.remove("show");
@@ -5033,6 +5194,11 @@ document.addEventListener("keydown",event=>{
   if(event.ctrlKey&&event.key.toLowerCase()==="k"){event.preventDefault();openSearchModal();}
   if(event.key.toLowerCase()==="n"&&!event.target.matches("input,textarea")) openPostModal();
   if(event.key==="Escape"){
+    /* If draft dialog is showing, close it first */
+    if(composerDraftOverlay && composerDraftOverlay.classList.contains('show')){
+      composerDraftOverlay.classList.remove('show');
+      return;
+    }
     closePostModal();closeSearchModal();closeReportFlow();closeReactionViewerModal();closeCommentReactionViewerModal();
     closeImageViewer();closeVideoPlayer();closeEditCommentModal();closeEditHistoryModal();
     reportSuccessOverlay.classList.remove("show");dlQualityOverlay.classList.remove("show");
@@ -5238,7 +5404,6 @@ const brandWalls=[
 {id:'mv-city-neon',icon:'fa-city',style:'radial-gradient(ellipse at 25% 90%,rgba(0,229,255,.42),transparent 25%),radial-gradient(ellipse at 78% 20%,rgba(168,85,247,.48),transparent 26%),linear-gradient(160deg,#030712,#111827 50%,#0b1024)'},
 {id:'mv-cosmic',icon:'fa-star',style:'radial-gradient(circle at 15% 25%,#fff 0 1px,transparent 2px),radial-gradient(circle at 70% 18%,rgba(255,255,255,.95) 0 1px,transparent 2px),radial-gradient(circle at 85% 75%,rgba(0,229,255,.9) 0 1px,transparent 2px),radial-gradient(circle at 38% 68%,rgba(255,78,205,.75) 0 1px,transparent 2px),linear-gradient(145deg,#03030b,#12113b 52%,#060c22)'}
 ];
-// Insert brandWalls into WALLPAPERS.mesh
 if(typeof WALLPAPERS!=='undefined' && WALLPAPERS.mesh){
   brandWalls.forEach(w=>WALLPAPERS.mesh.push(w));
 }
@@ -5261,13 +5426,31 @@ window.buildCommentBodyHTML=function(mv,isReply){const html=oldBuildComment(mv,i
 const oldCreateComment=window.createCommentElement;
 window.createCommentElement=function(data,isReply){const el=oldCreateComment({...data,replyTo:data.replyTo||null},isReply);if(el?._mv&&data.replyTo){el._mv.replyTo={...data.replyTo};const body=el.querySelector('.comment-body');if(body){body.innerHTML=buildCommentBodyHTML(el._mv,isReply);fillCommentReactionPicker(el);renderCommentReaction(el);}}return el;};
 window.sendReply=function(comment,text,media=null){const top=getTopLevelComment(comment),post=top?.closest('.post');if(!top||!post)return;const t=comment._mv||{},to={name:t.author||'Mediaverse user',username:t.username||'',id:t.id||''},author=getPostAuthorName(post),data={author:CURRENT_USER.name,avatar:CURRENT_USER.image,text,media:media||null,createdAt:Date.now(),isAuthor:CURRENT_USER.name===author,isOwn:true,verified:!!CURRENT_USER.verified,replyTo:to},el=createCommentElement(data,true),list=top.querySelector(':scope > .comment-body > .reply-list');if(list)list.appendChild(el);bumpPostStat(post,'thoughts',1);showToast(`Reply sent to ${to.name}`);};
-function clampPopup(p){if(!p||!p.classList.contains('show'))return;p.style.left='0px';requestAnimationFrame(()=>{const r=p.getBoundingClientRect(),pad=8;let s=0;if(r.right>innerWidth-pad)s-=r.right-(innerWidth-pad);if(r.left+s<pad)s+=pad-(r.left+s);if(s)p.style.left=s+'px';});}
-const po=new MutationObserver(ms=>ms.forEach(m=>{if(m.type==='attributes'&&m.attributeName==='class')clampPopup(m.target);}));document.querySelectorAll('.comment-reaction-popup').forEach(p=>po.observe(p,{attributes:true}));new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType!==1)return;if(n.matches?.('.comment-reaction-popup'))po.observe(n,{attributes:true});n.querySelectorAll?.('.comment-reaction-popup').forEach(p=>po.observe(p,{attributes:true}));}))).observe(document.body,{childList:true,subtree:true});
-function positionMenu(m){if(!m||!m.classList.contains('show'))return;m.style.left='auto';m.style.right='0px';m.style.top='calc(100% + 8px)';m.style.bottom='auto';requestAnimationFrame(()=>{let r=m.getBoundingClientRect();if(r.right>innerWidth-8)m.style.right=((parseFloat(m.style.right)||0)+(r.right-(innerWidth-8)))+'px';r=m.getBoundingClientRect();if(r.bottom>innerHeight-8){m.style.top='auto';m.style.bottom='calc(100% + 8px)';}})}
-document.addEventListener('click',e=>{const b=e.target.closest('.more-btn');if(b)setTimeout(()=>positionMenu(b.closest('.post-menu-wrap')?.querySelector('.post-menu')),0)},true);addEventListener('resize',()=>document.querySelectorAll('.post-menu.show').forEach(positionMenu),{passive:true});
-window.MV_LIFE_FLOW_PROVIDER='OpenStreetMap Nominatim';
-if(typeof renderBgStrip==='function')renderBgStrip();if(typeof applyBgTheme==='function')applyBgTheme();
-})();
+
+/* NEW: clampPopup with vertical flip + inside container guard */
+function clampPopup(p){
+  if(!p||!p.classList.contains('show'))return;
+  p.classList.remove('popup-below');
+  p.style.left='0px';
+  p.style.transformOrigin='';
+  requestAnimationFrame(()=>{
+    if(!p.classList.contains('show'))return;
+    const pad=8;
+    const r=p.getBoundingClientRect();
+    /* Horizontal clamp */
+    let sx=0;
+    if(r.right>window.innerWidth-pad) sx-=r.right-(window.innerWidth-pad);
+    if(r.left+sx<pad) sx+=pad-(r.left+sx);
+    if(sx) p.style.left=sx+'px';
+    /* Vertical flip — শুধু একবার, no observer, no loop */
+    const flowScroll = p.closest('.comment-flow-scroll') || p.closest('.comments');
+    const topLimit = flowScroll ? flowScroll.getBoundingClientRect().top : 0;
+    if(r.top < topLimit + 4){
+      p.classList.add('popup-below');
+    }
+  });
+}
+
 </script>
 
 </body>
