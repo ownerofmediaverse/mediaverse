@@ -846,11 +846,45 @@ html.mv-network-lock,body.mv-network-lock{overflow:hidden!important;}
 .comment-react-btn.reacted .cmr-react-emoji{display:inline-flex;}
 .comment-react-btn .cmr-react-emoji .reaction-emoji.reaction-image{width:14px!important;height:14px!important;font-size:14px!important;}
 
-.comment-reaction-popup{position:absolute;bottom:calc(100% + 10px);left:0;z-index:420;display:flex;align-items:center;gap:3px;padding:7px 10px;border-radius:28px;opacity:0;pointer-events:none;transform-origin:bottom left;transform:translateY(10px) scale(.75);max-width:calc(100vw - 40px);overflow-x:auto;overflow-y:hidden;scrollbar-width:none;background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.035)),rgba(18,20,38,.96);border:1px solid var(--border-bright);backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);box-shadow:0 22px 60px rgba(0,0,0,.58);transition:opacity .25s ease,transform .3s cubic-bezier(.2,.9,.3,1.5);}
-.comment-reaction-popup::-webkit-scrollbar{display:none;}
+.comment-reaction-popup{
+  position:absolute;
+  bottom:calc(100% + 10px);
+  left:0;
+  z-index:420;
+  display:flex;
+  flex-wrap:wrap;                 /* ⭐ slide bondho, wrap hobe */
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  padding:8px;
+  border-radius:20px;
+  opacity:0;
+  pointer-events:none;
+  transform-origin:bottom left;
+  transform:translateY(10px) scale(.75);
+  width:max-content;
+  max-width:min(320px, calc(100vw - 24px));
+  box-sizing:border-box;
+  overflow:visible;               /* ⭐ overflow-x:auto sorano hoyeche */
+  background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.035)),rgba(18,20,38,.96);
+  border:1px solid var(--border-bright);
+  backdrop-filter:blur(28px) saturate(170%);
+  -webkit-backdrop-filter:blur(28px) saturate(170%);
+  box-shadow:0 22px 60px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.10);
+  transition:opacity .25s ease,transform .3s cubic-bezier(.2,.9,.3,1.5);
+}
 .comment-reaction-popup.show{opacity:1;pointer-events:auto;transform:translateY(0) scale(1);}
-.comment-reaction-popup .reaction-choice{width:36px;height:36px;}
-.comment-reaction-popup .reaction-choice .reaction-emoji.reaction-image{width:26px!important;height:26px!important;font-size:26px!important;}
+.comment-reaction-popup .reaction-choice{
+  width:34px;
+  height:34px;
+  flex:0 0 auto;
+  margin:0;
+}
+.comment-reaction-popup .reaction-choice .reaction-emoji.reaction-image{
+  width:24px!important;
+  height:24px!important;
+  font-size:24px!important;
+}
 
 /* Reply popup below flip + inside box guard */
 .comment-reaction-popup.popup-below{
@@ -863,8 +897,23 @@ html.mv-network-lock,body.mv-network-lock{overflow:hidden!important;}
   transform:translateY(0) scale(1);
 }
 .reply-list .comment-reaction-popup{
-  max-width:calc(100% - 8px);
+  left:auto;                       /* ⭐ left:0 sorano */
+  right:0;                         /* ⭐ dan kinara theke bosbe */
+  transform-origin:bottom right;   /* ⭐ animation dan theke */
+  max-width:min(300px, calc(100vw - 24px));
   box-sizing:border-box;
+}
+.reply-list .comment-reaction-popup.popup-below{
+  transform-origin:top right;      /* ⭐ niche namle o dan theke */
+}
+.reply-list .comment-reaction-popup .reaction-choice{
+  width:32px;
+  height:32px;
+}
+.reply-list .comment-reaction-popup .reaction-choice .reaction-emoji.reaction-image{
+  width:22px!important;
+  height:22px!important;
+  font-size:22px!important;
 }
 
 /* Comment media composer */
@@ -1405,6 +1454,43 @@ html[data-mv-theme="light"] body .grid-bg{filter:invert(1);opacity:.08;}
 /* ===== FINAL POLISH: ENSURE CAPTION NEVER OVERLAPS BG SECTION ===== */
 .composer-text-area{overflow:visible;}
 .composer-text-area.has-bg{overflow:hidden;}
+
+
+/* ===== COMMENT REACTION POPUP — MOBILE FIX ===== */
+@media (max-width:520px){
+  .comment-reaction-popup{
+    gap:3px;
+    padding:7px;
+    border-radius:18px;
+    max-width:min(300px, calc(100vw - 20px));
+  }
+  .comment-reaction-popup .reaction-choice{
+    width:32px;
+    height:32px;
+  }
+  .comment-reaction-popup .reaction-choice .reaction-emoji.reaction-image{
+    width:22px!important;
+    height:22px!important;
+    font-size:22px!important;
+  }
+  .reply-list .comment-reaction-popup .reaction-choice{
+    width:30px;
+    height:30px;
+  }
+  .reply-list .comment-reaction-popup .reaction-choice .reaction-emoji.reaction-image{
+    width:20px!important;
+    height:20px!important;
+    font-size:20px!important;
+  }
+}
+@media (max-width:380px){
+  .comment-reaction-popup{gap:2px;padding:6px;border-radius:16px;}
+  .comment-reaction-popup .reaction-choice{width:30px;height:30px;}
+  .comment-reaction-popup .reaction-choice .reaction-emoji.reaction-image{
+    width:20px!important;height:20px!important;font-size:20px!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -3580,6 +3666,31 @@ function renderCommentReaction(comment){
     }
   }
 }
+
+function updateReplyCount(comment){
+  if(!comment || !comment._mv) return;
+  const body = comment.querySelector(':scope > .comment-body');
+  if(!body) return;
+  const replyList = body.querySelector(':scope > .reply-list');
+  const count = replyList
+    ? replyList.querySelectorAll(':scope > .comment').length
+    : 0;
+
+  const slot = body.querySelector(':scope > .comment-reply-stat-slot');
+  if(!slot) return;
+
+  if(count > 0){
+    const isMine = !!comment._mv.isOwn;
+    const label = isMine
+      ? `${formatNumber(count)} ${count === 1 ? 'reply' : 'replies'} to your comment`
+      : `${formatNumber(count)} ${count === 1 ? 'reply' : 'replies'}`;
+
+    slot.innerHTML = `<div class="comment-reply-stat"><i class="fa-regular fa-comments"></i><span>${label}</span></div>`;
+  } else {
+    slot.innerHTML = '';
+  }
+}
+
 function setCommentReaction(comment, type){
   const mv = comment._mv;
   const prev = mv.userReaction;
@@ -3629,7 +3740,7 @@ function buildCommentBodyHTML(mv, isReply){
     </div>
     ${mv._authorHidden && mv._currentViewerIsPostAuthor ? `<div class="comment-hidden-author"><b>This comment is hidden for everyone.</b><br>You can undo the hide from the 3-dot menu.</div>` : `${mediaHTML}${mv.text ? `<p class="comment-text">${escapeHTML(mv.text)}</p>` : ''}`}
     <div class="comment-meta-row">${buildCommentMetaRowHTML(mv)}</div>
-    ${mv.legacyStats||''}
+    <div class="comment-reply-stat-slot" data-reply-slot="${mv.id}"></div>
     <div class="comment-reaction-summary"><div class="comment-reaction-stack"></div><span class="comment-reaction-count"></span></div>
     <div class="comment-actions-row">
       <button class="comment-act-btn comment-react-btn" type="button" data-comment-react><i class="fa-regular fa-heart cmr-icon"></i><span class="cmr-react-emoji"></span><span class="cmr-label">React</span></button>
@@ -3655,7 +3766,7 @@ function createCommentElement(data, isReply){
     createdAt: data.createdAt || Date.now(), editedAt: data.editedAt || null,
     editHistory: data.editHistory ? [...data.editHistory] : [],
     pinned: !!data.pinned, isAuthor: !!data.isAuthor, isOwn: !!data.isOwn,
-    verified: !!data.verified, isReply: !!isReply, legacyStats: data.legacyStats || '',
+    verified: !!data.verified, isReply: !!isReply,
     authorHidden: !!data.authorHidden, userHidden: !!data.userHidden, userReaction: null
   };
   c._mv = mv;
@@ -3722,11 +3833,28 @@ cancelDeleteComment.addEventListener('click',closeDeleteComment);
 deleteCommentOverlay.addEventListener('click',e=>{if(e.target===deleteCommentOverlay)closeDeleteComment();});
 confirmDeleteComment.addEventListener('click',()=>{
   if(!deletingCommentEl) return;
-  const comment=deletingCommentEl;
-  const post=comment.closest('.post');
+  const comment = deletingCommentEl;
+
+  // Reply কিনা চেক করি — reply হলে parent top-level comment বের করি
+  const wasReply = !!(comment._mv && comment._mv.isReply);
+  let parentComment = null;
+  if(wasReply){
+    const replyList = comment.closest('.reply-list');
+    parentComment = replyList ? replyList.closest('.comment') : null;
+  }
+
+  const post = comment.closest('.post');
   comment.remove();
+
   if(post) bumpPostStat(post,'thoughts',-1);
-  closeDeleteComment();showToast('Comment deleted');
+
+  // ⭐ Reply ছিল — parent comment-এর reply count refresh করি
+  if(parentComment && typeof updateReplyCount === 'function'){
+    updateReplyCount(parentComment);
+  }
+
+  closeDeleteComment();
+  showToast('Comment deleted');
 });
 
 /* Delete POST */
@@ -3923,10 +4051,11 @@ function startCommentHold(btn){
     document.querySelectorAll('.comment-reaction-popup.show').forEach(p=>{ if(p!==popup) p.classList.remove('show','popup-below'); });
     document.querySelectorAll('.reaction-popup.show').forEach(p=>p.classList.remove('show'));
     if(popup){
-      popup.classList.add('show');
-      /* একবার position adjust — observer ছাড়াই */
-      setTimeout(()=>clampPopup(popup), 60);
-    }
+  popup.classList.add('show');
+  requestAnimationFrame(()=>clampPopup(popup));
+  setTimeout(()=>clampPopup(popup), 50);
+  setTimeout(()=>clampPopup(popup), 180);
+}
     if(navigator.vibrate) navigator.vibrate(15);
   }, 430);
 }
@@ -4163,7 +4292,7 @@ function addComment(button){
   const postAuthor=getPostAuthorName(actualPost); myCommentCount++;
   const legacyStats=`<div class="comment-stats"><span class="cs-item cs-count"><i class="fa-regular fa-comment-dots"></i> ${formatNumber(myCommentCount)} comments</span></div>`;
   const commentEl=createCommentElement({author:CURRENT_USER.name,avatar:CURRENT_USER.image,text,media,createdAt:Date.now(),isAuthor:CURRENT_USER.name===postAuthor,isOwn:true,verified:!!CURRENT_USER.verified,legacyStats});
-  list.appendChild(commentEl); resetCommentComposer(box); fillCommentReactionPicker(commentEl); bumpPostStat(actualPost,'thoughts',1);
+  list.appendChild(commentEl); resetCommentComposer(box); fillCommentReactionPicker(commentEl); bumpPostStat(actualPost,'thoughts',1); updateReplyCount(commentEl);
   requestAnimationFrame(()=>commentEl.scrollIntoView({behavior:'smooth',block:'nearest'})); showToast(media&&text?'Comment sent with media':'Comment sent');
 }
 function upgradeStaticComments(root=document){
@@ -4173,13 +4302,13 @@ function upgradeStaticComments(root=document){
     const avatar = el.querySelector(':scope > img')?.src || 'https://i.pravatar.cc/100?img=1';
     const pEl = el.querySelector('p');
     const text = pEl ? pEl.textContent : '';
-    const legacyStats = el.querySelector('.comment-stats')?.outerHTML || '';
+    // legacyStats removed — reply count will be computed dynamically
     const post = el.closest('.post');
     const postAuthor = post ? getPostAuthorName(post) : '';
     const verifiedNames = new Set(['Sorufa Begum','Aduri Akter','Emma Wilson','Olivia Chen','Mediaverse User']);
     const ageMinutes = author === 'Emma Wilson' ? 6 : 30;
     const createdAt = Date.now() - ageMinutes*60*1000;
-    const newEl = createCommentElement({author, avatar, text, createdAt, isAuthor: author === postAuthor, isOwn: author === CURRENT_USER.name, verified: verifiedNames.has(author), legacyStats});
+    const newEl = createCommentElement({author, avatar, text, createdAt, isAuthor: author === postAuthor, isOwn: author === CURRENT_USER.name, verified: verifiedNames.has(author)});
     newEl.dataset.mvUpgraded = '1';
     el.replaceWith(newEl);
   });
@@ -5230,6 +5359,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     setDefaultReactButton(post);ensureReactionData(post);renderPostStats(post);bindVideoShells(post);
   });
   upgradeStaticComments();
+document.querySelectorAll('.comment-list > .comment').forEach(c => updateReplyCount(c));
   bindCommentVideos(document);
   enableHomeAutoPlay(document);
   updateProgressUI();
@@ -5388,6 +5518,51 @@ document.addEventListener('DOMContentLoaded',()=>applyLockedSignalGuard(document
 .composer-theme-strip{gap:9px;padding:2px 2px 7px}.composer-theme-strip .bg-swatch{position:relative;box-shadow:0 7px 18px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.10)!important;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.composer-theme-strip .bg-swatch:hover{transform:translateY(-2px)}.composer-theme-strip .bg-swatch.active{border-color:rgba(115,235,255,.78)!important;box-shadow:0 0 0 2px rgba(0,229,255,.18),0 9px 24px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.28)}
 @media(max-width:520px){.mv-life-pair,.mv-life-pair .mv-life-photo{min-height:150px;height:150px}.mv-life-card-title{font-size:16px}.mv-life-card{border-radius:18px}.comment-reaction-popup{max-width:calc(100vw - 16px)}.post-menu{max-width:calc(100vw - 16px)}}
 @media(max-width:360px){.mv-life-pair,.mv-life-pair .mv-life-photo{min-height:132px;height:132px}.mv-life-pair-badge{width:46px;height:46px;font-size:17px}}
+
+@media (max-width:520px){
+  .reply-list .comment-reaction-popup{
+    max-width:min(280px, calc(100vw - 20px));
+    padding:7px;
+    gap:3px;
+    border-radius:18px;
+  }
+  .reply-list .comment-reaction-popup .reaction-choice{
+    width:30px;
+    height:30px;
+  }
+  .reply-list .comment-reaction-popup .reaction-choice .reaction-emoji.reaction-image{
+    width:20px!important;
+    height:20px!important;
+    font-size:20px!important;
+  }
+}
+
+/* ===== Comment reply count ===== */
+.comment-reply-stat{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin-top:8px;
+  padding:6px 10px;
+  border-radius:10px;
+  font-size:9.5px;
+  font-weight:700;
+  letter-spacing:.2px;
+  color:#8be9ff;
+  background:linear-gradient(135deg,rgba(0,229,255,.10),rgba(168,85,247,.08));
+  border:1px solid rgba(0,229,255,.18);
+  cursor:pointer;
+  transition:.2s ease;
+  user-select:none;
+}
+.comment-reply-stat:hover{
+  background:linear-gradient(135deg,rgba(0,229,255,.18),rgba(168,85,247,.14));
+  border-color:rgba(0,229,255,.30);
+  transform:translateY(-1px);
+}
+.comment-reply-stat i{font-size:10px;color:var(--cyan);}
+.comment-reply-stat span{color:#dfe6f5;}
+
 </style>
 <script>
 (function(){
@@ -5425,31 +5600,55 @@ const oldBuildComment=window.buildCommentBodyHTML;
 window.buildCommentBodyHTML=function(mv,isReply){const html=oldBuildComment(mv,isReply);if(!isReply||!mv?.replyTo)return html;return html.replace('<div class="comment-top">',`<div class="reply-to-line"><i class="fa-solid fa-reply"></i><span>Reply to <b>${safe(mv.replyTo.name||'Mediaverse user')}</b>${mv.replyTo.username?' · '+safe(mv.replyTo.username):''}</span></div><div class="comment-top">`);};
 const oldCreateComment=window.createCommentElement;
 window.createCommentElement=function(data,isReply){const el=oldCreateComment({...data,replyTo:data.replyTo||null},isReply);if(el?._mv&&data.replyTo){el._mv.replyTo={...data.replyTo};const body=el.querySelector('.comment-body');if(body){body.innerHTML=buildCommentBodyHTML(el._mv,isReply);fillCommentReactionPicker(el);renderCommentReaction(el);}}return el;};
-window.sendReply=function(comment,text,media=null){const top=getTopLevelComment(comment),post=top?.closest('.post');if(!top||!post)return;const t=comment._mv||{},to={name:t.author||'Mediaverse user',username:t.username||'',id:t.id||''},author=getPostAuthorName(post),data={author:CURRENT_USER.name,avatar:CURRENT_USER.image,text,media:media||null,createdAt:Date.now(),isAuthor:CURRENT_USER.name===author,isOwn:true,verified:!!CURRENT_USER.verified,replyTo:to},el=createCommentElement(data,true),list=top.querySelector(':scope > .comment-body > .reply-list');if(list)list.appendChild(el);bumpPostStat(post,'thoughts',1);showToast(`Reply sent to ${to.name}`);};
+window.sendReply=function(comment,text,media=null){const top=getTopLevelComment(comment),post=top?.closest('.post');if(!top||!post)return;const t=comment._mv||{},to={name:t.author||'Mediaverse user',username:t.username||'',id:t.id||''},author=getPostAuthorName(post),data={author:CURRENT_USER.name,avatar:CURRENT_USER.image,text,media:media||null,createdAt:Date.now(),isAuthor:CURRENT_USER.name===author,isOwn:true,verified:!!CURRENT_USER.verified,replyTo:to},el=createCommentElement(data,true),list=top.querySelector(':scope > .comment-body > .reply-list');
+if(list) list.appendChild(el);
+updateReplyCount(top);
+bumpPostStat(post,'thoughts',1);
+showToast(`Reply sent to ${to.name}`);
+};   // ← এই }; টা missing ছিল — sendReply close করার জন্য
 
 /* NEW: clampPopup with vertical flip + inside container guard */
-function clampPopup(p){
+window.clampPopup = function(p){   // ← window.clampPopup করলাম যাতে startCommentHold থেকে access পায়
   if(!p||!p.classList.contains('show'))return;
   p.classList.remove('popup-below');
-  p.style.left='0px';
+
+  const isReply = !!p.closest('.reply-list');
+
+  if(isReply){
+    p.style.left='auto';
+    p.style.right='0';
+  }else{
+    p.style.left='0px';
+    p.style.right='';
+  }
   p.style.transformOrigin='';
+
   requestAnimationFrame(()=>{
     if(!p.classList.contains('show'))return;
     const pad=8;
     const r=p.getBoundingClientRect();
-    /* Horizontal clamp */
-    let sx=0;
-    if(r.right>window.innerWidth-pad) sx-=r.right-(window.innerWidth-pad);
-    if(r.left+sx<pad) sx+=pad-(r.left+sx);
-    if(sx) p.style.left=sx+'px';
-    /* Vertical flip — শুধু একবার, no observer, no loop */
+
+    if(isReply){
+      const overflowLeft = pad - r.left;
+      if(overflowLeft > 0){
+        p.style.right = (-overflowLeft) + 'px';
+      }
+    }else{
+      let sx=0;
+      if(r.right > window.innerWidth - pad) sx -= r.right - (window.innerWidth - pad);
+      if(r.left + sx < pad) sx += pad - (r.left + sx);
+      if(sx) p.style.left = sx + 'px';
+    }
+
     const flowScroll = p.closest('.comment-flow-scroll') || p.closest('.comments');
     const topLimit = flowScroll ? flowScroll.getBoundingClientRect().top : 0;
     if(r.top < topLimit + 4){
       p.classList.add('popup-below');
     }
   });
-}
+};   // ← clampPopup assignment close
+
+})();   
 
 </script>
 
