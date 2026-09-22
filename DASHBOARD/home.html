@@ -5599,6 +5599,55 @@ button.comment-reply-stat.open .reply-caret{
   transition: opacity .2s ease;
 }
 
+/* ============================================================
+   Reaction Stack — black circle removed, only emoji visible
+   ============================================================ */
+
+/* Post reaction stack */
+.reaction-stack .rstack-item{
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  width: 32px;
+  height: 32px;
+  margin-left: -6px;          /* overlap কমিয়ে দিলাম */
+  overflow: visible;
+  border-radius: 0;
+}
+.reaction-stack .rstack-item:first-child{
+  margin-left: 0;
+}
+.reaction-stack .rstack-item .reaction-emoji{
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,.55));  /* emoji টা আলাদা করে দেখা যাবে */
+}
+
+/* Comment reaction stack */
+.comment-reaction-stack .crstack-item{
+  background: transparent !important;
+  border: none !important;
+  width: 18px;
+  height: 18px;
+  margin-left: -3px;
+  overflow: visible;
+}
+.comment-reaction-stack .crstack-item:first-child{
+  margin-left: 0;
+}
+
+/* Reaction viewer (modal) — যদি ওখানেও কালো circle দেখা যায় */
+.rv-group-emoji{
+  background: transparent !important;
+  border: none !important;
+}
+.rv-tab{
+
+}
+
+/* Optional — subtle hover effect যাতে emoji গুলো lift করে */
+.reaction-summary:hover .reaction-stack .rstack-item{
+  transform: translateY(-2px) scale(1.08);
+}
+
 </style>
 <script>
 (function(){
