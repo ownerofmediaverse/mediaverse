@@ -5790,6 +5790,179 @@ document.addEventListener('click', e => {
 
 
 </script>
+<!-- ============================================================
+     FACEBOOK-STYLE SEE MORE FOR LONG POSTS
+     ============================================================ -->
+<style id="mv-see-more-style">
+.post-text.clamped{
+  max-height:250px;
+  overflow:hidden;
+  -webkit-mask-image:linear-gradient(to bottom,#000 62%,transparent 100%);
+          mask-image:linear-gradient(to bottom,#000 62%,transparent 100%);
+}
+.post-text.expanded{
+  max-height:none !important;
+  -webkit-mask-image:none !important;
+          mask-image:none !important;
+}
+.mv-see-more-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  margin:-6px 0 8px;
+  padding:4px 0;
+  border:none;
+  background:transparent;
+  color:var(--cyan);                 /* ✅ সবসময় নীল */
+  font-family:inherit;
+  font-size:12.5px;
+  font-weight:700;
+  letter-spacing:.2px;
+  cursor:pointer;
+  transition:opacity .2s ease;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.mv-see-more-btn:hover,
+.mv-see-more-btn:focus,
+.mv-see-more-btn:active,
+.mv-see-more-btn:focus-visible{
+  color:var(--cyan);                 /* ✅ hover/focus/active সবেতেই নীল */
+  opacity:.85;
+  outline:none;
+}
+.mv-see-more-btn i{
+  font-size:10px;
+  color:var(--cyan);                 /* ✅ arrow icon ও নীল */
+  transition:transform .25s ease;
+}
+.mv-see-more-btn[data-state="expanded"] i{
+  transform:rotate(180deg);
+}
+@media (max-width:520px){
+  .post-text.clamped{max-height:200px;}
+  .mv-see-more-btn{font-size:12px;}
+}
+</style>
 
+<script>
+(function(){
+  'use strict';
+
+  function getClampHeight(){
+    return window.innerWidth <= 520 ? 200 : 250;
+  }
+
+  function applySeeMore(post){
+    if(!post || !post.classList || !post.classList.contains('post')) return;
+
+    /* পুরনো button/state পরিষ্কার */
+    post.querySelector('.mv-see-more-btn')?.remove();
+
+    const textEl = post.querySelector('.post-text');
+    if(!textEl) return;
+    if(textEl.classList.contains('has-bg')) return;   /* background theme skip */
+    if(!textEl.textContent.trim()) return;
+
+    textEl.classList.remove('clamped','expanded');
+    textEl.style.maxHeight = '';
+
+    /* layout পাকা হওয়ার পর measure */
+    requestAnimationFrame(function(){
+      const clampH = getClampHeight();
+      if(textEl.scrollHeight <= clampH + 20) return;  /* ছোট হলে কিছু করবো না */
+
+      textEl.classList.add('clamped');
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'mv-see-more-btn';
+      btn.dataset.state = 'clamped';
+      btn.setAttribute('aria-expanded','false');
+      btn.innerHTML = 'See more <i class="fa-solid fa-chevron-down"></i>';
+
+      textEl.insertAdjacentElement('afterend', btn);
+
+      btn.addEventListener('click', function(){
+        if(textEl.classList.contains('clamped')){
+          /* Expand */
+          textEl.classList.remove('clamped');
+          textEl.classList.add('expanded');
+          btn.dataset.state = 'expanded';
+          btn.setAttribute('aria-expanded','true');
+          btn.innerHTML = 'See less <i class="fa-solid fa-chevron-down"></i>';
+        } else {
+          /* Collapse */
+          textEl.classList.add('clamped');
+          textEl.classList.remove('expanded');
+          btn.dataset.state = 'clamped';
+          btn.setAttribute('aria-expanded','false');
+          btn.innerHTML = 'See more <i class="fa-solid fa-chevron-down"></i>';
+
+          /* collapse করলে post টা view-তে আনি */
+          const rect = post.getBoundingClientRect();
+          if(rect.top < 60 || rect.top > window.innerHeight * 0.5){
+            post.scrollIntoView({behavior:'smooth', block:'start'});
+          }
+        }
+      });
+    });
+  }
+
+  function applyAll(){
+    document.querySelectorAll('#postsContainer .post').forEach(applySeeMore);
+  }
+
+  /* ১) পেজ load হলে সব post-এ apply */
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', applyAll);
+  } else {
+    applyAll();
+  }
+
+  /* ২) নতুন post যোগ হলে (composer / infinite scroll) */
+  function observeNewPosts(){
+    const container = document.getElementById('postsContainer');
+    if(!container) return;
+    const mo = new MutationObserver(function(muts){
+      muts.forEach(function(m){
+        m.addedNodes.forEach(function(n){
+          if(n.nodeType !== 1) return;
+          if(n.classList && n.classList.contains('post')) applySeeMore(n);
+          else if(n.querySelectorAll) n.querySelectorAll('.post').forEach(applySeeMore);
+        });
+      });
+    });
+    mo.observe(container, {childList:true, subtree:false});
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', observeNewPosts);
+  } else {
+    observeNewPosts();
+  }
+
+  /* ৩) Post edit এর পরে re-measure */
+  document.addEventListener('click', function(e){
+    if(e.target.closest('#mvPostEditSave')){
+      setTimeout(function(){
+        let latest = null, latestTime = 0;
+        document.querySelectorAll('#postsContainer .post').forEach(function(p){
+          const t = p._mvData && p._mvData.editedAt;
+          if(t && t > latestTime){ latestTime = t; latest = p; }
+        });
+        if(latest && Date.now() - latestTime < 3000){
+          applySeeMore(latest);
+        }
+      }, 130);
+    }
+  });
+
+  /* Expose for other scripts */
+  window.mvApplySeeMore = applySeeMore;
+  window.mvApplySeeMoreAll = applyAll;
+})();
+</script>
 </body>
 </html>
