@@ -3685,9 +3685,22 @@ function updateReplyCount(comment){
       ? `${formatNumber(count)} ${count === 1 ? 'reply' : 'replies'} to your comment`
       : `${formatNumber(count)} ${count === 1 ? 'reply' : 'replies'}`;
 
-    slot.innerHTML = `<div class="comment-reply-stat"><i class="fa-regular fa-comments"></i><span>${label}</span></div>`;
+    const isOpen = replyList && replyList.dataset.mvExpanded === '1';
+
+    slot.innerHTML = `<button class="comment-reply-stat${isOpen?' open':''}" type="button" data-reply-toggle><i class="fa-regular fa-comments"></i><span>${label}</span><i class="fa-solid fa-chevron-down reply-caret"></i></button>`;
+
+    if(replyList){
+      if(!replyList.dataset.mvInit){
+        replyList.dataset.mvInit = '1';
+        replyList.dataset.mvExpanded = '0';
+        replyList.style.display = 'none';   // default: hidden
+      } else if(replyList.dataset.mvExpanded === '1'){
+        replyList.style.display = '';
+      }
+    }
   } else {
     slot.innerHTML = '';
+    if(replyList) replyList.style.display = 'none';
   }
 }
 
@@ -5563,6 +5576,29 @@ document.addEventListener('DOMContentLoaded',()=>applyLockedSignalGuard(document
 .comment-reply-stat i{font-size:10px;color:var(--cyan);}
 .comment-reply-stat span{color:#dfe6f5;}
 
+
+/* Reply toggle button */
+button.comment-reply-stat{
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid rgba(0,229,255,.18);
+  font-family: inherit;
+  cursor: pointer;
+  padding: 6px 10px;
+}
+button.comment-reply-stat .reply-caret{
+  font-size: 9px;
+  color: var(--cyan);
+  margin-left: 4px;
+  transition: transform .25s ease;
+}
+button.comment-reply-stat.open .reply-caret{
+  transform: rotate(180deg);
+}
+.reply-list{
+  transition: opacity .2s ease;
+}
+
 </style>
 <script>
 (function(){
@@ -5600,12 +5636,38 @@ const oldBuildComment=window.buildCommentBodyHTML;
 window.buildCommentBodyHTML=function(mv,isReply){const html=oldBuildComment(mv,isReply);if(!isReply||!mv?.replyTo)return html;return html.replace('<div class="comment-top">',`<div class="reply-to-line"><i class="fa-solid fa-reply"></i><span>Reply to <b>${safe(mv.replyTo.name||'Mediaverse user')}</b>${mv.replyTo.username?' · '+safe(mv.replyTo.username):''}</span></div><div class="comment-top">`);};
 const oldCreateComment=window.createCommentElement;
 window.createCommentElement=function(data,isReply){const el=oldCreateComment({...data,replyTo:data.replyTo||null},isReply);if(el?._mv&&data.replyTo){el._mv.replyTo={...data.replyTo};const body=el.querySelector('.comment-body');if(body){body.innerHTML=buildCommentBodyHTML(el._mv,isReply);fillCommentReactionPicker(el);renderCommentReaction(el);}}return el;};
-window.sendReply=function(comment,text,media=null){const top=getTopLevelComment(comment),post=top?.closest('.post');if(!top||!post)return;const t=comment._mv||{},to={name:t.author||'Mediaverse user',username:t.username||'',id:t.id||''},author=getPostAuthorName(post),data={author:CURRENT_USER.name,avatar:CURRENT_USER.image,text,media:media||null,createdAt:Date.now(),isAuthor:CURRENT_USER.name===author,isOwn:true,verified:!!CURRENT_USER.verified,replyTo:to},el=createCommentElement(data,true),list=top.querySelector(':scope > .comment-body > .reply-list');
-if(list) list.appendChild(el);
-updateReplyCount(top);
-bumpPostStat(post,'thoughts',1);
-showToast(`Reply sent to ${to.name}`);
-};   // ← এই }; টা missing ছিল — sendReply close করার জন্য
+window.sendReply=function(comment,text,media=null){
+  const top=getTopLevelComment(comment),post=top?.closest('.post');
+  if(!top||!post)return;
+  const t=comment._mv||{},
+        to={name:t.author||'Mediaverse user',username:t.username||'',id:t.id||''},
+        author=getPostAuthorName(post),
+        data={
+          author:CURRENT_USER.name,
+          avatar:CURRENT_USER.image,
+          text,
+          media:media||null,
+          createdAt:Date.now(),
+          isAuthor:CURRENT_USER.name===author,
+          isOwn:true,
+          verified:!!CURRENT_USER.verified,
+          replyTo:to
+        },
+        el=createCommentElement(data,true),
+        list=top.querySelector(':scope > .comment-body > .reply-list');
+
+  if(list){
+    list.appendChild(el);
+    // ⭐ নতুন reply পাঠালে auto expand
+    list.dataset.mvInit = '1';
+    list.dataset.mvExpanded = '1';
+    list.style.display = '';
+  }
+
+  updateReplyCount(top);
+  bumpPostStat(post,'thoughts',1);
+  showToast(`Reply sent to ${to.name}`);
+};
 
 /* NEW: clampPopup with vertical flip + inside container guard */
 window.clampPopup = function(p){   // ← window.clampPopup করলাম যাতে startCommentHold থেকে access পায়
@@ -5648,7 +5710,35 @@ window.clampPopup = function(p){   // ← window.clampPopup করলাম য�
   });
 };   // ← clampPopup assignment close
 
+/* === Reply list toggle on "N replies" button === */
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-reply-toggle]');
+  if(!btn) return;
+  e.stopPropagation();
+  e.preventDefault();
+
+  const comment = btn.closest('.comment');
+  if(!comment) return;
+  const body = comment.querySelector(':scope > .comment-body');
+  const replyList = body?.querySelector(':scope > .reply-list');
+  if(!replyList) return;
+
+  const willOpen = replyList.dataset.mvExpanded !== '1';
+
+  if(willOpen){
+    replyList.style.display = '';
+    replyList.dataset.mvExpanded = '1';
+    btn.classList.add('open');
+  } else {
+    replyList.style.display = 'none';
+    replyList.dataset.mvExpanded = '0';
+    btn.classList.remove('open');
+  }
+});
+
 })();   
+
+
 
 </script>
 
