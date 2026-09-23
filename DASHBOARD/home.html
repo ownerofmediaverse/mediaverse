@@ -1102,8 +1102,10 @@ html[data-mv-theme="light"] body .grid-bg{filter:invert(1);opacity:.08;}
 .cm-grid[data-count="4"],
 .cm-grid[data-count="more"]{grid-template-columns:1fr 1fr;}
 .cm-item{position:relative;overflow:hidden;border-radius:12px;background:#05060d;aspect-ratio:1/1;}
-.cm-grid[data-count="1"] .cm-item{aspect-ratio:auto;max-height:420px;}
+.cm-grid[data-count="1"] .cm-item{aspect-ratio:auto;max-height:560px;background:#05060d;}
+.cm-grid[data-count="1"] .cm-item img,.cm-grid[data-count="1"] .cm-item video{width:100%;height:auto;max-height:560px;object-fit:contain;display:block;background:#05060d;}
 .cm-item img,.cm-item video{width:100%;height:100%;object-fit:cover;display:block;}
+.cm-grid[data-count="1"] .cm-item img,.cm-grid[data-count="1"] .cm-item video{object-fit:contain;height:auto;}
 .cm-item .cm-remove{position:absolute;top:8px;right:8px;z-index:4;width:30px;height:30px;border:none;cursor:pointer;border-radius:10px;color:#fff;background:rgba(8,10,18,.72);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:grid;place-items:center;font-size:12px;transition:.2s;}
 .cm-item .cm-remove:hover{background:rgba(255,95,130,.72);}
 .cm-item .cm-tag{position:absolute;left:8px;bottom:8px;z-index:4;padding:4px 9px;border-radius:8px;font-size:9px;font-weight:800;letter-spacing:.4px;color:#fff;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.12);}
@@ -2289,6 +2291,7 @@ let commentFlowPost=null;
 let commentFlowMovedComments=null;
 let deletingCommentEl=null;
 let deletingPostEl=null;
+let editingPost=null;              // ⭐ NEW: edit করা post এর reference
 const rsClose=document.getElementById("rsClose");
 
 const dlQualityOverlay=document.getElementById("dlQualityOverlay");
@@ -2819,8 +2822,18 @@ function forceClosePostModal(){
   postOverlay.classList.remove('show');
   elPrivacyMenu.classList.remove('show');
   composerDraftOverlay.classList.remove('show');
+  // ⭐ Edit mode reset
+  editingPost=null;
+  publishPost.textContent='Broadcast Signal ✦';
+  const head=document.querySelector('.composer-head h2');
+  if(head) head.textContent='Create a Signal';
 }
 function closePostModal(){
+  // ⭐ Edit mode এ draft dialog দেখাবো না, সরাসরি cancel
+  if(editingPost){
+    forceClosePostModal();
+    return;
+  }
   if(hasComposerContent()){
     composerDraftOverlay.classList.add('show');
     return;
@@ -3258,6 +3271,11 @@ function buildPrivacyIcon(){
   return `<i class="fa-solid ${meta.icon}"></i>`;
 }
 function publishComposerPost(){
+  // ⭐ Edit mode হলে edit-save এ যাবে
+  if(editingPost){
+    saveEditedPost();
+    return;
+  }
   const text=postInput.value.trim();
   const hasMedia=composerState.media.length>0;
   const hasMeta=!!(composerState.feeling||composerState.lifeUpdate||composerState.location||composerState.tagged.length);
@@ -3280,14 +3298,14 @@ function publishComposerPost(){
     onlyWho:[...composerState.onlyWho]
   };
 
-  setTimeout(()=>{
-    createPostFromComposer(snapshot);
-    publishPost.disabled=false;
-    publishPost.innerHTML=oldLabel;
-    savedComposerDraft=null;
-    forceClosePostModal();
-    showToast('Your signal has entered the Mediaverse ✦');
-  },420);
+  setTimeout(async ()=>{
+  await createPostFromComposer(snapshot);
+  publishPost.disabled=false;
+  publishPost.innerHTML=oldLabel;
+  savedComposerDraft=null;
+  forceClosePostModal();
+  showToast('Your signal has entered the Mediaverse ✦');
+},420);
 }
 publishPost.addEventListener('click',publishComposerPost);
 
@@ -3296,7 +3314,23 @@ function buildPrivacyIconForPrivacy(p){
   return `<i class="fa-solid ${meta.icon}"></i>`;
 }
 
-function createPostFromComposer(snap){
+async function createPostFromComposer(snap){
+  // ⭐ blob URL গুলো dataURL এ convert করি
+  snap.media = await Promise.all(snap.media.map(async (m) => {
+    if (m.url && m.url.startsWith('blob:')) {
+      try {
+        const blob = await fetch(m.url).then(r => r.blob());
+        const dataUrl = await new Promise(res => {
+          const fr = new FileReader();
+          fr.onload = () => res(fr.result);
+          fr.readAsDataURL(blob);
+        });
+        return { ...m, url: dataUrl };
+      } catch(e) { return m; }
+    }
+    return m;
+  }));
+
   const article=document.createElement('article');
   article.className='post glass';
   const mediaType = snap.media.length===0 ? 'text' : (snap.media.length===1 ? snap.media[0].type : 'mixed');
@@ -4447,7 +4481,7 @@ function handlePostMenuAction(action,post,menu){
     }
     case "watch-later":showToast("Added to Watch Later");break;
     case "download":startDownload(post);break;
-    case "edit-post":openPostEditor(post);break;
+    case "edit-post":openEditPostInComposer(post);break;
     case "delete-post":openDeletePostConfirm(post);break;
     case "report":openReportFlow(post);break;
   }
@@ -5515,6 +5549,261 @@ document.getElementById('mvEditPrivacy').addEventListener('click',()=>{const p=M
 /* ---------- Locked post front-end guard ---------- */
 function applyLockedSignalGuard(root=document){root.querySelectorAll('.post .meta-visibility.private').forEach(postMeta=>{const post=postMeta.closest('.post');if(getPostAuthorName(post)!==CURRENT_USER.name&&post.dataset.owner!=='current')post.style.display='none';});}
 document.addEventListener('DOMContentLoaded',()=>applyLockedSignalGuard(document));
+
+/* =========================================================
+   ⭐ EDIT SIGNAL — full composer দিয়ে edit
+========================================================= */
+function openEditPostInComposer(post){
+  if(!post || (getPostAuthorName(post)!==CURRENT_USER.name && post.dataset.owner!=='current')){
+    showToast('You can edit only your own signal');
+    return;
+  }
+
+  editingPost=post;
+  resetComposer();
+
+  const d=post._mvData||{};
+
+  // Text
+  const textEl=post.querySelector('.post-text');
+  postInput.value=d.text||textEl?.textContent||'';
+
+  // Background / Wallpaper
+  if(d.themeMode==='wallpaper' && d.wallpaper && d.wallpaper!=='none'){
+    composerState.wallpaper=d.wallpaper;
+    composerState.themeMode='wallpaper';
+  } else if(d.bg && d.bg!=='none'){
+    composerState.bg=d.bg;
+    composerState.themeMode='color';
+  }
+
+  // Meta
+  if(d.feeling)      composerState.feeling={...d.feeling};
+  if(d.lifeUpdate)   composerState.lifeUpdate={...d.lifeUpdate};
+  if(d.location)     composerState.location={...d.location};
+  if(Array.isArray(d.tagged))  composerState.tagged=[...d.tagged];
+  if(Array.isArray(d.onlyWho)) composerState.onlyWho=[...d.onlyWho];
+  if(d.privacy)      composerState.privacy=d.privacy;
+
+  // Media — DOM থেকে rebuild
+  composerState.media=[];
+  const singleImg=post.querySelector('.post-media');
+  if(singleImg && singleImg.tagName==='IMG'){
+    composerState.media.push({url:singleImg.src,type:'image',existing:true});
+  }
+  const shell=post.querySelector('.video-shell');
+  if(shell){
+    const v=shell.querySelector('video');
+    const src=shell.dataset.videoSrc||v?.src;
+    if(src) composerState.media.push({url:src,type:'video',existing:true});
+  }
+  post.querySelectorAll('.post-media-grid .pm-item').forEach(item=>{
+    const i=item.querySelector('img');
+    const v=item.querySelector('video');
+    if(v) composerState.media.push({url:v.src,type:'video',existing:true});
+    else if(i) composerState.media.push({url:i.src,type:'image',existing:true});
+  });
+
+  // UI আপডেট
+  applyBgTheme();
+  renderComposerChips();
+  renderComposerMedia();
+  applyPrivacyUI();
+  updatePublishState();
+  updateCharCounter();
+
+  // Header + Button
+  publishPost.textContent='Save changes ✦';
+  const head=document.querySelector('.composer-head h2');
+  if(head) head.textContent='Edit Signal';
+
+  postOverlay.classList.add('show');
+  setTimeout(()=>postInput.focus(),180);
+}
+
+function saveEditedPost(){
+  const post=editingPost;
+  if(!post) return;
+  const text=postInput.value.trim();
+  const hasMedia=composerState.media.length>0;
+  const hasMeta=!!(composerState.feeling||composerState.lifeUpdate||composerState.location||composerState.tagged.length);
+
+  if(!text && !hasMedia && !hasMeta){
+    showToast('A signal needs text or media');
+    return;
+  }
+
+  publishPost.disabled=true;
+  const oldLabel=publishPost.innerHTML;
+  publishPost.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+
+  setTimeout(async ()=>{
+  try{
+    // ⭐ edit এর media blob গুলোও dataURL এ convert
+    composerState.media = await Promise.all(composerState.media.map(async (m) => {
+      if (m.url && m.url.startsWith('blob:')) {
+        try {
+          const blob = await fetch(m.url).then(r => r.blob());
+          const dataUrl = await new Promise(res => {
+            const fr = new FileReader();
+            fr.onload = () => res(fr.result);
+            fr.readAsDataURL(blob);
+          });
+          return { ...m, url: dataUrl };
+        } catch(e) { return m; }
+      }
+      return m;
+    }));
+    applyEditToPost(post);
+    showToast('Signal updated · Edited');
+  }catch(e){
+    console.error(e);
+    showToast('Failed to save changes');
+  }
+  publishPost.disabled=false;
+  publishPost.innerHTML=oldLabel;
+  editingPost=null;
+  forceClosePostModal();
+},380);
+}
+
+function applyEditToPost(post){
+  const snap={
+    text: postInput.value.trim(),
+    media: composerState.media.map(m=>({url:m.url,type:m.type})),
+    bg: composerState.bg,
+    wallpaper: composerState.wallpaper,
+    themeMode: composerState.themeMode,
+    feeling: composerState.feeling,
+    lifeUpdate: composerState.lifeUpdate,
+    location: composerState.location,
+    tagged: [...composerState.tagged],
+    privacy: composerState.privacy,
+    onlyWho: [...composerState.onlyWho]
+  };
+
+  // _mvData update
+  post._mvData=post._mvData||{};
+  Object.assign(post._mvData,snap);
+  post._mvData.editedAt=Date.now();
+  post._mvData.editHistory=post._mvData.editHistory||[];
+  post._mvData.editHistory.unshift({text:snap.text,time:Date.now()});
+
+  // === Text ===
+  let textEl=post.querySelector('.post-text');
+  let bgStyle='';
+  if(snap.themeMode==='wallpaper' && snap.wallpaper!=='none'){
+    const w=findWallpaperById(snap.wallpaper); if(w) bgStyle=w.style;
+  } else if(snap.bg && snap.bg!=='none'){
+    const t=BG_THEMES.find(x=>x.id===snap.bg); if(t) bgStyle=t.style;
+  }
+
+  if(snap.text){
+    if(!textEl){
+      textEl=document.createElement('div');
+      textEl.className='post-text';
+      const anchor=post.querySelector('.mv-life-card')||post.querySelector('.post-chips')||post.querySelector('.post-head');
+      anchor.insertAdjacentElement('afterend',textEl);
+    }
+    textEl.textContent=snap.text;
+    if(bgStyle){textEl.classList.add('has-bg');textEl.style.background=bgStyle;}
+    else{textEl.classList.remove('has-bg');textEl.style.background='';}
+  } else if(textEl){textEl.remove();textEl=null;}
+
+  // === পুরনো chips / life card মুছি ===
+  post.querySelector('.post-chips')?.remove();
+  post.querySelector('.mv-life-card')?.remove();
+
+  // === নতুন chips ===
+  const chipsParts=[];
+  if(snap.lifeUpdate) chipsParts.push(`<span class="post-chip chip-life"><i class="fa-solid ${snap.lifeUpdate.icon||'fa-seedling'}"></i>Life · ${escapeHTML(snap.lifeUpdate.label)}${snap.lifeUpdate.detail?` · ${escapeHTML(snap.lifeUpdate.detail)}`:''}</span>`);
+  if(snap.feeling)    chipsParts.push(`<span class="post-chip chip-feeling"><span class="chip-emoji">${snap.feeling.emoji}</span>Vibe · ${escapeHTML(snap.feeling.label)}</span>`);
+  if(snap.location)   chipsParts.push(`<span class="post-chip chip-location"><i class="fa-solid ${snap.location.icon||'fa-location-dot'}"></i>${escapeHTML(snap.location.name)}</span>`);
+  if(snap.tagged.length){
+    const names=snap.tagged.map(t=>escapeHTML(t.name)).join(', ');
+    chipsParts.push(`<button class="post-chip chip-tag mv-tag-open" type="button" data-open-tags="1"><i class="fa-solid fa-user-tag"></i><span>With ${names}</span><span class="mv-tag-see">See all</span></button>`);
+  }
+  if(chipsParts.length){
+    const temp=document.createElement('div');
+    temp.innerHTML=`<div class="post-chips">${chipsParts.join('')}</div>`;
+    post.querySelector('.post-head').insertAdjacentElement('afterend',temp.firstElementChild);
+  }
+
+  // === Life card ===
+  if(snap.lifeUpdate && typeof buildLifeEventCardHTML==='function'){
+    const lifeHTML=buildLifeEventCardHTML(snap.lifeUpdate);
+    if(lifeHTML){
+      const temp=document.createElement('div');
+      temp.innerHTML=lifeHTML;
+      const anchor=post.querySelector('.post-chips')||post.querySelector('.post-text')||post.querySelector('.post-head');
+      anchor.insertAdjacentElement('afterend',temp.firstElementChild);
+    }
+  }
+
+  // === Media rebuild ===
+  post.querySelector('.post-media')?.remove();
+  post.querySelector('.video-shell')?.remove();
+  post.querySelector('.post-media-grid')?.remove();
+
+  let mediaHTML='';
+  if(snap.media.length===1){
+    const m=snap.media[0];
+    if(m.type==='video'){
+      mediaHTML=`<div class="video-shell" data-video-src="${m.url}"><video preload="metadata" playsinline muted src="${m.url}"></video><div class="video-duration-badge">0:00</div><div class="video-play-badge"><i class="fa-solid fa-play"></i></div></div>`;
+    } else {
+      mediaHTML=`<img class="post-media" src="${m.url}" alt="">`;
+    }
+  } else if(snap.media.length>1){
+    const count=snap.media.length;
+    const countAttr=count>=5?'more':String(count);
+    const visible=count>4?snap.media.slice(0,4):snap.media;
+    const items=visible.map((x,i)=>{
+      const isLast=count>4 && i===3;
+      const inner=x.type==='video'
+        ? `<video src="${x.url}" muted playsinline preload="metadata"></video>`
+        : `<img src="${x.url}" alt="">`;
+      const overlay=isLast?`<div class="pm-more-overlay">+${count-4}</div>`:'';
+      return `<div class="pm-item" data-media-idx="${i}">${inner}${overlay}</div>`;
+    }).join('');
+    mediaHTML=`<div class="post-media-grid" data-count="${countAttr}">${items}</div>`;
+  }
+  if(mediaHTML){
+    const temp=document.createElement('div');
+    temp.innerHTML=mediaHTML;
+    const mediaEl=temp.firstElementChild;
+    const anchor=post.querySelector('.post-text')||post.querySelector('.post-chips')||post.querySelector('.mv-life-card')||post.querySelector('.post-head');
+    anchor.insertAdjacentElement('afterend',mediaEl);
+    if(mediaEl.classList.contains('video-shell')) bindVideoShells(post);
+  }
+
+  // mediaType
+  post.dataset.mediaType = snap.media.length===0 ? 'text' : (snap.media.length===1 ? snap.media[0].type : 'mixed');
+
+  // Privacy icon
+  const vis=post.querySelector('.meta-visibility');
+  if(vis){
+    const meta=PRIVACY_META[snap.privacy];
+    vis.className=`meta-visibility ${snap.privacy}`;
+    vis.dataset.visibility=meta.label;
+    vis.innerHTML=`<i class="fa-solid ${meta.icon}"></i>`;
+  }
+
+  // Edited label
+  let slot=post.querySelector('.mv-post-edited-slot');
+  if(!slot){
+    const pm=post.querySelector('.post-meta');
+    slot=document.createElement('span');
+    slot.className='mv-post-edited-slot';
+    const visEl=pm?.querySelector('.meta-visibility');
+    if(visEl) pm.insertBefore(slot,visEl);
+    else pm?.appendChild(slot);
+  }
+  slot.innerHTML=`<span class="mv-edited-label"><i class="fa-solid fa-pen"></i> Edited</span><span class="meta-sep">·</span>`;
+
+  // See-more re-apply
+  if(typeof window.mvApplySeeMore==='function') setTimeout(()=>window.mvApplySeeMore(post),80);
+}
+
 </script>
 
 <style id="mv-final-ux-patch">
