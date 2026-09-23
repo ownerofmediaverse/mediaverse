@@ -5763,17 +5763,26 @@ document.querySelectorAll('.comment-list > .comment').forEach(c => updateReplyCo
   // Counter
   mfCounter.textContent = `${index + 1} / ${media.length}`;
 
-  // Arrows
-  if (media.length > 1) {
-    mfPrev.style.display = '';
-    mfNext.style.display = '';
-    mfPrev.disabled = false;
-    mfNext.disabled = false;
-  } else {
+// Arrows — প্রথম media তে prev hide, শেষ media তে next hide
+if (media.length > 1) {
+  // Previous button
+  if (index === 0) {
     mfPrev.style.display = 'none';
-    mfNext.style.display = 'none';
+  } else {
+    mfPrev.style.display = '';
+    mfPrev.disabled = false;
   }
-
+  // Next button
+  if (index === media.length - 1) {
+    mfNext.style.display = 'none';
+  } else {
+    mfNext.style.display = '';
+    mfNext.disabled = false;
+  }
+} else {
+  mfPrev.style.display = 'none';
+  mfNext.style.display = 'none';
+}
   // Dots
   if (media.length > 1) {
     mfDots.innerHTML = media.map((_, i) =>
