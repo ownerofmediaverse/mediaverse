@@ -2634,6 +2634,7 @@ const FRIEND_LIST=[
   {id:'f5', profileId:'MV-10005', name:'Sohagi Akter', username:'@sohagi', image:'https://i.pravatar.cc/150?img=59'},
   {id:'f6', profileId:'MV-10006', name:'Olivia Chen', username:'@oliviachen', image:'https://i.pravatar.cc/150?img=49'}
 ];
+window.FRIEND_LIST = FRIEND_LIST;
 
 const LOCATION_SUGGESTIONS=[
   {name:'Dhaka, Bangladesh', sub:'Capital · South Asia', icon:'fa-city'},
@@ -2986,12 +2987,21 @@ function forceClosePostModal(){
   postOverlay.classList.remove('show');
   elPrivacyMenu.classList.remove('show');
   composerDraftOverlay.classList.remove('show');
-  // ⭐ Edit mode reset
-  editingPost=null;
-  publishPost.textContent='Broadcast Signal ✦';
-  const head=document.querySelector('.composer-head h2');
-  if(head) head.textContent='Create a Signal';
+
+  // ⭐ Composer chrome আবার স্বাভাবিক করি
+  const toolsBox       = document.querySelector('.composer-tools');
+  const bgSection      = document.querySelector('.composer-bg-section');
+  const privacyTrigger = document.querySelector('.privacy-trigger');
+  if(toolsBox)       toolsBox.style.display       = '';
+  if(bgSection)      bgSection.style.display      = '';
+  if(privacyTrigger) privacyTrigger.style.display = '';
+
+  editingPost = null;
+  publishPost.textContent = 'Broadcast Signal ✦';
+  const head = document.querySelector('.composer-head h2');
+  if(head) head.textContent = 'Create a Signal';
 }
+
 function closePostModal(){
   // ⭐ Edit mode এ draft dialog দেখাবো না, সরাসরি cancel
   if(editingPost){
@@ -4536,15 +4546,11 @@ document.addEventListener("click",event=>{
   post.dataset.savedMenu=active?"true":"false";
   showToast(active?"Signal saved to your library":"Removed from your library");
 });
-document.addEventListener("click",async event=>{
+document.addEventListener("click",event=>{
   const button=event.target.closest(".share-btn");
   if(!button) return;
   const post=button.closest(".post");
-  try{
-    if(navigator.share){await navigator.share({title:"Mediaverse",text:"Explore this signal on Mediaverse",url:window.location.href});}
-    else{await navigator.clipboard.writeText(window.location.href);showToast("Signal link copied");}
-    bumpPostStat(post,'shares',1);
-  }catch{}
+  if(post && typeof openShareSheet==='function') openShareSheet(post);
 });
 document.querySelectorAll(".follow").forEach(button=>{
   button.addEventListener("click",()=>{
@@ -5956,6 +5962,15 @@ document.addEventListener('keydown', (e) => {
 
 <script src="mediaverse-theme.js"></script>
 <script>
+
+/* ⭐ Direct child selector — .mv-share-card এর ভিতরে ঢুকবে না */
+function mvDirectChild(parent, selector){
+  if(!parent) return null;
+  for(const c of parent.children){
+    if(c.matches && c.matches(selector)) return c;
+  }
+  return null;
+}
 /* =========================================================================
    MEDIAVERSE FINAL FEATURE ENGINE
 ========================================================================= */
@@ -6088,58 +6103,66 @@ document.addEventListener('DOMContentLoaded',()=>applyLockedSignalGuard(document
 /* =========================================================
    ⭐ EDIT SIGNAL — full composer দিয়ে edit
 ========================================================= */
+
 function openEditPostInComposer(post){
   if(!post || (getPostAuthorName(post)!==CURRENT_USER.name && post.dataset.owner!=='current')){
     showToast('You can edit only your own signal');
     return;
   }
 
-  editingPost=post;
+  editingPost = post;
   resetComposer();
 
-  const d=post._mvData||{};
+  const d = post._mvData || {};
+  const isShare = !!d.isShare;
 
-  // Text
-  const textEl=post.querySelector('.post-text');
-  postInput.value=d.text||textEl?.textContent||'';
+  // ⭐ Caption: শুধু direct child .post-text (share card এর ভিতরের না)
+  const directText = mvDirectChild(post, '.post-text');
+  postInput.value = d.text || directText?.textContent || '';
 
-  // Background / Wallpaper
-  if(d.themeMode==='wallpaper' && d.wallpaper && d.wallpaper!=='none'){
-    composerState.wallpaper=d.wallpaper;
-    composerState.themeMode='wallpaper';
-  } else if(d.bg && d.bg!=='none'){
-    composerState.bg=d.bg;
-    composerState.themeMode='color';
+  if(!isShare){
+    // Background / Wallpaper
+    if(d.themeMode==='wallpaper' && d.wallpaper && d.wallpaper!=='none'){
+      composerState.wallpaper = d.wallpaper;
+      composerState.themeMode = 'wallpaper';
+    } else if(d.bg && d.bg!=='none'){
+      composerState.bg = d.bg;
+      composerState.themeMode = 'color';
+    }
+
+    if(d.feeling)      composerState.feeling    = {...d.feeling};
+    if(d.lifeUpdate)   composerState.lifeUpdate = {...d.lifeUpdate};
+    if(d.location)     composerState.location   = {...d.location};
+    if(Array.isArray(d.tagged))  composerState.tagged  = [...d.tagged];
+    if(Array.isArray(d.onlyWho)) composerState.onlyWho = [...d.onlyWho];
+    if(d.privacy)      composerState.privacy    = d.privacy;
+
+    // ⭐ Media — শুধু direct children
+    composerState.media = [];
+
+    const directImg = mvDirectChild(post, '.post-media');
+    if(directImg && directImg.tagName === 'IMG'){
+      composerState.media.push({url: directImg.src, type:'image', existing:true});
+    }
+
+    const directShell = mvDirectChild(post, '.video-shell');
+    if(directShell){
+      const v = directShell.querySelector('video');
+      const src = directShell.dataset.videoSrc || v?.src;
+      if(src) composerState.media.push({url: src, type:'video', existing:true});
+    }
+
+    const directGrid = mvDirectChild(post, '.post-media-grid');
+    if(directGrid){
+      directGrid.querySelectorAll(':scope > .pm-item').forEach(item => {
+        const i = item.querySelector('img');
+        const v = item.querySelector('video');
+        if(v) composerState.media.push({url: v.src, type:'video', existing:true});
+        else if(i) composerState.media.push({url: i.src, type:'image', existing:true});
+      });
+    }
   }
 
-  // Meta
-  if(d.feeling)      composerState.feeling={...d.feeling};
-  if(d.lifeUpdate)   composerState.lifeUpdate={...d.lifeUpdate};
-  if(d.location)     composerState.location={...d.location};
-  if(Array.isArray(d.tagged))  composerState.tagged=[...d.tagged];
-  if(Array.isArray(d.onlyWho)) composerState.onlyWho=[...d.onlyWho];
-  if(d.privacy)      composerState.privacy=d.privacy;
-
-  // Media — DOM থেকে rebuild
-  composerState.media=[];
-  const singleImg=post.querySelector('.post-media');
-  if(singleImg && singleImg.tagName==='IMG'){
-    composerState.media.push({url:singleImg.src,type:'image',existing:true});
-  }
-  const shell=post.querySelector('.video-shell');
-  if(shell){
-    const v=shell.querySelector('video');
-    const src=shell.dataset.videoSrc||v?.src;
-    if(src) composerState.media.push({url:src,type:'video',existing:true});
-  }
-  post.querySelectorAll('.post-media-grid .pm-item').forEach(item=>{
-    const i=item.querySelector('img');
-    const v=item.querySelector('video');
-    if(v) composerState.media.push({url:v.src,type:'video',existing:true});
-    else if(i) composerState.media.push({url:i.src,type:'image',existing:true});
-  });
-
-  // UI আপডেট
   applyBgTheme();
   renderComposerChips();
   renderComposerMedia();
@@ -6147,23 +6170,34 @@ function openEditPostInComposer(post){
   updatePublishState();
   updateCharCounter();
 
-  // Header + Button
-  publishPost.textContent='Save changes ✦';
-  const head=document.querySelector('.composer-head h2');
-  if(head) head.textContent='Edit Signal';
+  // ⭐ Header + button
+  publishPost.textContent = isShare ? 'Save Caption ✦' : 'Save changes ✦';
+  const head = document.querySelector('.composer-head h2');
+  if(head) head.textContent = isShare ? 'Edit Caption' : 'Edit Signal';
+
+  // ⭐ Shared post এ tools / bg / privacy hide
+  const toolsBox       = document.querySelector('.composer-tools');
+  const bgSection      = document.querySelector('.composer-bg-section');
+  const privacyTrigger = document.querySelector('.privacy-trigger');
+  if(toolsBox)       toolsBox.style.display       = isShare ? 'none' : '';
+  if(bgSection)      bgSection.style.display      = isShare ? 'none' : '';
+  if(privacyTrigger) privacyTrigger.style.display = isShare ? 'none' : '';
 
   postOverlay.classList.add('show');
-  setTimeout(()=>postInput.focus(),180);
+  setTimeout(()=>postInput.focus(), 180);
 }
+
 
 function saveEditedPost(){
   const post=editingPost;
   if(!post) return;
   const text=postInput.value.trim();
+  const isShare = !!(post._mvData && post._mvData.isShare);
   const hasMedia=composerState.media.length>0;
   const hasMeta=!!(composerState.feeling||composerState.lifeUpdate||composerState.location||composerState.tagged.length);
 
-  if(!text && !hasMedia && !hasMeta){
+
+  if(!isShare && !text && !hasMedia && !hasMeta){
     showToast('A signal needs text or media');
     return;
   }
@@ -6217,14 +6251,63 @@ function applyEditToPost(post){
     onlyWho: [...composerState.onlyWho]
   };
 
-  // _mvData update
-  post._mvData=post._mvData||{};
-  Object.assign(post._mvData,snap);
-  post._mvData.editedAt=Date.now();
-  post._mvData.editHistory=post._mvData.editHistory||[];
-  post._mvData.editHistory.unshift({text:snap.text,time:Date.now()});
+  post._mvData = post._mvData || {};
+  const isShare = !!post._mvData.isShare;
 
-  // === Text ===
+  /* ⭐ ===== SHARED POST: শুধু caption update ===== */
+  if(isShare){
+    post._mvData.text = snap.text;
+    post._mvData.editedAt = Date.now();
+    post._mvData.editHistory = post._mvData.editHistory || [];
+    post._mvData.editHistory.unshift({text: snap.text, time: Date.now()});
+
+    // Caption element = direct child .post-text
+    let captionEl = mvDirectChild(post, '.post-text');
+
+    if(snap.text){
+      if(!captionEl){
+        captionEl = document.createElement('div');
+        captionEl.className = 'post-text';
+        captionEl.textContent = snap.text;
+        const shareLine = mvDirectChild(post, '.mv-share-line');
+        if(shareLine){
+          shareLine.insertAdjacentElement('beforebegin', captionEl);
+        } else {
+          const head = mvDirectChild(post, '.post-head');
+          if(head) head.insertAdjacentElement('afterend', captionEl);
+        }
+      } else {
+        captionEl.textContent = snap.text;
+      }
+    } else if(captionEl){
+      captionEl.remove();
+    }
+
+    // Edited label
+    let slot = post.querySelector('.post-meta .mv-post-edited-slot');
+    if(!slot){
+      const pm = post.querySelector('.post-meta');
+      slot = document.createElement('span');
+      slot.className = 'mv-post-edited-slot';
+      const visEl = pm?.querySelector('.meta-visibility');
+      if(visEl) pm.insertBefore(slot, visEl);
+      else pm?.appendChild(slot);
+    }
+    if(slot){
+      slot.innerHTML = `<span class="mv-edited-label"><i class="fa-solid fa-pen"></i> Edited</span><span class="meta-sep">·</span>`;
+    }
+
+    if(typeof window.mvApplySeeMore === 'function') setTimeout(()=>window.mvApplySeeMore(post), 80);
+    return;   // ⭐ এখানেই থামি — share card-এর কিছুই touch করি না
+  }
+
+
+
+  Object.assign(post._mvData, snap);
+  post._mvData.editedAt = Date.now();
+  post._mvData.editHistory = post._mvData.editHistory || [];
+  post._mvData.editHistory.unshift({text: snap.text, time: Date.now()});
+
   let textEl=post.querySelector('.post-text');
   let bgStyle='';
   if(snap.themeMode==='wallpaper' && snap.wallpaper!=='none'){
@@ -6342,6 +6425,41 @@ function applyEditToPost(post){
 </script>
 
 <style id="mv-final-ux-patch">
+/* ===== Shared post original meta (time + privacy) ===== */
+.mv-share-origin{
+  display:flex;align-items:flex-start;gap:9px;margin-bottom:10px;
+}
+.mv-share-origin > img{
+  width:34px;height:34px;border-radius:11px;object-fit:cover;
+  border:1px solid rgba(255,255,255,.09);flex-shrink:0;
+}
+.mv-share-origin-info{flex:1;min-width:0;}
+.mv-share-origin-info b{
+  display:flex;align-items:center;gap:5px;
+  font-size:12px;color:#fff;font-weight:700;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.mv-share-origin-info b i{color:var(--cyan);font-size:10px;flex-shrink:0;}
+.mv-share-origin-meta{
+  display:flex;align-items:center;flex-wrap:wrap;gap:5px;
+  margin-top:4px;font-size:10px;color:var(--muted);
+}
+.mv-share-origin-meta .meta-sep{opacity:.5;}
+.mv-share-origin-meta .meta-visibility{
+  display:inline-flex!important;align-items:center;gap:3px;
+  padding:2px 6px;border-radius:7px;font-size:9px;font-weight:700;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.09);
+  cursor:default;
+}
+.mv-share-origin-meta .meta-visibility i{font-size:8.5px;}
+.mv-share-origin-meta .meta-visibility.public{color:#00e5ff;background:rgba(0,229,255,.08);border-color:rgba(0,229,255,.18);}
+.mv-share-origin-meta .meta-visibility.friends{color:#35e69a;background:rgba(53,230,154,.08);border-color:rgba(53,230,154,.18);}
+.mv-share-origin-meta .meta-visibility.only{color:#4d7cff;background:rgba(77,124,255,.09);border-color:rgba(77,124,255,.20);}
+.mv-share-origin-meta .meta-visibility.private{color:#ff9f43;background:rgba(255,159,67,.09);border-color:rgba(255,159,67,.20);}
+.mv-share-origin-meta .mv-share-orig-label{
+  font-style:italic;color:#7d84a0;font-size:9px;letter-spacing:.2px;
+}
 .mv-life-card{position:relative;overflow:hidden;margin:2px 0 14px;border:1px solid rgba(255,255,255,.09);border-radius:22px;background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.018)),rgba(10,12,24,.72);box-shadow:0 16px 42px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.10)}
 .mv-life-card::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 12% 0%,rgba(94,232,255,.13),transparent 30%),radial-gradient(circle at 90% 100%,rgba(169,120,255,.12),transparent 34%)}
 .mv-life-card-head{position:relative;display:flex;align-items:center;gap:10px;padding:12px 14px 9px;color:#aeb7ca;font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase}
@@ -6668,6 +6786,414 @@ document.addEventListener('click', e => {
   .post-text.clamped{max-height:200px;}
   .mv-see-more-btn{font-size:12px;}
 }
+
+/* ============================================================
+   SHARE SHEET
+   ============================================================ */
+.share-sheet{
+  width:min(100%,500px);
+  max-height:90vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  border-radius:24px;
+}
+.share-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:15px 18px;
+  border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;
+}
+.share-head-info h2{
+  font-family:"Space Grotesk",sans-serif;font-size:16px;letter-spacing:.2px;
+}
+.share-head-info p{margin-top:3px;color:var(--muted);font-size:10.5px;}
+.share-body{
+  flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;
+}
+.share-view{
+  flex:1;min-height:0;overflow-y:auto;display:none;
+  flex-direction:column;padding:14px;gap:12px;
+  scrollbar-width:thin;
+}
+.share-view#shareMainView{display:flex;}
+.share-view#shareFriendsView.active{display:flex;}
+
+/* Preview card */
+.share-preview{
+  border-radius:16px;
+  background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+  border:1px solid rgba(255,255,255,.08);
+  padding:11px;display:flex;flex-direction:column;gap:8px;
+}
+.share-preview-head{display:flex;align-items:center;gap:9px;min-width:0;}
+.share-preview-head img{
+  width:34px;height:34px;border-radius:11px;object-fit:cover;
+  border:1px solid rgba(255,255,255,.09);flex-shrink:0;
+}
+.share-preview-head b{
+  display:block;font-size:12px;color:#fff;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.share-preview-head span{display:block;font-size:9.5px;color:var(--muted);margin-top:2px;}
+.share-preview-media{border-radius:10px;overflow:hidden;max-height:130px;}
+.share-preview-media img{width:100%;height:130px;object-fit:cover;display:block;}
+.share-preview-text{
+  font-size:11.5px;color:#c8cde0;line-height:1.5;
+  max-height:55px;overflow:hidden;
+}
+
+/* Options */
+.share-options{display:flex;flex-direction:column;gap:6px;}
+.share-option{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 12px;border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+  cursor:pointer;text-align:left;color:#e3e7f4;font-family:inherit;
+  transition:transform .2s ease, background .2s ease, border-color .2s ease;
+}
+.share-option:hover{
+  transform:translateY(-1px);
+  background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.03));
+  border-color:rgba(0,229,255,.18);
+}
+.share-option:active{transform:scale(.98);}
+.share-opt-icon{
+  width:40px;height:40px;flex:0 0 40px;border-radius:12px;
+  display:grid;place-items:center;font-size:15px;color:#fff;
+  background:linear-gradient(135deg,rgba(0,229,255,.20),rgba(168,85,247,.18));
+  border:1px solid rgba(255,255,255,.10);
+}
+.share-opt-icon.icon-timeline{color:#7cecff;background:linear-gradient(135deg,rgba(0,229,255,.18),rgba(168,85,247,.14));}
+.share-opt-icon.icon-friends{color:#6de7b6;background:linear-gradient(135deg,rgba(53,230,154,.18),rgba(0,229,255,.12));}
+.share-opt-icon.icon-copy{color:#b8a8ff;background:linear-gradient(135deg,rgba(125,102,255,.20),rgba(168,85,247,.14));}
+.share-opt-icon.icon-external{color:#ffb88c;background:linear-gradient(135deg,rgba(255,159,67,.18),rgba(255,78,205,.12));}
+.share-opt-info{flex:1;min-width:0;}
+.share-opt-info b{display:block;font-size:12.5px;color:#fff;font-weight:700;}
+.share-opt-info span{display:block;font-size:10px;color:var(--muted);margin-top:2px;line-height:1.35;}
+.share-opt-arrow{font-size:11px;color:#7d849d;flex-shrink:0;}
+
+/* Friends view */
+.share-friend-top{display:flex;align-items:center;gap:8px;}
+.share-back-btn{
+  width:38px;height:38px;flex:0 0 38px;border:none;cursor:pointer;
+  border-radius:12px;color:#cfd5e8;background:rgba(255,255,255,.055);
+  display:grid;place-items:center;font-size:13px;transition:.2s ease;
+}
+.share-back-btn:hover{background:rgba(255,255,255,.11);color:#fff;}
+.share-friend-search{
+  flex:1;min-width:0;display:flex;align-items:center;gap:8px;
+  padding:0 12px;height:38px;border-radius:12px;
+  background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);
+}
+.share-friend-search i{color:var(--cyan);font-size:12px;flex-shrink:0;}
+.share-friend-search input{
+  flex:1;min-width:0;border:none;outline:none;background:transparent;
+  color:#fff;font-family:inherit;font-size:12px;
+}
+.share-friend-search input::placeholder{color:#7a8099;}
+.share-selected-strip{display:flex;flex-wrap:wrap;gap:6px;}
+.share-selected-strip:empty{display:none;}
+.share-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 8px 4px 4px;border-radius:20px;
+  font-size:10.5px;font-weight:700;color:#fff;
+  background:linear-gradient(135deg,rgba(0,229,255,.14),rgba(168,85,247,.12));
+  border:1px solid rgba(0,229,255,.22);
+}
+.share-chip img{width:20px;height:20px;border-radius:50%;object-fit:cover;}
+.share-chip button{
+  width:16px;height:16px;border:none;border-radius:50%;cursor:pointer;
+  background:rgba(255,255,255,.14);color:#fff;font-size:8px;
+  display:grid;place-items:center;padding:0;
+}
+.share-friend-list{
+  display:flex;flex-direction:column;gap:4px;padding-bottom:4px;
+}
+.share-friend-row{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border:1px solid transparent;
+  border-radius:12px;background:transparent;cursor:pointer;
+  text-align:left;color:#e3e7f4;font-family:inherit;transition:.18s ease;
+}
+.share-friend-row:hover{
+  background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.07);
+}
+.share-friend-row.selected{
+  background:linear-gradient(135deg,rgba(0,229,255,.10),rgba(168,85,247,.08));
+  border-color:rgba(0,229,255,.22);
+}
+.share-friend-row img{
+  width:38px;height:38px;flex:0 0 38px;border-radius:11px;
+  object-fit:cover;border:1px solid rgba(255,255,255,.09);
+}
+.share-friend-info{flex:1;min-width:0;}
+.share-friend-info b{
+  display:block;font-size:12px;color:#fff;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.share-friend-info span{
+  display:block;font-size:10px;color:var(--muted);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.share-friend-check{
+  width:24px;height:24px;flex:0 0 24px;border-radius:8px;
+  display:grid;place-items:center;font-size:11px;color:#fff;
+  background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);
+  transition:.2s ease;
+}
+.share-friend-row.selected .share-friend-check{
+  background:linear-gradient(135deg,var(--purple),var(--cyan));
+  border-color:transparent;
+}
+.share-friend-check i{opacity:0;transition:opacity .2s;}
+.share-friend-row.selected .share-friend-check i{opacity:1;}
+
+.share-empty{
+  display:flex;flex-direction:column;align-items:center;
+  padding:30px 15px;gap:8px;color:#7d84a0;font-size:11px;
+}
+.share-empty i{font-size:22px;color:#5e6580;}
+
+.share-foot{
+  flex-shrink:0;display:flex;gap:9px;
+  padding:12px 14px 14px;border-top:1px solid rgba(255,255,255,.07);
+}
+.share-foot .rf-back{
+  padding:12px 18px;border:1px solid rgba(255,255,255,.10);
+  border-radius:13px;background:rgba(255,255,255,.045);
+  color:#c9cede;font:600 12px inherit;cursor:pointer;transition:.2s ease;
+}
+.share-foot .rf-back:hover{background:rgba(255,255,255,.09);color:#fff;}
+.share-foot .publish{
+  flex:1;border:none;cursor:pointer;padding:12px;border-radius:13px;
+  color:#fff;font:700 12px inherit;
+  background:linear-gradient(135deg,var(--purple),var(--cyan));
+  transition:.2s ease;
+}
+.share-foot .publish:hover:not(:disabled){
+  transform:translateY(-1px);box-shadow:0 8px 24px rgba(168,85,247,.28);
+}
+.share-foot .publish:disabled{opacity:.45;cursor:not-allowed;}
+.share-foot .publish span{opacity:.85;margin-left:2px;}
+
+/* Shared post card on timeline */
+.mv-share-line{
+  display:flex;align-items:center;gap:7px;
+  margin:2px 0 10px;padding:7px 11px;border-radius:11px;
+  font-size:11px;color:#aeb6cb;
+  background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);
+}
+.mv-share-line i{color:var(--cyan);font-size:11px;}
+.mv-share-line b{color:#e6eaf6;font-weight:700;}
+.mv-share-card{
+  margin:2px 0 12px;padding:12px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+  border:1px solid rgba(255,255,255,.08);
+}
+.mv-share-origin{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.mv-share-origin img{width:28px;height:28px;border-radius:9px;object-fit:cover;}
+.mv-share-origin b{font-size:11.5px;color:#fff;}
+.mv-share-text{
+  font-size:11.5px;color:#c8cde0;line-height:1.5;
+  white-space:pre-line;word-break:break-word;
+}
+
+.mv-share-thumb{
+  margin-top:9px;
+  border-radius:10px;
+  overflow:hidden;
+  max-height:220px;
+  background:#05060d;
+}
+.mv-share-thumb img{
+  width:100%;
+  max-height:220px;
+  object-fit:cover;
+  display:block;
+}
+
+/* ============================================================
+   SHARED POST — full content preserved
+   ============================================================ */
+.mv-share-card.mv-share-full{
+  padding:12px;
+  border-radius:16px;
+}
+.mv-share-content{
+  margin-top:10px;
+  display:flex;
+  flex-direction:column;
+  gap:0;
+}
+.mv-share-content .post-text{
+  padding:4px 0 12px 0;
+  font-size:13.5px;
+  line-height:1.75;
+}
+.mv-share-content .post-text.has-bg{
+  border-radius:16px;
+  padding:32px 24px;
+  margin-bottom:6px;
+}
+.mv-share-content .post-chips{
+  padding:0 0 10px 0;
+}
+.mv-share-content .post-media{
+  border-radius:12px;
+  max-height:560px;
+  object-fit:cover;
+  margin-top:2px;
+}
+.mv-share-content .video-shell{
+  border-radius:12px;
+  margin-top:2px;
+}
+.mv-share-content .video-shell video{
+  max-height:560px;
+}
+.mv-share-content .post-media-grid{
+  border-radius:12px;
+  margin-top:2px;
+}
+.mv-share-content .mv-life-card{
+  margin:2px 0 10px;
+  border-radius:18px;
+}
+
+@media (max-width:520px){
+  .mv-share-content .post-text{font-size:12.5px;}
+  .mv-share-content .post-text.has-bg{font-size:18px;padding:26px 20px;min-height:150px;}
+  .mv-share-content .post-media,
+  .mv-share-content .video-shell video{max-height:380px;}
+}
+
+@media (max-width:520px){
+  .mv-share-thumb img{max-height:170px;}
+}
+
+/* Mobile */
+@media (max-width:520px){
+  .share-sheet{width:100%;max-height:92vh;border-radius:24px 24px 0 0;}
+  .share-head{padding:13px 15px;}
+  .share-head-info h2{font-size:15px;}
+  .share-view{padding:12px;gap:10px;}
+  .share-option{padding:10px 11px;gap:10px;}
+  .share-opt-icon{width:36px;height:36px;flex-basis:36px;font-size:14px;border-radius:11px;}
+  .share-opt-info b{font-size:12px;}
+  .share-opt-info span{font-size:9.5px;}
+  .share-preview-media img{height:110px;}
+  .share-foot{padding:10px 12px 12px;}
+}
+
+/* ============================================================
+   SHARE TO TIMELINE (Caption modal)
+   ============================================================ */
+.share-timeline-user{
+  display:flex;align-items:center;gap:10px;
+  padding-bottom:10px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.share-timeline-user img{
+  width:42px;height:42px;border-radius:13px;object-fit:cover;
+  border:1px solid rgba(255,255,255,.10);flex-shrink:0;
+}
+.share-timeline-user b{
+  display:block;font-size:13px;color:#fff;font-weight:700;
+}
+.share-timeline-vis{
+  display:inline-flex;align-items:center;gap:5px;
+  margin-top:4px;padding:3px 9px;border-radius:8px;
+  font-size:9.5px;font-weight:700;color:#c7d0e8;
+  background:rgba(0,229,255,.08);
+  border:1px solid rgba(0,229,255,.16);
+}
+.share-timeline-vis i{font-size:9px;color:var(--cyan);}
+
+.share-timeline-input{
+  width:100%;
+  min-height:82px;
+  padding:11px 13px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.08);
+  outline:none;
+  background:rgba(255,255,255,.035);
+  color:#fff;
+  font-family:inherit;
+  font-size:13px;
+  line-height:1.55;
+  resize:vertical;
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+.share-timeline-input::placeholder{color:#7a8099;}
+.share-timeline-input:focus{
+  border-color:rgba(0,229,255,.35);
+  box-shadow:0 0 0 3px rgba(0,229,255,.06);
+  background:rgba(255,255,255,.05);
+}
+
+.share-timeline-counter{
+  display:flex;
+  justify-content:flex-end;
+  padding:4px 4px 0;
+  font-size:10px;
+  color:#7d84a0;
+  letter-spacing:.3px;
+  font-variant-numeric:tabular-nums;
+  user-select:none;
+}
+.share-timeline-counter.warn{color:#ffb56b;}
+.share-timeline-counter.danger{color:#ff6b81;}
+
+/* Original post preview (embedded look) */
+.share-timeline-preview{
+  border-radius:14px;
+  overflow:hidden;
+  background:linear-gradient(135deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+  border:1px solid rgba(255,255,255,.08);
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+.share-timeline-preview:empty{display:none;}
+.share-timeline-preview .stp-head{
+  display:flex;align-items:center;gap:9px;
+}
+.share-timeline-preview .stp-head img{
+  width:32px;height:32px;border-radius:10px;object-fit:cover;
+  border:1px solid rgba(255,255,255,.09);
+}
+.share-timeline-preview .stp-head b{
+  font-size:12px;color:#fff;
+  display:flex;align-items:center;gap:5px;
+}
+.share-timeline-preview .stp-head b i{color:var(--cyan);font-size:10px;}
+.share-timeline-preview .stp-head span{
+  display:block;font-size:9.5px;color:var(--muted);margin-top:2px;
+}
+.share-timeline-preview .stp-text{
+  font-size:11.5px;color:#c8cde0;line-height:1.55;
+  white-space:pre-line;word-break:break-word;
+  max-height:100px;overflow:hidden;
+  -webkit-mask-image:linear-gradient(to bottom,#000 70%,transparent);
+          mask-image:linear-gradient(to bottom,#000 70%,transparent);
+}
+.share-timeline-preview .stp-media{
+  border-radius:10px;overflow:hidden;max-height:180px;
+  background:#05060d;
+}
+.share-timeline-preview .stp-media img{
+  width:100%;max-height:180px;object-fit:cover;display:block;
+}
+
+@media (max-width:520px){
+  .share-timeline-user img{width:38px;height:38px;border-radius:12px;}
+  .share-timeline-user b{font-size:12.5px;}
+  .share-timeline-input{min-height:70px;font-size:13px;}
+  .share-timeline-preview .stp-media img{max-height:140px;}
+}
+
 </style>
 
 <script>
@@ -6788,5 +7314,1096 @@ document.addEventListener('click', e => {
   window.mvApplySeeMoreAll = applyAll;
 })();
 </script>
+<script id="mv-text-to-image">
+(function(){
+  'use strict';
+
+  console.log('[MV-TextImg] Loaded');
+
+  /* ============================================================
+     1) HELPERS — gradient parser
+  ============================================================ */
+  function parseLinearGradient(css){
+    if(!css) return null;
+    // linear-gradient(135deg, #a 0%, #b 50%, #c 100%)
+    const m = String(css).match(/linear-gradient\(\s*([\d.]+)deg\s*,\s*([\s\S]+)\)\s*$/i);
+    if(!m) return null;
+    const angle = parseFloat(m[1]);
+    const stopsStr = m[2];
+
+    // split by top-level commas
+    const stops = [];
+    let depth = 0, cur = '';
+    for(let i=0; i<stopsStr.length; i++){
+      const c = stopsStr[i];
+      if(c === '(') depth++;
+      else if(c === ')') depth--;
+      if(c === ',' && depth === 0){ stops.push(cur.trim()); cur = ''; }
+      else cur += c;
+    }
+    if(cur.trim()) stops.push(cur.trim());
+
+    const parsed = stops.map(function(s){
+      const mm = s.match(/^(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|[a-zA-Z]+)\s*(\d+(?:\.\d+)?)?\s*%?$/);
+      if(!mm) return { color: s, pos: null };
+      return {
+        color: mm[1],
+        pos: mm[2] != null ? parseFloat(mm[2])/100 : null
+      };
+    });
+    return { angle: angle, stops: parsed };
+  }
+
+  function extractUrlFromCss(css){
+    if(!css) return null;
+    const m = String(css).match(/url\((['"]?)([^'")]+)\1\)/);
+    return m ? m[2] : null;
+  }
+
+  /* ============================================================
+     2) CANVAS RENDERERS
+  ============================================================ */
+  function drawLinearGradient(ctx, W, H, angle, stops){
+    const rad  = angle * Math.PI / 180;
+    const dirX = Math.sin(rad);
+    const dirY = -Math.cos(rad);
+    const cx = W/2, cy = H/2;
+    const len = Math.abs(W * dirX) + Math.abs(H * dirY);
+    const x0 = cx - dirX * len / 2;
+    const y0 = cy - dirY * len / 2;
+    const x1 = cx + dirX * len / 2;
+    const y1 = cy + dirY * len / 2;
+
+    const g = ctx.createLinearGradient(x0, y0, x1, y1);
+    stops.forEach(function(s, i){
+      let pos = s.pos;
+      if(pos == null) pos = stops.length > 1 ? i/(stops.length-1) : 0;
+      pos = Math.max(0, Math.min(1, pos));
+      try { g.addColorStop(pos, s.color); } catch(e){}
+    });
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  function loadImage(src){
+    return new Promise(function(resolve, reject){
+      const img = new Image();
+      // ⚠️ blob:/data: URL এ crossOrigin set করলে fail করে — তাই শুধু http(s) এ
+      if(/^https?:/i.test(src)) img.crossOrigin = 'anonymous';
+      img.onload  = function(){ resolve(img); };
+      img.onerror = function(){ reject(new Error('Image load failed: '+src)); };
+      img.src = src;
+    });
+  }
+
+  function drawCover(ctx, img, W, H){
+    const iw = img.naturalWidth  || img.width;
+    const ih = img.naturalHeight || img.height;
+    if(!iw || !ih) return;
+    const ir = iw / ih;
+    const cr = W / H;
+    let dw, dh, dx, dy;
+    if(ir > cr){ dh = H; dw = H * ir; dx = (W - dw)/2; dy = 0; }
+    else       { dw = W; dh = W / ir; dx = 0; dy = (H - dh)/2; }
+    ctx.drawImage(img, dx, dy, dw, dh);
+  }
+
+  function wrapTextLines(ctx, text, maxWidth){
+    const paragraphs = String(text || '').split('\n');
+    const out = [];
+    for(const para of paragraphs){
+      if(para === ''){ out.push(''); continue; }
+      const words = para.split(/\s+/);
+      let line = '';
+      for(const word of words){
+        const test = line ? (line + ' ' + word) : word;
+        if(ctx.measureText(test).width <= maxWidth){
+          line = test;
+        } else {
+          if(line) out.push(line);
+          line = word;
+        }
+      }
+      if(line) out.push(line);
+    }
+    return out;
+  }
+
+  /* ============================================================
+     3) MAIN: text + bg → dataURL
+  ============================================================ */
+  async function generateTextImage(text, bgStyle, imageUrl){
+    const W = 1080, H = 1080;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    let drawn = false;
+
+    // 1) Wallpaper image (url(...) থাকলে)
+    if(imageUrl){
+      try{
+        const img = await loadImage(imageUrl);
+        drawCover(ctx, img, W, H);
+        // readability overlay
+        ctx.fillStyle = 'rgba(8,10,22,0.22)';
+        ctx.fillRect(0, 0, W, H);
+        drawn = true;
+      }catch(e){
+        console.warn('[MV-TextImg] wallpaper load failed:', e.message);
+      }
+    }
+
+    // 2) linear-gradient fallback
+    if(!drawn){
+      const lin = parseLinearGradient(bgStyle);
+      if(lin){
+        drawLinearGradient(ctx, W, H, lin.angle, lin.stops);
+        drawn = true;
+      }
+    }
+
+    // 3) last resort
+    if(!drawn){
+      const g = ctx.createLinearGradient(0,0,W,H);
+      g.addColorStop(0,'#1e1b4b');
+      g.addColorStop(1,'#4c1d95');
+      ctx.fillStyle = g;
+      ctx.fillRect(0,0,W,H);
+    }
+
+    // ===== Text =====
+    const len = String(text || '').length;
+    let baseSize = 66;
+    if(len > 60)   baseSize = 58;
+    if(len > 140)  baseSize = 50;
+    if(len > 280)  baseSize = 42;
+    if(len > 500)  baseSize = 36;
+    if(len > 800)  baseSize = 30;
+    if(len > 1200) baseSize = 26;
+
+    const fontFamily = "'Space Grotesk','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+    const paddingX = 80;
+    const paddingY = 80;
+    const maxTextWidth  = W - paddingX * 2;
+    const maxTextHeight = H - paddingY * 2;
+
+    // auto-shrink to fit
+    let fontSize = baseSize;
+    let lines = [];
+    for(let s = baseSize; s >= 18; s -= 2){
+      ctx.font = '700 ' + s + 'px ' + fontFamily;
+      lines = wrapTextLines(ctx, text, maxTextWidth);
+      if(lines.length * s * 1.4 <= maxTextHeight){ fontSize = s; break; }
+      fontSize = s;
+    }
+
+    const lh = fontSize * 1.4;
+    const totalH = lines.length * lh;
+    const startY = (H - totalH) / 2 + lh * 0.75;
+
+    ctx.font = '700 ' + fontSize + 'px ' + fontFamily;
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.shadowColor  = 'rgba(0,0,0,0.55)';
+    ctx.shadowBlur   = 20;
+    ctx.shadowOffsetY = 4;
+
+    lines.forEach(function(line, i){
+      ctx.fillText(line, W/2, startY + i * lh);
+    });
+
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+
+    return canvas.toDataURL('image/png', 0.92);
+  }
+
+  /* ============================================================
+     4) Composer state → background info
+  ============================================================ */
+  function getBgInfo(state){
+    if(!state) return null;
+
+    // wallpaper mode
+    if(state.themeMode === 'wallpaper' && state.wallpaper && state.wallpaper !== 'none'){
+      let w = null;
+      try{
+        if(typeof findWallpaperById === 'function') w = findWallpaperById(state.wallpaper);
+      }catch(e){}
+      if(w) return { bgStyle: w.style, imageUrl: extractUrlFromCss(w.style) };
+    }
+
+    // color mode
+    if(state.bg && state.bg !== 'none'){
+      let t = null;
+      try{
+        if(typeof BG_THEMES !== 'undefined'){
+          t = BG_THEMES.find(function(x){ return x.id === state.bg; });
+        }
+      }catch(e){}
+      if(t) return { bgStyle: t.style, imageUrl: null };
+    }
+
+    return null;
+  }
+
+  /* ============================================================
+     5) CORE: post → text-image conversion
+  ============================================================ */
+  async function convertPost(post){
+    if(!post || !post._mvData) return false;
+    if(post._mvData._isTextImage) return false;
+    if(post._mvData._converting) return false;
+
+    // already has real media?
+    if(Array.isArray(post._mvData.media) && post._mvData.media.length > 0){
+      return false;
+    }
+    if(!post._mvData.text || !post._mvData.text.trim()) return false;
+
+    const bgInfo = getBgInfo(post._mvData);
+    if(!bgInfo) return false;
+
+    const textEl = post.querySelector('.post-text.has-bg');
+    if(!textEl) return false;
+
+    post._mvData._converting = true;
+    console.log('[MV-TextImg] converting post…', post.dataset.postId);
+
+    try{
+      const dataUrl = await generateTextImage(
+        post._mvData.text,
+        bgInfo.bgStyle,
+        bgInfo.imageUrl
+      );
+
+      // textEl might have been removed meanwhile
+      const currentTextEl = post.querySelector('.post-text.has-bg');
+      if(!currentTextEl){ post._mvData._converting = false; return false; }
+
+      // Build <img class="post-media">
+      const img = document.createElement('img');
+      img.className = 'post-media';
+      img.src = dataUrl;
+      img.alt = String(post._mvData.text).slice(0, 180);
+      img.loading = 'lazy';
+      img.draggable = false;
+
+      currentTextEl.replaceWith(img);
+
+      // screen-reader / search için hidden text
+      if(!post.querySelector('.mv-sr-text')){
+        const sr = document.createElement('div');
+        sr.className = 'mv-sr-text';
+        sr.textContent = post._mvData.text;
+        sr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;';
+        post.appendChild(sr);
+      }
+
+      // _mvData update
+      post._mvData.media = [{ url: dataUrl, type: 'image', isTextImage: true }];
+      post._mvData._isTextImage = true;
+      post.dataset.mediaType = 'image';
+      post._mvData._converting = false;
+
+      console.log('[MV-TextImg] ✅ converted');
+      return true;
+    }catch(e){
+      console.error('[MV-TextImg] conversion failed:', e);
+      post._mvData._converting = false;
+      return false;
+    }
+  }
+
+  /* ============================================================
+     6) PATCH: applyEditToPost — edit শেষে re-convert
+  ============================================================ */
+  const origApplyEdit = window.applyEditToPost;
+  if(typeof origApplyEdit === 'function'){
+    window.applyEditToPost = function(post){
+      if(post && post._mvData){ post._mvData._isTextImage = false; }
+      const r = origApplyEdit.apply(this, arguments);
+      setTimeout(function(){ convertPost(post); }, 120);
+      return r;
+    };
+  }
+
+  /* ============================================================
+     7) PATCH: openEditPostInComposer — generated image skip
+  ============================================================ */
+  const origOpenEdit = window.openEditPostInComposer;
+  if(typeof origOpenEdit === 'function'){
+    window.openEditPostInComposer = function(post){
+      const wasTextImage = post && post._mvData && post._mvData._isTextImage;
+      const r = origOpenEdit.apply(this, arguments);
+      if(wasTextImage){
+        try{
+          composerState.media = [];
+          if(typeof renderComposerMedia === 'function') renderComposerMedia();
+          if(typeof updatePublishState === 'function') updatePublishState();
+        }catch(e){}
+      }
+      return r;
+    };
+  }
+
+  /* ============================================================
+     8) MUTATION OBSERVER — নতুন post যোগ হলেই convert
+  ============================================================ */
+  function startObserver(){
+    const container = document.getElementById('postsContainer');
+    if(!container){ console.warn('[MV-TextImg] postsContainer not found'); return; }
+
+    const mo = new MutationObserver(function(muts){
+      muts.forEach(function(m){
+        m.addedNodes.forEach(function(node){
+          if(node.nodeType !== 1) return;
+          if(node.classList && node.classList.contains('post')){
+            setTimeout(function(){ convertPost(node); }, 80);
+          }
+          if(node.querySelectorAll){
+            node.querySelectorAll('.post').forEach(function(p){
+              setTimeout(function(){ convertPost(p); }, 80);
+            });
+          }
+        });
+      });
+    });
+
+    mo.observe(container, { childList: true, subtree: false });
+    console.log('[MV-TextImg] observer ready');
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', startObserver);
+  } else {
+    startObserver();
+  }
+
+  // Debug helper
+  window.mvConvertTextBgPost = convertPost;
+  window.mvTestTextImg = generateTextImage;
+
+})();
+</script>
+
+<!-- ================= SHARE SHEET ================= -->
+<div class="overlay" id="shareOverlay">
+  <div class="modal glass share-sheet">
+    <div class="share-head">
+      <div class="share-head-info">
+        <h2 id="shareTitle">Echo this Signal</h2>
+        <p>Share with your timeline, friends, or beyond</p>
+      </div>
+      <button class="close" id="closeShare" type="button" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="share-body">
+      <!-- Main options -->
+      <div class="share-view" id="shareMainView">
+        <div class="share-preview" id="sharePreview"></div>
+        <div class="share-options">
+          <button class="share-option" data-share="timeline" type="button">
+            <div class="share-opt-icon icon-timeline"><i class="fa-solid fa-user-pen"></i></div>
+            <div class="share-opt-info"><b>Share to your timeline</b><span>Post this on your profile</span></div>
+            <i class="fa-solid fa-chevron-right share-opt-arrow"></i>
+          </button>
+          <button class="share-option" data-share="friends" type="button">
+            <div class="share-opt-icon icon-friends"><i class="fa-solid fa-user-group"></i></div>
+            <div class="share-opt-info"><b>Send to friends</b><span>Share privately with your circle</span></div>
+            <i class="fa-solid fa-chevron-right share-opt-arrow"></i>
+          </button>
+          <button class="share-option" data-share="copy" type="button">
+            <div class="share-opt-icon icon-copy"><i class="fa-solid fa-link"></i></div>
+            <div class="share-opt-info"><b>Copy link</b><span>Copy this signal's link</span></div>
+            <i class="fa-solid fa-chevron-right share-opt-arrow"></i>
+          </button>
+          <button class="share-option" data-share="external" type="button">
+            <div class="share-opt-icon icon-external"><i class="fa-solid fa-share-nodes"></i></div>
+            <div class="share-opt-info"><b>Share externally</b><span>Send to other apps</span></div>
+            <i class="fa-solid fa-chevron-right share-opt-arrow"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Friends picker -->
+      <div class="share-view" id="shareFriendsView">
+        <div class="share-friend-top">
+          <button class="share-back-btn" id="shareFriendBack" type="button" aria-label="Back"><i class="fa-solid fa-arrow-left"></i></button>
+          <div class="share-friend-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="shareFriendSearch" placeholder="Search friends…" autocomplete="off">
+          </div>
+        </div>
+        <div class="share-selected-strip" id="shareSelectedStrip"></div>
+        <div class="share-friend-list" id="shareFriendList"></div>
+      </div>
+    </div>
+
+    <div class="share-foot" id="shareFoot" style="display:none;">
+      <button class="rf-back" id="shareCancelBtn" type="button">Cancel</button>
+      <button class="publish" id="shareSendBtn" type="button" disabled>Send <span id="shareSendCount"></span></button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ================= SHARE TO TIMELINE (Caption) ================= -->
+<div class="overlay" id="shareTimelineOverlay">
+  <div class="modal glass share-sheet">
+    <div class="share-head">
+      <div class="share-head-info">
+        <h2>Share to your timeline</h2>
+        <p>Add your thoughts before posting</p>
+      </div>
+      <button class="close" id="closeShareTimeline" type="button" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="share-body">
+      <div class="share-view" id="shareTimelineView" style="display:flex;">
+        <div class="share-timeline-user">
+          <img src="https://i.pravatar.cc/150?img=12" alt="">
+          <div>
+            <b>Mediaverse User</b>
+            <div class="share-timeline-vis"><i class="fa-solid fa-earth-americas"></i> Public</div>
+          </div>
+        </div>
+
+<textarea
+  id="shareTimelineCaption"
+  class="share-timeline-input"
+  placeholder="Say something about this signal… (optional)"
+  maxlength="10000"
+  rows="3"
+></textarea>
+<div class="share-timeline-counter">
+  <span id="shareTimelineCount">0</span> / 10000
+</div>
+
+        <div class="share-timeline-preview" id="shareTimelinePreview"></div>
+      </div>
+    </div>
+
+    <div class="share-foot">
+      <button class="rf-back" id="shareTimelineCancel" type="button">Cancel</button>
+      <button class="publish" id="shareTimelinePost" type="button">
+        Share now <i class="fa-solid fa-paper-plane" style="font-size:11px;margin-left:4px;"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SHARE SYSTEM (COMPLETE) ================= -->
+<script>
+(function(){
+  'use strict';
+
+  /* ============================================================
+     STATE
+  ============================================================ */
+  let shareCurrentPost      = null;
+  let shareSelectedFriends  = [];
+  let shareTimelinePost     = null;
+
+  /* ============================================================
+     ELEMENTS
+  ============================================================ */
+  const shareOverlay       = document.getElementById('shareOverlay');
+  const shareMainView      = document.getElementById('shareMainView');
+  const shareFriendsView   = document.getElementById('shareFriendsView');
+  const shareFoot          = document.getElementById('shareFoot');
+  const shareFriendList    = document.getElementById('shareFriendList');
+  const shareFriendSearch  = document.getElementById('shareFriendSearch');
+  const shareSelectedStrip = document.getElementById('shareSelectedStrip');
+  const shareSendBtn       = document.getElementById('shareSendBtn');
+  const shareSendCount     = document.getElementById('shareSendCount');
+  const sharePreview       = document.getElementById('sharePreview');
+  const closeShareBtn      = document.getElementById('closeShare');
+  const shareCancelBtn     = document.getElementById('shareCancelBtn');
+  const shareFriendBack    = document.getElementById('shareFriendBack');
+  const shareTitle         = document.getElementById('shareTitle');
+
+  const shareTimelineOverlay  = document.getElementById('shareTimelineOverlay');
+  const shareTimelineCaption  = document.getElementById('shareTimelineCaption');
+  const shareTimelinePreview  = document.getElementById('shareTimelinePreview');
+  const shareTimelinePostBtn  = document.getElementById('shareTimelinePost');
+  const shareTimelineCancel   = document.getElementById('shareTimelineCancel');
+  const shareTimelineClose    = document.getElementById('closeShareTimeline');
+
+  if(!shareOverlay){
+    console.warn('[Share] shareOverlay not found. Add the HTML first.');
+    return;
+  }
+
+  /* ============================================================
+     HIJACK: replace old share-btn click listener
+  ============================================================ */
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.share-btn');
+    if(!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const post = btn.closest('.post');
+    if(post) openShareSheet(post);
+  }, true);   /* ⭐ capture: true — যাতে পুরনো handler আগে না চলে */
+
+  /* ============================================================
+     OPEN / CLOSE SHARE SHEET
+  ============================================================ */
+  function openShareSheet(post){
+    if(!post) return;
+    shareCurrentPost = post;
+    shareSelectedFriends = [];
+    renderSharePreview(post);
+    showShareView('main');
+    shareOverlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeShareSheet(){
+    shareOverlay.classList.remove('show');
+    document.body.style.overflow = '';
+    shareCurrentPost = null;
+    shareSelectedFriends = [];
+    if(shareFriendSearch) shareFriendSearch.value = '';
+  }
+
+  function showShareView(view){
+    if(view === 'main'){
+      shareMainView.style.display = '';
+      shareFriendsView.classList.remove('active');
+      shareFoot.style.display = 'none';
+      shareTitle.textContent = 'Echo this Signal';
+    } else {
+      shareMainView.style.display = 'none';
+      shareFriendsView.classList.add('active');
+      shareFoot.style.display = 'flex';
+      shareTitle.textContent = 'Send to friends';
+      renderShareFriendList('');
+      renderShareSelected();
+      setTimeout(()=>shareFriendSearch?.focus(), 180);
+    }
+  }
+
+  /* ============================================================
+     PREVIEW
+  ============================================================ */
+  function renderSharePreview(post){
+    const authorEl = post.querySelector('.post-author strong');
+    const author   = (authorEl?.childNodes[0]?.textContent || 'Mediaverse User').trim();
+    const avatar   = post.querySelector('.post-avatar img')?.src || '';
+    const textEl   = post.querySelector('.post-text');
+    const text     = textEl ? textEl.textContent.trim().replace(/\s+/g,' ') : '';
+    const shortText= text.length > 130 ? text.slice(0,130)+'…' : text;
+    const hasMedia = !!post.querySelector('.post-media, .post-media-grid, .video-shell');
+    const thumb    = post.querySelector('.post-media, .post-media-grid .pm-item img')?.src || '';
+
+    sharePreview.innerHTML = `
+      <div class="share-preview-head">
+        <img src="${escapeHTML(avatar)}" alt="">
+        <div>
+          <b>${escapeHTML(author)}</b>
+          <span>${hasMedia ? 'Media signal' : 'Text signal'}</span>
+        </div>
+      </div>
+      ${thumb ? `<div class="share-preview-media"><img src="${escapeHTML(thumb)}" alt=""></div>` : ''}
+      ${shortText ? `<div class="share-preview-text">${escapeHTML(shortText)}</div>` : ''}
+    `;
+  }
+
+  /* ============================================================
+     FRIEND PICKER
+  ============================================================ */
+  function renderShareFriendList(query){
+    const q = (query||'').toLowerCase().trim();
+    const list = (window.FRIEND_LIST || []).filter(f =>
+      !q || (f.name + ' ' + f.username).toLowerCase().includes(q)
+    );
+    if(!list.length){
+      shareFriendList.innerHTML = '<div class="share-empty"><i class="fa-solid fa-user-slash"></i><span>No friends found</span></div>';
+      return;
+    }
+    shareFriendList.innerHTML = list.map(f => {
+      const sel = shareSelectedFriends.some(x => x.id === f.id);
+      return `<button class="share-friend-row ${sel?'selected':''}" type="button" data-friend="${f.id}">
+        <img src="${escapeHTML(f.image)}" alt="">
+        <div class="share-friend-info">
+          <b>${escapeHTML(f.name)}</b>
+          <span>${escapeHTML(f.username)}</span>
+        </div>
+        <span class="share-friend-check"><i class="fa-solid fa-check"></i></span>
+      </button>`;
+    }).join('');
+  }
+
+  function renderShareSelected(){
+    if(!shareSelectedFriends.length){
+      shareSelectedStrip.innerHTML = '';
+      shareSendBtn.disabled = true;
+      shareSendCount.textContent = '';
+      return;
+    }
+    shareSelectedStrip.innerHTML = shareSelectedFriends.map(f =>
+      `<span class="share-chip">
+        <img src="${escapeHTML(f.image)}" alt="">
+        <span>${escapeHTML(f.name.split(' ')[0])}</span>
+        <button type="button" data-remove="${f.id}" aria-label="Remove"><i class="fa-solid fa-xmark"></i></button>
+      </span>`
+    ).join('');
+    shareSendBtn.disabled = false;
+    shareSendCount.textContent = `(${shareSelectedFriends.length})`;
+  }
+
+  /* ============================================================
+     SHARE SHEET EVENTS
+  ============================================================ */
+  shareOverlay.addEventListener('click', e => {
+    if(e.target === shareOverlay){ closeShareSheet(); return; }
+
+    const opt = e.target.closest('.share-option');
+    if(opt){ handleShareAction(opt.dataset.share); return; }
+
+    const row = e.target.closest('.share-friend-row');
+    if(row){
+      const f = (window.FRIEND_LIST||[]).find(x => x.id === row.dataset.friend);
+      if(!f) return;
+      const idx = shareSelectedFriends.findIndex(x => x.id === f.id);
+      if(idx >= 0) shareSelectedFriends.splice(idx, 1);
+      else shareSelectedFriends.push(f);
+      renderShareFriendList(shareFriendSearch.value);
+      renderShareSelected();
+      return;
+    }
+
+    const rm = e.target.closest('[data-remove]');
+    if(rm){
+      shareSelectedFriends = shareSelectedFriends.filter(x => x.id !== rm.dataset.remove);
+      renderShareFriendList(shareFriendSearch.value);
+      renderShareSelected();
+      return;
+    }
+  });
+
+  closeShareBtn?.addEventListener('click', closeShareSheet);
+  shareCancelBtn?.addEventListener('click', closeShareSheet);
+  shareFriendBack?.addEventListener('click', () => showShareView('main'));
+  shareFriendSearch?.addEventListener('input', () => renderShareFriendList(shareFriendSearch.value));
+
+  shareSendBtn?.addEventListener('click', () => {
+    if(!shareSelectedFriends.length || !shareCurrentPost) return;
+    const post = shareCurrentPost;
+    shareSelectedFriends.forEach(f => sendShareToFriend(f, post));
+    bumpPostStat(post, 'shares', shareSelectedFriends.length);
+    showToast(`Signal sent to ${shareSelectedFriends.length} ${shareSelectedFriends.length===1?'friend':'friends'} ✦`);
+    closeShareSheet();
+  });
+
+  /* ============================================================
+     ACTIONS
+  ============================================================ */
+  function handleShareAction(action){
+    const post = shareCurrentPost;
+    if(!post) return;
+    if(action === 'timeline'){
+      closeShareSheet();
+      setTimeout(()=>openShareTimelineModal(post), 180);
+    }
+    else if(action === 'friends'){ showShareView('friends'); }
+    else if(action === 'copy')    { copyShareLink(post); closeShareSheet(); }
+    else if(action === 'external'){ externalShare(post); closeShareSheet(); }
+  }
+
+  function getShareUrl(post){
+    const base = window.location.origin + window.location.pathname;
+    const id   = post?.dataset?.postId || 'signal';
+    return `${base}#${id}`;
+  }
+
+  async function copyShareLink(post){
+    const url = getShareUrl(post);
+    try{
+      if(navigator.clipboard?.writeText){
+        await navigator.clipboard.writeText(url);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = url;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+      showToast('Link copied to clipboard');
+      bumpPostStat(post, 'shares', 1);
+    }catch(e){ showToast('Could not copy link'); }
+  }
+
+  async function externalShare(post){
+    const url    = getShareUrl(post);
+    const author = (post.querySelector('.post-author strong')?.childNodes[0]?.textContent || 'Mediaverse').trim();
+    try{
+      if(navigator.share){
+        await navigator.share({
+          title: 'Mediaverse Signal',
+          text:  `Check out this signal from ${author}`,
+          url:   url
+        });
+        bumpPostStat(post, 'shares', 1);
+      } else {
+        await copyShareLink(post);
+      }
+    }catch(e){}
+  }
+
+  function sendShareToFriend(friend, post){
+    try{
+      const key = 'mv_sent_shares_v1';
+      const arr = JSON.parse(localStorage.getItem(key) || '[]');
+      arr.unshift({
+        friend:   friend.name,
+        friendId: friend.id,
+        postId:   post?.dataset?.postId || '',
+        time:     Date.now()
+      });
+      localStorage.setItem(key, JSON.stringify(arr.slice(0, 50)));
+    }catch(e){}
+  }
+
+  /* ============================================================
+     ⭐ SHARE TO TIMELINE (with caption modal)
+  ============================================================ */
+  function openShareTimelineModal(post){
+  if(!post || !shareTimelineOverlay) return;
+  shareTimelinePost = post;
+  shareTimelineCaption.value = '';
+
+  // ⭐ Counter reset
+  if(shareTimelineCount) shareTimelineCount.textContent = '0';
+  if(shareTimelineCounter){
+    shareTimelineCounter.classList.remove('warn','danger');
+  }
+
+  renderShareTimelinePreview(post);
+  shareTimelineOverlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  setTimeout(()=>shareTimelineCaption?.focus(), 200);
+}
+
+  function closeShareTimelineModal(){
+    if(!shareTimelineOverlay) return;
+    shareTimelineOverlay.classList.remove('show');
+    document.body.style.overflow = '';
+    shareTimelinePost = null;
+    shareTimelineCaption.value = '';
+  }
+
+  function renderShareTimelinePreview(post){
+    const authorEl = post.querySelector('.post-author strong');
+    const author   = (authorEl?.childNodes[0]?.textContent || 'Mediaverse User').trim();
+    const verified = !!authorEl?.querySelector('.verified');
+    const avatar   = post.querySelector('.post-avatar img')?.src || '';
+    const text     = post.querySelector('.post-text')?.textContent?.trim() || '';
+    const thumb    = post.querySelector('.post-media, .post-media-grid .pm-item img')?.src || '';
+
+    shareTimelinePreview.innerHTML = `
+      <div class="stp-head">
+        <img src="${escapeHTML(avatar)}" alt="">
+        <div>
+          <b>${escapeHTML(author)}${verified?' <i class="fa-solid fa-circle-check"></i>':''}</b>
+          <span>Original signal</span>
+        </div>
+      </div>
+      ${text ? `<div class="stp-text">${escapeHTML(text)}</div>` : ''}
+      ${thumb ? `<div class="stp-media"><img src="${escapeHTML(thumb)}" alt=""></div>` : ''}
+    `;
+  }
+
+  shareTimelineClose?.addEventListener('click', closeShareTimelineModal);
+  shareTimelineCancel?.addEventListener('click', closeShareTimelineModal);
+  shareTimelineOverlay?.addEventListener('click', e => {
+    if(e.target === shareTimelineOverlay) closeShareTimelineModal();
+  });
+
+  shareTimelinePostBtn?.addEventListener('click', () => {
+    if(!shareTimelinePost) return;
+    const caption = shareTimelineCaption.value.trim();
+    publishTimelineShare(shareTimelinePost, caption);
+    closeShareTimelineModal();
+  });
+
+/* ⭐ Caption live counter (10000 limit) */
+const shareTimelineCount   = document.getElementById('shareTimelineCount');
+const shareTimelineCounter = document.querySelector('.share-timeline-counter');
+const MAX_CAPTION = 10000;
+
+shareTimelineCaption?.addEventListener('input', () => {
+  const len = shareTimelineCaption.value.length;
+  if(shareTimelineCount) shareTimelineCount.textContent = len;
+  if(shareTimelineCounter){
+    shareTimelineCounter.classList.toggle('warn',   len > 8000 && len <= 9600);
+    shareTimelineCounter.classList.toggle('danger', len > 9600);
+  }
+});
+
+shareTimelinePostBtn?.addEventListener('click', () => {
+  if(!shareTimelinePost) return;
+  const caption = shareTimelineCaption.value.trim();
+  publishTimelineShare(shareTimelinePost, caption);
+  closeShareTimelineModal();
+});
+
+function publishTimelineShare(post, caption){
+  if(!post) return;
+
+  const authorEl = post.querySelector('.post-author strong');
+  const author   = (authorEl?.childNodes[0]?.textContent || 'Mediaverse User').trim();
+  const verified = !!authorEl?.querySelector('.verified');
+  const avatar   = post.querySelector('.post-avatar img')?.src || 'https://i.pravatar.cc/100?img=12';
+  const postId   = post.dataset.postId || '';
+
+// ⭐ Original post এর timestamp + privacy extract
+const origMeta = (function(){
+  const meta = post.querySelector('.post-meta');
+  if(!meta) return { time:'', fullTime:'', visibilityClass:'public', visibilityLabel:'Public', visibilityIcon:'fa-solid fa-earth-americas' };
+
+  // Time: meta এর ভিতরে первый span যেটা .meta-sep বা .meta-visibility না
+  let time = '', fullTime = '';
+  meta.querySelectorAll(':scope > span').forEach(span=>{
+    if(span.classList.contains('meta-sep') || span.classList.contains('meta-visibility')) return;
+    if(!time){
+      time = span.textContent.trim();
+      fullTime = span.getAttribute('title') || '';
+    }
+  });
+
+  // Visibility
+  const visEl = meta.querySelector('.meta-visibility');
+  let visibilityClass = 'public';
+  if(visEl){
+    if(visEl.classList.contains('private'))      visibilityClass = 'private';
+    else if(visEl.classList.contains('friends')) visibilityClass = 'friends';
+    else if(visEl.classList.contains('only'))    visibilityClass = 'only';
+    else                                          visibilityClass = 'public';
+  }
+  const visibilityLabel = visEl?.dataset.visibility || 'Public';
+  const iconClass = visEl?.querySelector('i')?.className || 'fa-solid fa-earth-americas';
+
+  return { time, fullTime, visibilityClass, visibilityLabel, visibilityIcon: iconClass };
+})();
+
+// ⭐ buildSharedPostContent এ পাঠাই
+const originalHTML = buildSharedPostContent(post, author, avatar, verified, postId, origMeta);
+
+  const article = document.createElement('article');
+  article.className = 'post glass';
+  article.dataset.mediaType = 'text';
+  article.dataset.postId    = 'mv-share-' + Date.now();
+  article.dataset.views     = '1';
+  article.dataset.thoughts  = '0';
+  article.dataset.shares    = '0';
+  article.dataset.owner     = 'current';
+  article._mvData = {
+    text: caption || '',
+    createdAt: Date.now(),
+    isShare: true,
+    originalPostId: postId
+  };
+
+  article.innerHTML = `
+    <div class="post-head">
+      <div class="post-avatar"><img src="https://i.pravatar.cc/100?img=12" alt=""></div>
+      <div class="post-author">
+        <strong>Mediaverse User <i class="fa-solid fa-circle-check verified"></i></strong>
+        <div class="post-meta">
+          <span>Just now</span><span class="meta-sep">·</span>
+          <span class="meta-visibility public" data-visibility="Public" tabindex="0"><i class="fa-solid fa-earth-americas"></i></span>
+        </div>
+      </div>
+      <div class="post-menu-wrap"><button class="more-btn" aria-label="More options"><i class="fa-solid fa-ellipsis"></i></button></div>
+    </div>
+    ${caption ? `<div class="post-text">${escapeHTML(caption)}</div>` : ''}
+    <div class="mv-share-line"><i class="fa-solid fa-retweet"></i> Shared a signal from <b>${escapeHTML(author)}</b></div>
+    ${originalHTML}
+    <div class="post-summary">
+      <div class="reaction-summary"><div class="reaction-stack"></div><span class="reaction-count"></span></div>
+      <div class="post-stats">
+        <span class="stat-item stat-views" title="Views"><i class="fa-regular fa-eye"></i><span class="stat-num">0</span></span>
+        <span class="stat-item stat-comments" title="Thoughts"><i class="fa-regular fa-comment"></i><span class="stat-num">0</span></span>
+        <span class="stat-item stat-shares" title="Echoes"><i class="fa-solid fa-arrow-up-from-bracket"></i><span class="stat-num">0</span></span>
+      </div>
+    </div>
+    <div class="post-actions">
+      <div class="post-action-wrap">
+        <div class="reaction-popup"></div>
+        <button class="post-action react-btn"><span class="react-icon-outer"><span class="react-icon-inner"></span></span><span class="react-btn-text">Love</span></button>
+      </div>
+      <button class="post-action comment-toggle"><i class="fa-regular fa-comment"></i> Thought</button>
+      <button class="post-action share-btn"><i class="fa-solid fa-arrow-up-from-bracket"></i> Echo</button>
+      <button class="post-action save-btn"><i class="fa-regular fa-bookmark"></i> Save</button>
+    </div>
+    <div class="comments">
+      <div class="comment-list"></div>
+      <div class="comment-box">
+        <input class="comment-media-input" type="file" accept="image/*,.gif,video/*">
+        <button class="comment-media-btn" type="button" title="Add photo, video or GIF"><i class="fa-regular fa-image"></i></button>
+        <input class="comment-text-input" type="text" placeholder="Write a comment…" autocomplete="off" maxlength="2000">
+        <div class="comment-media-preview">
+          <div class="comment-media-preview-thumb"></div>
+          <div class="comment-media-preview-info"><b>Media selected</b><span>Ready to send</span></div>
+          <button class="comment-media-remove" type="button" title="Remove media"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <button class="send-comment" type="button" title="Send comment"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  `;
+
+  // Posts container-এ prepend
+  const postsContainer = document.getElementById('postsContainer');
+  postsContainer.prepend(article);
+
+  if(typeof fillAllReactionPickers === 'function') fillAllReactionPickers(article);
+  if(typeof setDefaultReactButton  === 'function') setDefaultReactButton(article);
+  if(typeof ensureReactionData     === 'function') ensureReactionData(article);
+  if(typeof renderPostStats        === 'function') renderPostStats(article);
+  if(typeof bindVideoShells        === 'function') bindVideoShells(article);
+  if(typeof window.mvApplySeeMore  === 'function') setTimeout(()=>window.mvApplySeeMore(article), 100);
+
+  // Share count bump
+  if(typeof bumpPostStat === 'function') bumpPostStat(post, 'shares', 1);
+
+  if(typeof showToast === 'function'){
+    showToast(caption ? 'Signal shared with your caption ✦' : 'Signal shared to your timeline ✦');
+  }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ⭐ Original post-এর সব content HTML হিসেবে build করি */
+function buildSharedPostContent(post, author, avatar, verified, postId, origMeta){
+  const parts = [];
+
+  // 1️⃣ Chips (feeling, location, tagged, life)
+  const chips = post.querySelector('.post-chips');
+  if(chips) parts.push(chips.outerHTML);
+
+  // 2️⃣ Life card (married, education, travel ইত্যাদি)
+  const lifeCard = post.querySelector('.mv-life-card');
+  if(lifeCard) parts.push(lifeCard.outerHTML);
+
+  // 3️⃣ Text (with background preservation)
+  const textEl = post.querySelector('.post-text');
+  if(textEl){
+    const hasBg = textEl.classList.contains('has-bg');
+    const bgStyle = hasBg ? (textEl.style.background || '') : '';
+    const inlineStyle = bgStyle ? ` style="background:${bgStyle}"` : '';
+    parts.push(`<div class="post-text${hasBg?' has-bg':''}"${inlineStyle}>${textEl.innerHTML}</div>`);
+  }
+
+  // 4️⃣ Media — single image
+  const singleImg = post.querySelector('.post-media');
+  if(singleImg && singleImg.tagName === 'IMG'){
+    parts.push(`<img class="post-media" src="${escapeHTML(singleImg.src)}" alt="">`);
+  }
+
+  // 5️⃣ Video shell
+  const shell = post.querySelector('.video-shell');
+  if(shell){
+    const v = shell.querySelector('video');
+    const src = shell.dataset.videoSrc || v?.src || '';
+    const poster = v?.poster || '';
+    const durBadge = shell.querySelector('.video-duration-badge')?.textContent || '0:00';
+    if(src){
+      parts.push(`
+        <div class="video-shell" data-video-src="${escapeHTML(src)}">
+          <video preload="metadata" playsinline muted ${poster?`poster="${escapeHTML(poster)}"`:''} src="${escapeHTML(src)}"></video>
+          <div class="video-duration-badge">${escapeHTML(durBadge)}</div>
+          <div class="video-play-badge"><i class="fa-solid fa-play"></i></div>
+        </div>
+      `);
+    }
+  }
+
+  // 6️⃣ Media grid (multi-image)
+  const grid = post.querySelector('.post-media-grid');
+  if(grid){
+    const count = grid.dataset.count || '1';
+    const items = [...grid.querySelectorAll('.pm-item')].map((item, i) => {
+      const img = item.querySelector('img');
+      const vid = item.querySelector('video');
+      const overlay = item.querySelector('.pm-more-overlay');
+      const overlayHTML = overlay ? `<div class="pm-more-overlay">${overlay.textContent}</div>` : '';
+      let inner = '';
+      if(vid){
+        inner = `<video src="${escapeHTML(vid.src)}" muted playsinline preload="metadata"></video>`;
+      } else if(img){
+        inner = `<img src="${escapeHTML(img.src)}" alt="">`;
+      }
+      return `<div class="pm-item" data-media-idx="${i}">${inner}${overlayHTML}</div>`;
+    }).join('');
+    parts.push(`<div class="post-media-grid" data-count="${escapeHTML(count)}">${items}</div>`);
+  }
+
+  // ⭐ NEW: Original meta (time + privacy)
+  const metaHTML = (origMeta && (origMeta.time || origMeta.visibilityLabel)) ? `
+    <div class="mv-share-origin-meta">
+      <span class="mv-share-orig-label"><i class="fa-regular fa-clock" style="font-size:8px;margin-right:3px;"></i>Originally posted</span>
+      ${origMeta.time ? `<span title="${escapeHTML(origMeta.fullTime||'')}">${escapeHTML(origMeta.time)}</span>` : ''}
+      ${origMeta.time && origMeta.visibilityLabel ? `<span class="meta-sep">·</span>` : ''}
+      ${origMeta.visibilityLabel ? `
+        <span class="meta-visibility ${origMeta.visibilityClass}" title="${escapeHTML(origMeta.visibilityLabel)}">
+          <i class="${escapeHTML(origMeta.visibilityIcon)}"></i>
+          <span>${escapeHTML(origMeta.visibilityLabel)}</span>
+        </span>` : ''}
+    </div>
+  ` : '';
+
+  // ⭐ NEW: Origin block — avatar + name + meta
+  const originHTML = `
+    <div class="mv-share-origin">
+      <img src="${escapeHTML(avatar)}" alt="">
+      <div class="mv-share-origin-info">
+        <b>${escapeHTML(author)}${verified?' <i class="fa-solid fa-circle-check"></i>':''}</b>
+        ${metaHTML}
+      </div>
+    </div>
+  `;
+
+  // সব content-কে একটা share wrapper-এ মুড়ে দিই
+  if(!parts.length){
+    return `
+      <div class="mv-share-card" data-original-post="${escapeHTML(postId)}">
+        ${originHTML}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="mv-share-card mv-share-full" data-original-post="${escapeHTML(postId)}">
+      ${originHTML}
+      <div class="mv-share-content">
+        ${parts.join('')}
+      </div>
+    </div>
+  `;
+}
+  /* ============================================================
+     ESC KEY
+  ============================================================ */
+  document.addEventListener('keydown', e => {
+    if(e.key !== 'Escape') return;
+    if(shareOverlay.classList.contains('show')) closeShareSheet();
+    if(shareTimelineOverlay?.classList.contains('show')) closeShareTimelineModal();
+  });
+
+  /* ============================================================
+     EXPOSE (debug / external use)
+  ============================================================ */
+  window.openShareSheet  = openShareSheet;
+  window.closeShareSheet = closeShareSheet;
+
+})();
+</script>
+
 </body>
 </html>
