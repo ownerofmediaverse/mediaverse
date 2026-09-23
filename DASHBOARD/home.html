@@ -639,6 +639,154 @@ input,textarea,.post-text{
 .dl-quality-item .dlq-tag.hd{color:#ffd43b;background:rgba(255,212,59,.10);border-color:rgba(255,212,59,.22);}
 .dl-quality-item .dlq-tag.uhd{color:var(--pink);background:rgba(255,78,205,.12);border-color:rgba(255,78,205,.24);}
 
+/* ============ MULTI-MEDIA GALLERY VIEWER ============ */
+.media-flow{
+  position:fixed;inset:0;z-index:7600;
+  display:none;flex-direction:column;
+  background:rgba(2,3,8,.95);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  animation:viewerIn .25s ease;
+}
+.media-flow.show{display:flex;}
+
+.mf-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px clamp(12px,3vw,26px);
+  background:linear-gradient(to bottom,rgba(0,0,0,.55),transparent);
+  flex-shrink:0;z-index:5;
+}
+.mf-counter{
+  font-size:12px;font-weight:700;color:#d6dbeb;
+  padding:7px 13px;border-radius:20px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.4px;
+}
+.mf-actions{display:flex;align-items:center;gap:8px;}
+
+.mf-stage{
+  flex:1;min-height:0;display:flex;
+  align-items:center;justify-content:center;
+  padding:0 clamp(10px,3vw,30px);
+  position:relative;
+  overflow:hidden;
+}
+.mf-stage img{
+  max-width:100%;max-height:100%;
+  object-fit:contain;border-radius:14px;
+  display:block;
+  box-shadow:0 30px 100px rgba(0,0,0,.7);
+  animation:ivZoom .32s cubic-bezier(.2,.9,.3,1.2);
+  user-select:none;
+  -webkit-user-drag:none;
+}
+.mf-stage video{
+  max-width:100%;max-height:100%;
+  border-radius:14px;background:#000;
+  display:block;
+  box-shadow:0 30px 100px rgba(0,0,0,.7);
+  animation:ivZoom .32s cubic-bezier(.2,.9,.3,1.2);
+}
+@keyframes ivZoom{
+  from{opacity:0;transform:scale(.94);}
+  to{opacity:1;transform:scale(1);}
+}
+
+.mf-nav{
+  position:absolute;top:50%;transform:translateY(-50%);
+  z-index:6;width:52px;height:52px;
+  border:none;cursor:pointer;border-radius:50%;
+  display:grid;place-items:center;
+  color:#fff;font-size:20px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.16);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  transition:transform .22s ease,background .22s ease,opacity .22s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.mf-nav:hover{
+  background:rgba(255,255,255,.22);
+  transform:translateY(-50%) scale(1.08);
+}
+.mf-nav:active{transform:translateY(-50%) scale(.92);}
+.mf-nav:disabled{opacity:0;pointer-events:none;}
+.mf-prev{left:clamp(8px,2.5vw,26px);}
+.mf-next{right:clamp(8px,2.5vw,26px);}
+
+.mf-video-wrap{
+  max-width:100%;
+  max-height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.mf-video-wrap video{
+  max-width:100%;
+  max-height:100%;
+  border-radius:14px;
+  background:#000;
+  display:block;
+  box-shadow:0 30px 100px rgba(0,0,0,.7);
+}
+.mf-expand-btn{
+  position:absolute;
+  top:12px;right:12px;
+  z-index:8;
+  width:44px;height:44px;
+  border:none;cursor:pointer;
+  border-radius:14px;
+  display:grid;place-items:center;
+  color:#fff;font-size:16px;
+  background:rgba(0,0,0,.55);
+  border:1px solid rgba(255,255,255,.18);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  transition:transform .2s ease, background .2s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.mf-expand-btn:hover{
+  background:linear-gradient(135deg,rgba(168,85,247,.85),rgba(0,229,255,.75));
+  transform:scale(1.08);
+  border-color:transparent;
+}
+.mf-expand-btn:active{transform:scale(.94);}
+@media (max-width:600px){
+  .mf-expand-btn{width:38px;height:38px;font-size:14px;top:10px;right:10px;}
+}
+
+.mf-dots{
+  flex-shrink:0;display:flex;justify-content:center;
+  gap:7px;padding:12px 20px 20px;
+  overflow-x:auto;scrollbar-width:none;
+  max-width:100%;
+}
+.mf-dots::-webkit-scrollbar{display:none;}
+.mf-dot{
+  width:7px;height:7px;flex:0 0 7px;
+  border-radius:50%;
+  background:rgba(255,255,255,.28);
+  cursor:pointer;
+  transition:all .22s ease;
+}
+.mf-dot:hover{background:rgba(255,255,255,.55);}
+.mf-dot.active{
+  width:22px;border-radius:8px;
+  background:linear-gradient(90deg,var(--purple),var(--cyan));
+  box-shadow:0 0 12px rgba(0,229,255,.5);
+}
+
+@media (max-width:600px){
+  .mf-nav{width:42px;height:42px;font-size:16px;}
+  .mf-counter{font-size:11px;padding:6px 11px;}
+  .mf-stage{padding:0 8px;}
+  .mf-prev{left:6px;}
+  .mf-next{right:6px;}
+  .mf-dots{padding:10px 16px 16px;}
+}
+
 /* IMAGE VIEWER */
 .img-viewer{position:fixed;inset:0;z-index:7000;display:none;align-items:center;justify-content:center;background:rgba(2,3,8,.93);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);animation:viewerIn .28s ease;}
 .img-viewer.show{display:flex;}
@@ -2160,6 +2308,21 @@ one decision at a time. 💜</div>
   </div>
 </div>
 
+<!-- ============ MULTI-MEDIA GALLERY VIEWER ============ -->
+<div class="media-flow" id="mediaFlow">
+  <div class="mf-top">
+    <div class="mf-counter" id="mfCounter">1 / 1</div>
+    <div class="mf-actions">
+      <button class="iv-btn" id="mfDownload" title="Download"><i class="fa-solid fa-download"></i></button>
+      <button class="iv-btn iv-close" id="mfClose" title="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+  <button class="mf-nav mf-prev" id="mfPrev" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button>
+  <button class="mf-nav mf-next" id="mfNext" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button>
+  <div class="mf-stage" id="mfStage"></div>
+  <div class="mf-dots" id="mfDots"></div>
+</div>
+
 <div class="img-viewer" id="imageViewer">
   <div class="iv-top">
     <div class="iv-title" id="ivTitle">Mediaverse</div>
@@ -2173,7 +2336,8 @@ one decision at a time. 💜</div>
 
 <div class="video-viewer" id="videoViewer">
   <div class="vv-top">
-    <button class="vv-btn" id="vvClose" title="Close"><i class="fa-solid fa-xmark"></i></button>
+<button class="vv-btn" id="vvClose" title="Close"><i class="fa-solid fa-xmark"></i></button>
+<button class="vv-btn" id="vvBackToGallery" title="Back to gallery" style="display:none;"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
     <div class="vv-title" id="vvTitle">Mediaverse Video<small id="vvSubtitle">Now playing</small></div>
     <div class="vv-top-actions">
       <button class="vv-btn small" id="vvCaptionsBtn" title="Captions"><i class="fa-solid fa-closed-captioning"></i></button>
@@ -4843,18 +5007,47 @@ ivDownload.addEventListener('click',()=>{
   fakePost.appendChild(img);
   startDownload(fakePost,true);
 });
-document.addEventListener('click',e=>{
-  const img=e.target.closest('.post-media');
-  if(img&&img.tagName==='IMG'){
-    const post=img.closest('.post');
-    const author=post?.querySelector('.post-author strong')?.innerText.replace(/\s+/g,' ').trim()||'Mediaverse';
-    openImage(img.src,author,post);
+document.addEventListener('click', e => {
+  // ১) +More overlay (4+) — লুকানো media open করি
+  const moreOverlay = e.target.closest('.pm-more-overlay');
+  if (moreOverlay) {
+    e.preventDefault(); e.stopPropagation();
+    const post = moreOverlay.closest('.post');
+    const item = moreOverlay.closest('.pm-item');
+    const idx = parseInt(item?.dataset.mediaIdx || '3', 10);
+    if (post) openMediaFlow(post, idx);
+    return;
   }
-  const gridImg=e.target.closest('.post-media-grid .pm-item img');
-  if(gridImg){
-    const post=gridImg.closest('.post');
-    const author=post?.querySelector('.post-author strong')?.innerText.replace(/\s+/g,' ').trim()||'Mediaverse';
-    openImage(gridImg.src,author,post);
+
+  // ২) Grid-এর ভিতরের video — media flow এ open
+  const gridVideo = e.target.closest('.post-media-grid .pm-item video');
+  if (gridVideo) {
+    e.preventDefault(); e.stopPropagation();
+    const post = gridVideo.closest('.post');
+    const item = gridVideo.closest('.pm-item');
+    const idx = parseInt(item?.dataset.mediaIdx || '0', 10);
+    if (post) openMediaFlow(post, idx);
+    return;
+  }
+
+  // ৩) Grid-এর ভিতরের image
+  const gridImg = e.target.closest('.post-media-grid .pm-item img');
+  if (gridImg) {
+    e.preventDefault();
+    const post = gridImg.closest('.post');
+    const item = gridImg.closest('.pm-item');
+    const idx = parseInt(item?.dataset.mediaIdx || '0', 10);
+    if (post) openMediaFlow(post, idx);
+    return;
+  }
+
+  // ৪) Single image
+  const img = e.target.closest('.post-media');
+  if (img && img.tagName === 'IMG') {
+    e.preventDefault();
+    const post = img.closest('.post');
+    if (post) openMediaFlow(post, 0);
+    return;
   }
 });
 
@@ -5419,6 +5612,339 @@ document.querySelectorAll('.comment-list > .comment').forEach(c => updateReplyCo
   updateCharCounter();
 });
 </script>
+<script>
+/* ============ MULTI-MEDIA GALLERY FLOW ============ */
+(function(){
+  'use strict';
+
+  const mfState = { media: [], index: 0, post: null, touchStartX: 0, touchStartY: 0 };
+  const mfEl      = document.getElementById('mediaFlow');
+  const mfStage   = document.getElementById('mfStage');
+  const mfCounter = document.getElementById('mfCounter');
+  const mfDots    = document.getElementById('mfDots');
+  const mfPrev    = document.getElementById('mfPrev');
+  const mfNext    = document.getElementById('mfNext');
+  const mfClose   = document.getElementById('mfClose');
+  const mfDownload= document.getElementById('mfDownload');
+
+  if (!mfEl) return;
+
+  /* Post থেকে সব media collect করি */
+  window.collectPostMedia = function(post){
+    if (!post) return [];
+
+    // ১) যদি _mvData.media থাকে (নতুন post, edit করা post)
+    if (post._mvData && Array.isArray(post._mvData.media) && post._mvData.media.length) {
+      return post._mvData.media.map(m => ({ type: m.type, url: m.url }));
+    }
+
+    // ২) DOM scan (পুরনো static post)
+    const out = [];
+
+    const singleImg = post.querySelector('.post-media');
+    if (singleImg && singleImg.tagName === 'IMG') {
+      out.push({ type: 'image', url: singleImg.src });
+    }
+
+    const shell = post.querySelector('.video-shell');
+    if (shell) {
+      const v = shell.querySelector('video');
+      const src = shell.dataset.videoSrc || v?.src;
+      if (src) out.push({ type: 'video', url: src });
+    }
+
+    post.querySelectorAll('.post-media-grid .pm-item').forEach(item => {
+      const v = item.querySelector('video');
+      const i = item.querySelector('img');
+      if (v) out.push({ type: 'video', url: v.src });
+      else if (i) out.push({ type: 'image', url: i.src });
+    });
+
+    return out;
+  };
+
+  /* Viewer open */
+  window.openMediaFlow = function(post, startIndex){
+    const media = collectPostMedia(post);
+    if (!media.length) return;
+
+    mfState.media = media;
+    mfState.index = Math.max(0, Math.min(startIndex || 0, media.length - 1));
+    mfState.post  = post;
+
+    renderMediaFlow();
+    mfEl.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    // Post এর view count bump
+    if (typeof bumpPostStat === 'function' && post) {
+      bumpPostStat(post, 'views', 1);
+    }
+  };
+
+  /* Render */
+  function renderMediaFlow(){
+  const { media, index } = mfState;
+  const item = media[index];
+  if (!item) return;
+
+  // Stage content
+  if (item.type === 'video') {
+    // ⭐ Button এখন .mf-stage এর direct child — সবসময় একই জায়গায় থাকবে
+    mfStage.innerHTML = `
+      <div class="mf-video-wrap">
+        <video src="${item.url}" controls playsinline autoplay preload="metadata"></video>
+      </div>
+      <button class="mf-expand-btn" id="mfExpandBtn" title="Open in full player" aria-label="Open in full player">
+        <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+      </button>`;
+
+    const videoEl = mfStage.querySelector('video');
+    // video শেষ হলে auto-advance (multiple media থাকলে)
+    videoEl?.addEventListener('ended', () => {
+      if (mfState.media.length > 1) setTimeout(goNext, 400);
+    });
+
+    // Expand button → full player
+    const expandBtn = document.getElementById('mfExpandBtn');
+    expandBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      const src = item.url;
+      const post = mfState.post;
+      const inlineVideo = mfStage.querySelector('video');
+      const currentTime = inlineVideo?.currentTime || 0;
+      const wasPlaying = inlineVideo ? !inlineVideo.paused : false;
+      if (inlineVideo) { try { inlineVideo.pause(); } catch(e){} }
+
+      // ⭐ Gallery state মনে রাখি (ফিরে আসার জন্য)
+      window._mfReturnState = {
+        media: [...mfState.media],
+        index: mfState.index,
+        post: mfState.post
+      };
+
+      // ⭐ Back button দেখাই
+      const backBtn = document.getElementById('vvBackToGallery');
+      if (backBtn) backBtn.style.display = '';
+
+      // Media flow বন্ধ করে full player খুলি
+      closeMediaFlow();
+
+      if (typeof openVideoPlayer === 'function') {
+        setTimeout(() => {
+          openVideoPlayer(src, post, { sourceVideo: inlineVideo });
+
+          // Full player খোলার পর আগের position থেকে resume করি
+          if (currentTime > 0 || wasPlaying) {
+            const vv = document.getElementById('vvVideo');
+            if (vv) {
+              const resume = () => {
+                try {
+                  if (currentTime > 0 && vv.duration) {
+                    vv.currentTime = Math.min(currentTime, vv.duration);
+                  }
+                  if (wasPlaying) vv.play().catch(()=>{});
+                } catch(err){}
+                vv.removeEventListener('loadedmetadata', resume);
+              };
+              vv.addEventListener('loadedmetadata', resume);
+            }
+          }
+        }, 80);
+      }
+    });
+
+  } else {
+    mfStage.innerHTML = `<img src="${item.url}" alt="Media ${index+1}" draggable="false">`;
+  }
+
+  // Counter
+  mfCounter.textContent = `${index + 1} / ${media.length}`;
+
+  // Arrows
+  if (media.length > 1) {
+    mfPrev.style.display = '';
+    mfNext.style.display = '';
+    mfPrev.disabled = false;
+    mfNext.disabled = false;
+  } else {
+    mfPrev.style.display = 'none';
+    mfNext.style.display = 'none';
+  }
+
+  // Dots
+  if (media.length > 1) {
+    mfDots.innerHTML = media.map((_, i) =>
+      `<span class="mf-dot ${i === index ? 'active' : ''}" data-idx="${i}"></span>`
+    ).join('');
+  } else {
+    mfDots.innerHTML = '';
+  }
+}
+
+  /* Navigation */
+  function goPrev(){
+    if (mfState.media.length < 2) return;
+    mfState.index = (mfState.index - 1 + mfState.media.length) % mfState.media.length;
+    renderMediaFlow();
+  }
+  function goNext(){
+    if (mfState.media.length < 2) return;
+    mfState.index = (mfState.index + 1) % mfState.media.length;
+    renderMediaFlow();
+  }
+
+  /* Close */
+  function closeMediaFlow(){
+    // video চললে pause করি
+    const v = mfStage.querySelector('video');
+    if (v) { try { v.pause(); } catch(e){} }
+    mfEl.classList.remove('show');
+    setTimeout(() => { mfStage.innerHTML = ''; }, 220);
+    document.body.style.overflow = '';
+    mfState.media = [];
+    mfState.post = null;
+  }
+
+  /* Events */
+  mfPrev.addEventListener('click', e => { e.stopPropagation(); goPrev(); });
+  mfNext.addEventListener('click', e => { e.stopPropagation(); goNext(); });
+  mfClose.addEventListener('click', closeMediaFlow);
+
+/* ⭐ Back to gallery from full player */
+const vvBackBtn = document.getElementById('vvBackToGallery');
+vvBackBtn?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+
+  const saved = window._mfReturnState;
+  if (!saved) return;
+
+  // Full player বন্ধ করি
+  if (typeof closeVideoPlayer === 'function') closeVideoPlayer();
+
+  // Gallery খুলি আগের position এ
+  setTimeout(() => {
+    mfState.media = saved.media;
+    mfState.index = saved.index;
+    mfState.post  = saved.post;
+    renderMediaFlow();
+    mfEl.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    window._mfReturnState = null;
+    if (vvBackBtn) vvBackBtn.style.display = 'none';
+  }, 220);
+});
+
+/* ⭐ Normal close (X / ESC / video শেষ) — state clear + back button hide */
+document.getElementById('vvClose')?.addEventListener('click', () => {
+  window._mfReturnState = null;
+  const b = document.getElementById('vvBackToGallery');
+  if (b) b.style.display = 'none';
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('videoViewer')?.classList.contains('show')) {
+    window._mfReturnState = null;
+    const b = document.getElementById('vvBackToGallery');
+    if (b) b.style.display = 'none';
+  }
+});
+
+  // Dots click
+  mfDots.addEventListener('click', e => {
+    const dot = e.target.closest('.mf-dot');
+    if (!dot) return;
+    mfState.index = parseInt(dot.dataset.idx, 10) || 0;
+    renderMediaFlow();
+  });
+
+  // Background click (শুধু image হলে close করি, video controls এর জন্য না)
+  mfStage.addEventListener('click', e => {
+    if (e.target === mfStage) closeMediaFlow();
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (!mfEl.classList.contains('show')) return;
+    const tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea') return;
+
+    if (e.key === 'Escape')      { e.preventDefault(); closeMediaFlow(); }
+    else if (e.key === 'ArrowLeft')  { e.preventDefault(); goPrev(); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); goNext(); }
+  });
+
+  // Touch swipe
+  mfStage.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    mfState.touchStartX = e.touches[0].clientX;
+    mfState.touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  mfStage.addEventListener('touchend', e => {
+    if (!e.changedTouches.length) return;
+    const dx = e.changedTouches[0].clientX - mfState.touchStartX;
+    const dy = e.changedTouches[0].clientY - mfState.touchStartY;
+    // horizontal swipe এবং minimum 50px
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) goNext();
+      else        goPrev();
+    }
+  }, { passive: true });
+
+  // Download
+  mfDownload.addEventListener('click', () => {
+    const item = mfState.media[mfState.index];
+    if (!item) return;
+
+    if (item.type === 'video') {
+      // Reuse existing video quality popup
+      const fakePost = document.createElement('div');
+      fakePost.dataset.mediaType = 'video';
+      fakePost.dataset.postId = 'mf-' + (typeof hashString === 'function' ? hashString(item.url) : Date.now());
+      const shell = document.createElement('div');
+      shell.className = 'video-shell';
+      shell.dataset.videoSrc = item.url;
+      const v = document.createElement('video');
+      v.src = item.url;
+      shell.appendChild(v);
+      fakePost.appendChild(shell);
+      if (typeof pendingVideoPost !== 'undefined') {
+        window.pendingVideoPost = fakePost;
+        if (typeof openVideoDownloadQualityPopup === 'function') {
+          openVideoDownloadQualityPopup();
+          return;
+        }
+      }
+      // fallback
+      const a = document.createElement('a');
+      a.href = item.url;
+      a.download = 'mediaverse_video.mp4';
+      a.click();
+    } else {
+      const fakePost = document.createElement('div');
+      fakePost.dataset.mediaType = 'image';
+      fakePost.dataset.postId = 'mf-' + (typeof hashString === 'function' ? hashString(item.url) : Date.now());
+      const img = document.createElement('img');
+      img.className = 'post-media';
+      img.src = item.url;
+      fakePost.appendChild(img);
+      if (typeof startDownload === 'function') {
+        startDownload(fakePost, true);
+      } else {
+        const a = document.createElement('a');
+        a.href = item.url;
+        a.download = 'mediaverse_image.jpg';
+        a.click();
+      }
+    }
+  });
+
+})();
+</script>
+
 <script src="mediaverse-theme.js"></script>
 <script>
 /* =========================================================================
