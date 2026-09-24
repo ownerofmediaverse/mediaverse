@@ -1826,6 +1826,7 @@ html[data-mv-theme="light"] body .grid-bg{filter:invert(1);opacity:.08;}
   position:relative;display:block;padding:0;
   min-height:240px;overflow:hidden;
 }
+/* --- Composer input — custom text --- */
 .composer-text-area.has-bg.mv-te-custom .composer-input{
   position:absolute;
   left:var(--mv-text-x,50%);
@@ -1836,13 +1837,53 @@ html[data-mv-theme="light"] body .grid-bg{filter:invert(1);opacity:.08;}
   padding:14px 12px !important;
   caret-color:#fff;
   transition:none;
+  pointer-events:auto;
+  touch-action:manipulation;
 }
-.composer-text-area.has-bg.mv-te-custom.mv-te-move-mode .composer-input{
-  cursor:grab;user-select:none;-webkit-user-select:none;
+
+/* ⭐ FIX #2: Font-size override (mobile !important কে beat করার জন্য) */
+.composer-text-area.mv-te-custom .composer-input{
+  font-size:var(--mv-text-size, 22px) !important;
 }
-.composer-text-area.has-bg.mv-te-custom.mv-te-move-mode .composer-input:active{
+@media (max-width:640px){
+  .composer-text-area.mv-te-custom .composer-input,
+  .composer-text-area.has-bg.mv-te-custom .composer-input{
+    font-size:var(--mv-text-size, 22px) !important;
+  }
+}
+
+/* ⭐ FIX #1: Drag overlay — textarea এর উপরে transparent layer */
+.composer-text-area.mv-te-custom .mv-te-drag-overlay{
+  position:absolute;
+  inset:0;
+  z-index:50;
+  display:none;
+  cursor:grab;
+  background:transparent;
+  touch-action:none;
+  -webkit-user-select:none;
+  user-select:none;
+}
+.composer-text-area.mv-te-custom.mv-te-move-mode .mv-te-drag-overlay{
+  display:block;
+}
+.composer-text-area.mv-te-custom.mv-te-move-mode .mv-te-drag-overlay:active{
   cursor:grabbing;
 }
+.composer-text-area.mv-te-custom.mv-te-move-mode .mv-te-drag-overlay::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border:2px dashed rgba(53,230,154,.55);
+  border-radius:14px;
+  pointer-events:none;
+  animation:mvTeDash 3s linear infinite;
+}
+@keyframes mvTeDash{
+  0%,100%{ border-color:rgba(53,230,154,.55); }
+  50%    { border-color:rgba(0,229,255,.75); }
+}
+
 .composer-text-area.has-bg.mv-te-custom.mv-te-move-mode::after{
   content:"↕  DRAG TO MOVE  ↔";
   position:absolute;top:8px;left:50%;transform:translateX(-50%);
