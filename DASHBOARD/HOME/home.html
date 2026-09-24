@@ -8037,7 +8037,7 @@ document.addEventListener('click', e => {
   /* ============================================================
      6) PATCH: applyEditToPost — edit শেষে re-convert
   ============================================================ */
-const origEdit = window.applyEditToPost;
+const origApplyEdit = window.applyEditToPost;
 if(typeof origEdit === 'function' && !origEdit._mvTEHooked){
     window.applyEditToPost = function(post){
       const r = origEdit.apply(this, arguments);
