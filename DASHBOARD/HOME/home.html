@@ -282,7 +282,22 @@ input,textarea,.post-text{
 .reaction-stack .rstack-item .reaction-emoji{font-size:30px;}
 .reaction-summary:hover .reaction-stack .rstack-item{transform:translateY(-2px) scale(1.08);}
 
-.post-actions{position:relative;z-index:5;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:7px 0 0 0;}
+.post-actions{
+  position:relative;
+  z-index:1500;              /* ⭐ was 5 — mini-controls (999) এর উপরে */
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:4px;
+  padding:7px 0 0 0;
+  overflow:visible;
+}
+
+/* ⭐ Reaction popup wrapper */
+.post-action-wrap{
+  position: relative;
+  overflow: visible;
+}
+
 .post-action{position:relative;width:100%;height:44px;border:none;cursor:pointer;padding:0 4px;border-radius:12px;color:#9ca3b8;font-family:inherit;font-size:11px;background:transparent;transition:color .25s ease,background .25s ease;display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden;}
 .post-action:hover{color:white;background:rgba(255,255,255,.055);}
 .post-action i{font-size:20px;transition:transform .22s ease;}
@@ -1922,7 +1937,8 @@ html[data-mv-theme="light"] body .grid-bg{filter:invert(1);opacity:.08;}
   left:var(--mv-text-x,50%);
   top:var(--mv-text-y,50%);
   transform:translate(-50%,-50%);
-  width:84%;max-width:84%;
+  width:86%;max-width:86%;      /* ⭐ composer এর সাথে match */
+  padding:14px 12px;            /* ⭐ composer এর সাথে match */
   white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;
   display:block;
 }
@@ -7971,13 +7987,20 @@ document.addEventListener('click', e => {
   ============================================================ */
   async function convertPost(post){
     if(!post || !post._mvData) return false;
-    if(post._mvData._isTextImage) return false;
-    if(post._mvData._converting) return false;
+if(post._mvData._isTextImage) return false;
+if(post._mvData._converting) return false;
 
-    // already has real media?
-    if(Array.isArray(post._mvData.media) && post._mvData.media.length > 0){
-      return false;
-    }
+// already has real media?
+if(Array.isArray(post._mvData.media) && post._mvData.media.length > 0){
+  return false;
+}
+
+// ⭐ NEW: Text Studio ব্যবহার করলে image conversion skip করি,
+// কারণ conversion ওই custom font/color/position/effect apply করতে পারে না।
+if(post._mvData.textStyle && post._mvData.textStyle.custom){
+  console.log('[MV-TextImg] skipped - text studio used');
+  return false;
+}
     if(!post._mvData.text || !post._mvData.text.trim()) return false;
 
     const bgInfo = getBgInfo(post._mvData);
@@ -8034,38 +8057,30 @@ document.addEventListener('click', e => {
     }
   }
 
-  /* ============================================================
-     6) PATCH: applyEditToPost — edit শেষে re-convert
-  ============================================================ */
-const origApplyEdit = window.applyEditToPost;
-if(typeof origEdit === 'function' && !origEdit._mvTEHooked){
-    window.applyEditToPost = function(post){
-      const r = origEdit.apply(this, arguments);
-      // ⭐ custom check সরিয়ে দিলাম — edit save এ সবসময় style re-apply হবে
-      if(post) setTimeout(() => applyStyleToPost(post), 80);
-      return r;
-    };
-    origEdit._mvTEHooked = true;
-}
-  /* ============================================================
-     7) PATCH: openEditPostInComposer — generated image skip
-  ============================================================ */
-  const origOpenEdit = window.openEditPostInComposer;
-  if(typeof origOpenEdit === 'function'){
-    window.openEditPostInComposer = function(post){
-      const wasTextImage = post && post._mvData && post._mvData._isTextImage;
-      const r = origOpenEdit.apply(this, arguments);
-      if(wasTextImage){
-        try{
-          composerState.media = [];
-          if(typeof renderComposerMedia === 'function') renderComposerMedia();
-          if(typeof updatePublishState === 'function') updatePublishState();
-        }catch(e){}
-      }
-      return r;
-    };
-  }
+ /* ============================================================
+   6) (REMOVED) applyEditToPost hook — mediaverse-text-editor.js
+      এর hookComposer() এ handle করা হয়েছে। এখানে রাখলে
+      double-hook হবে, তাই বাদ দিলাম।
+============================================================ */
 
+/* ============================================================
+   7) PATCH: openEditPostInComposer — generated image skip
+============================================================ */
+const origOpenEdit = window.openEditPostInComposer;
+if(typeof origOpenEdit === 'function'){
+  window.openEditPostInComposer = function(post){
+    const wasTextImage = post && post._mvData && post._mvData._isTextImage;
+    const r = origOpenEdit.apply(this, arguments);
+    if(wasTextImage){
+      try{
+        composerState.media = [];
+        if(typeof renderComposerMedia === 'function') renderComposerMedia();
+        if(typeof updatePublishState === 'function') updatePublishState();
+      }catch(e){}
+    }
+    return r;
+  };
+}
   /* ============================================================
      8) MUTATION OBSERVER — নতুন post যোগ হলেই convert
   ============================================================ */
@@ -9474,8 +9489,18 @@ if(container){
 })();
 </script>
 <script src="mediaverse-text-editor.js"></script>
-</body>
-</html>
-
+<script>
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const c = window.createPostFromComposer;
+    const a = window.applyEditToPost;
+    console.log('--- MV sanity check ---');
+    console.log('createPostFromComposer exists:',  typeof c === 'function');
+    console.log('createPostFromComposer hooked:', !!(c && c._mvTEHooked));
+    console.log('applyEditToPost exists:',       typeof a === 'function');
+    console.log('applyEditToPost hooked:',      !!(a && a._mvTEHooked));
+  }, 1200);
+});
+</script>
 </body>
 </html>
