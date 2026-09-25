@@ -1981,6 +1981,195 @@ html[data-mv-theme="light"] .mv-te-center-btn{
 }
 
 </style>
+
+<!-- ============================================================
+     AI DETECTION BADGE STYLES
+============================================================ -->
+<style id="mv-ai-detector-style">
+
+/* ===== Author line layout fix ===== */
+.post-author strong{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  min-width:0;
+  max-width:100%;
+  flex-wrap:nowrap;
+  overflow:hidden;
+}
+.post-author strong .mv-author-name{
+  min-width:0;
+  flex:0 1 auto;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.post-author strong .verified{ flex:0 0 auto; }
+
+/* ===== AI Badge — BIGGER ===== */
+.mv-ai-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:4px 10px;              /* ⭐ আগের 2px 7px ছিল */
+  border-radius:8px;             /* ⭐ একটু বেশি round */
+  font-size:10.5px;              /* ⭐ আগের 9px ছিল */
+  font-weight:800;
+  letter-spacing:.4px;
+  text-transform:uppercase;
+  color:#e9f7ff;
+  background:linear-gradient(135deg,rgba(168,85,247,.35),rgba(0,229,255,.24));
+  border:1px solid rgba(168,85,247,.52);
+  box-shadow:
+    0 0 14px rgba(168,85,247,.30),
+    inset 0 1px 0 rgba(255,255,255,.20);
+  vertical-align:middle;
+  line-height:1;
+  flex:0 0 auto;
+  white-space:nowrap;
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;                /* ⭐ clickable বোঝাতে */
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  animation:mvAiBadgeIn .4s cubic-bezier(.2,.9,.3,1.5);
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.mv-ai-badge:hover{
+  transform:translateY(-1px) scale(1.04);
+  box-shadow:
+    0 0 20px rgba(168,85,247,.42),
+    inset 0 1px 0 rgba(255,255,255,.28);
+}
+.mv-ai-badge:active{
+  transform:scale(.96);
+}
+
+.mv-ai-badge i{
+  font-size:11px;               /* ⭐ আগের 8.5px ছিল */
+  color:#7cf1ff;
+  filter:drop-shadow(0 0 5px rgba(0,229,255,.75));
+  flex-shrink:0;
+}
+.mv-ai-badge .mv-ai-text{
+  display:inline !important;
+}
+
+/* Shine effect */
+.mv-ai-badge::after{
+  content:"";
+  position:absolute;
+  top:0;left:-100%;
+  width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.36),transparent);
+  animation:mvAiShine 3.5s linear infinite;
+  pointer-events:none;
+}
+@keyframes mvAiBadgeIn{
+  from{opacity:0;transform:scale(.7);}
+  to{opacity:1;transform:scale(1);}
+}
+@keyframes mvAiShine{
+  from{left:-100%;}
+  to{left:200%;}
+}
+
+/* Confidence levels */
+.mv-ai-badge.conf-low{
+  background:linear-gradient(135deg,rgba(255,159,67,.32),rgba(255,78,205,.18));
+  border-color:rgba(255,159,67,.46);
+}
+.mv-ai-badge.conf-med{
+  background:linear-gradient(135deg,rgba(168,85,247,.34),rgba(0,229,255,.20));
+  border-color:rgba(168,85,247,.50);
+}
+.mv-ai-badge.conf-high{
+  background:linear-gradient(135deg,rgba(53,230,154,.32),rgba(0,229,255,.24));
+  border-color:rgba(53,230,154,.52);
+}
+
+/* Responsive */
+@media (max-width:768px){
+  .mv-ai-badge{ font-size:10px; padding:3px 9px; }
+  .mv-ai-badge i{ font-size:10px; }
+}
+@media (max-width:480px){
+  .mv-ai-badge{ font-size:9.5px; padding:3px 8px; gap:4px; }
+  .mv-ai-badge i{ font-size:9.5px; }
+}
+@media (max-width:360px){
+  .mv-ai-badge{ font-size:9px; padding:3px 7px; }
+}
+
+html[data-mv-theme="light"] .mv-ai-badge{
+  color:#2a1a4a;
+  background:linear-gradient(135deg,rgba(168,85,247,.24),rgba(0,180,220,.18));
+  border-color:rgba(168,85,247,.44);
+}
+html[data-mv-theme="light"] .mv-ai-badge i{color:#6b21a8;}
+
+/* AI Toast (special top toast for badge click) */
+.mv-ai-toast{
+  position:fixed;
+  top:90px;
+  left:50%;
+  transform:translate(-50%, -20px);
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 18px;
+  border-radius:14px;
+  font-size:12.5px;
+  font-weight:600;
+  color:#e9f7ff;
+  background:linear-gradient(135deg,rgba(168,85,247,.88),rgba(0,229,255,.72));
+  border:1px solid rgba(255,255,255,.24);
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.55),
+    0 0 30px rgba(168,85,247,.35),
+    inset 0 1px 0 rgba(255,255,255,.28);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .28s ease, transform .32s cubic-bezier(.2,.9,.3,1.4);
+  max-width:min(92vw, 460px);
+  text-align:center;
+}
+.mv-ai-toast.show{
+  opacity:1;
+  transform:translate(-50%, 0);
+  pointer-events:auto;
+}
+.mv-ai-toast i{
+  font-size:16px;
+  color:#fff;
+  filter:drop-shadow(0 0 6px rgba(255,255,255,.7));
+  flex-shrink:0;
+}
+.mv-ai-toast .mv-ai-toast-text{
+  line-height:1.4;
+}
+.mv-ai-toast b{
+  font-weight:800;
+  color:#fff;
+  text-shadow:0 0 8px rgba(255,255,255,.4);
+}
+@media (max-width:520px){
+  .mv-ai-toast{
+    top:70px;
+    padding:11px 15px;
+    font-size:11.5px;
+    gap:8px;
+  }
+  .mv-ai-toast i{ font-size:14px; }
+}
+
+</style>
+
 </head>
 <body>
 
@@ -7022,6 +7211,29 @@ button.comment-reply-stat.open .reply-caret{
   transform: translateY(-2px) scale(1.08);
 }
 
+/* ============================================================
+   FIX: Post 3-dot menu stacking (react/comment ar upore asbe na)
+   ============================================================ */
+.post.menu-open{
+  z-index: 9999 !important;
+  position: relative;
+}
+.post.menu-open .post-menu-wrap{
+  /* ⭐ Ei line tai main fix — 1500+ er opore tule dilam */
+  z-index: 99999 !important;
+}
+.post.menu-open .post-menu{
+  z-index: 100000 !important;
+}
+
+/* Menu open hole post-actions er reaction popup auto-close hobe,
+   ar menu er niche render hobe */
+.post.menu-open .post-actions,
+.post.menu-open .comments,
+.post.menu-open .video-shell-mini-controls{
+  z-index: 1 !important;
+}
+
 </style>
 <script>
 (function(){
@@ -7864,94 +8076,189 @@ document.addEventListener('click', e => {
   /* ============================================================
      3) MAIN: text + bg → dataURL
   ============================================================ */
-  async function generateTextImage(text, bgStyle, imageUrl){
-    const W = 1080, H = 1080;
-    const canvas = document.createElement('canvas');
-    canvas.width = W; canvas.height = H;
-    const ctx = canvas.getContext('2d');
+/* ===== Font map (text editor এর FONTS এর সাথে sync) ===== */
+const MV_FONT_MAP = {
+  space:    "'Space Grotesk', sans-serif",
+  inter:    "'Inter', sans-serif",
+  poppins:  "'Poppins', sans-serif",
+  playfair: "'Playfair Display', serif",
+  oswald:   "'Oswald', sans-serif",
+  bebas:    "'Bebas Neue', sans-serif",
+  mono:     "'Roboto Mono', monospace",
+  dancing:  "'Dancing Script', cursive",
+  pacifico: "'Pacifico', cursive",
+  lobster:  "'Lobster', cursive",
+  georgia:  "Georgia, serif"
+};
 
-    let drawn = false;
+function mvHexToRgba(hex, a){
+  const m = String(hex||'#fff').replace('#','');
+  const h = m.length === 3 ? m.split('').map(c=>c+c).join('') : m;
+  const n = parseInt(h,16) || 0;
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
 
-    // 1) Wallpaper image (url(...) থাকলে)
-    if(imageUrl){
-      try{
-        const img = await loadImage(imageUrl);
-        drawCover(ctx, img, W, H);
-        // readability overlay
-        ctx.fillStyle = 'rgba(8,10,22,0.22)';
-        ctx.fillRect(0, 0, W, H);
-        drawn = true;
-      }catch(e){
-        console.warn('[MV-TextImg] wallpaper load failed:', e.message);
-      }
+async function generateTextImage(text, bgStyle, imageUrl, textStyle){
+  const W = 1080, H = 1080;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  /* ---------- 1) Background ---------- */
+  let drawn = false;
+
+  if(imageUrl){
+    try{
+      const img = await loadImage(imageUrl);
+      drawCover(ctx, img, W, H);
+      ctx.fillStyle = 'rgba(8,10,22,0.22)';
+      ctx.fillRect(0, 0, W, H);
+      drawn = true;
+    }catch(e){
+      console.warn('[MV-TextImg] wallpaper load failed:', e.message);
     }
-
-    // 2) linear-gradient fallback
-    if(!drawn){
-      const lin = parseLinearGradient(bgStyle);
-      if(lin){
-        drawLinearGradient(ctx, W, H, lin.angle, lin.stops);
-        drawn = true;
-      }
-    }
-
-    // 3) last resort
-    if(!drawn){
-      const g = ctx.createLinearGradient(0,0,W,H);
-      g.addColorStop(0,'#1e1b4b');
-      g.addColorStop(1,'#4c1d95');
-      ctx.fillStyle = g;
-      ctx.fillRect(0,0,W,H);
-    }
-
-    // ===== Text =====
-    const len = String(text || '').length;
-    let baseSize = 66;
-    if(len > 60)   baseSize = 58;
-    if(len > 140)  baseSize = 50;
-    if(len > 280)  baseSize = 42;
-    if(len > 500)  baseSize = 36;
-    if(len > 800)  baseSize = 30;
-    if(len > 1200) baseSize = 26;
-
-    const fontFamily = "'Space Grotesk','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-    const paddingX = 80;
-    const paddingY = 80;
-    const maxTextWidth  = W - paddingX * 2;
-    const maxTextHeight = H - paddingY * 2;
-
-    // auto-shrink to fit
-    let fontSize = baseSize;
-    let lines = [];
-    for(let s = baseSize; s >= 18; s -= 2){
-      ctx.font = '700 ' + s + 'px ' + fontFamily;
-      lines = wrapTextLines(ctx, text, maxTextWidth);
-      if(lines.length * s * 1.4 <= maxTextHeight){ fontSize = s; break; }
-      fontSize = s;
-    }
-
-    const lh = fontSize * 1.4;
-    const totalH = lines.length * lh;
-    const startY = (H - totalH) / 2 + lh * 0.75;
-
-    ctx.font = '700 ' + fontSize + 'px ' + fontFamily;
-    ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic';
-    ctx.shadowColor  = 'rgba(0,0,0,0.55)';
-    ctx.shadowBlur   = 20;
-    ctx.shadowOffsetY = 4;
-
-    lines.forEach(function(line, i){
-      ctx.fillText(line, W/2, startY + i * lh);
-    });
-
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
-
-    return canvas.toDataURL('image/png', 0.92);
   }
+  if(!drawn){
+    const lin = parseLinearGradient(bgStyle);
+    if(lin){
+      drawLinearGradient(ctx, W, H, lin.angle, lin.stops);
+      drawn = true;
+    }
+  }
+  if(!drawn){
+    const g = ctx.createLinearGradient(0,0,W,H);
+    g.addColorStop(0,'#1e1b4b');
+    g.addColorStop(1,'#4c1d95');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  /* ---------- 2) Text style (Text Studio থেকে) ---------- */
+  const ts = textStyle || {};
+  const fontId      = ts.fontId || 'space';
+  const fontCss     = MV_FONT_MAP[fontId] || MV_FONT_MAP.space;
+  const baseSize    = ts.fontSize || 22;
+  let   fontSize    = Math.round(baseSize * 1.8);
+  const bold        = ts.bold !== false;
+  const italic      = !!ts.italic;
+  const underline   = !!ts.underline;
+  const color       = ts.color || '#ffffff';
+  const align       = ts.align || 'center';
+  const letterSpace = (ts.letterSpacing || 0) * 1.8;
+  const lineHeightF = ts.lineHeight || 1.35;
+  const effect      = ts.effect || 'none';
+  const effectColor = ts.effectColor || '#00e5ff';
+  const gradFrom    = ts.gradientFrom || '#00e5ff';
+  const gradTo      = ts.gradientTo || '#a855f7';
+  const xPct        = (ts.x != null ? ts.x : 50);
+  const yPct        = (ts.y != null ? ts.y : 50);
+
+  try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(e){}
+
+  const makeFont = (s) => `${italic?'italic ':''}${bold?'700':'400'} ${s}px ${fontCss}`;
+
+  ctx.font = makeFont(fontSize);
+  try{ if('letterSpacing' in ctx) ctx.letterSpacing = letterSpace + 'px'; }catch(e){}
+
+  /* ---------- 3) Layout & wrapping ---------- */
+  const containerW = W * 0.86;
+  const containerH = H * 0.86;
+  const maxTextW   = containerW - 40;
+
+  let lines = wrapTextLines(ctx, text, maxTextW);
+  for(let s = fontSize; s >= 16; s -= 2){
+    ctx.font = makeFont(s);
+    try{ if('letterSpacing' in ctx) ctx.letterSpacing = letterSpace + 'px'; }catch(e){}
+    lines = wrapTextLines(ctx, text, maxTextW);
+    if(lines.length * s * lineHeightF <= containerH - 80){ fontSize = s; break; }
+  }
+  ctx.font = makeFont(fontSize);
+
+  const lh     = fontSize * lineHeightF;
+  const totalH = lines.length * lh;
+
+  const cx = W * (xPct / 100);
+  const cy = H * (yPct / 100);
+  const firstBaselineY = cy - totalH/2 + fontSize * 0.78;
+
+  const containerLeft  = cx - containerW/2;
+  const containerRight = cx + containerW/2;
+
+  /* ---------- 4) Effect setup ---------- */
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  ctx.lineWidth = 0;
+  ctx.strokeStyle = 'transparent';
+  ctx.lineJoin = 'round';
+  ctx.miterLimit = 2;
+
+  let useGradient = false;
+
+  if(effect === 'shadow'){
+    ctx.shadowColor = mvHexToRgba(effectColor, 0.85);
+    ctx.shadowBlur = 22;
+    ctx.shadowOffsetY = 6;
+  } else if(effect === 'glow'){
+    ctx.shadowColor = effectColor;
+    ctx.shadowBlur = 30;
+  } else if(effect === 'outline'){
+    ctx.lineWidth = Math.max(2, fontSize * 0.06);
+    ctx.strokeStyle = effectColor;
+    ctx.shadowColor = 'rgba(0,0,0,.55)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetY = 3;
+  } else if(effect === 'gradient'){
+    useGradient = true;
+  }
+
+  /* ---------- 5) Draw ---------- */
+  lines.forEach((line, i) => {
+    const y = firstBaselineY + i * lh;
+    let drawX;
+    if(align === 'center'){ ctx.textAlign = 'center'; drawX = cx; }
+    else if(align === 'right'){ ctx.textAlign = 'right'; drawX = containerRight; }
+    else { ctx.textAlign = 'left'; drawX = containerLeft; }
+
+    let grad = null;
+    if(useGradient){
+      const topY = firstBaselineY - fontSize + i * lh;
+      const botY = topY + totalH;
+      grad = ctx.createLinearGradient(cx - containerW/2, topY, cx + containerW/2, botY);
+      grad.addColorStop(0, gradFrom);
+      grad.addColorStop(1, gradTo);
+      ctx.fillStyle = grad;
+    } else {
+      ctx.fillStyle = color;
+    }
+
+    if(underline){
+      const metrics = ctx.measureText(line);
+      const lineW = metrics.width;
+      let ux1, ux2;
+      if(align === 'center'){ ux1 = drawX - lineW/2; ux2 = drawX + lineW/2; }
+      else if(align === 'right'){ ux1 = drawX - lineW; ux2 = drawX; }
+      else { ux1 = drawX; ux2 = drawX + lineW; }
+
+      const savedLW = ctx.lineWidth;
+      const savedSS = ctx.strokeStyle;
+      ctx.beginPath();
+      ctx.moveTo(ux1, y + fontSize * 0.14);
+      ctx.lineTo(ux2, y + fontSize * 0.14);
+      ctx.lineWidth = Math.max(1.5, fontSize * 0.055);
+      ctx.strokeStyle = useGradient ? gradFrom : color;
+      ctx.stroke();
+      ctx.lineWidth = savedLW;
+      ctx.strokeStyle = savedSS;
+    }
+
+    if(effect === 'outline') ctx.strokeText(line, drawX, y);
+    ctx.fillText(line, drawX, y);
+  });
+
+  return canvas.toDataURL('image/png', 0.92);
+}
 
   /* ============================================================
      4) Composer state → background info
@@ -7995,12 +8302,7 @@ if(Array.isArray(post._mvData.media) && post._mvData.media.length > 0){
   return false;
 }
 
-// ⭐ NEW: Text Studio ব্যবহার করলে image conversion skip করি,
-// কারণ conversion ওই custom font/color/position/effect apply করতে পারে না।
-if(post._mvData.textStyle && post._mvData.textStyle.custom){
-  console.log('[MV-TextImg] skipped - text studio used');
-  return false;
-}
+
     if(!post._mvData.text || !post._mvData.text.trim()) return false;
 
     const bgInfo = getBgInfo(post._mvData);
@@ -8013,11 +8315,12 @@ if(post._mvData.textStyle && post._mvData.textStyle.custom){
     console.log('[MV-TextImg] converting post…', post.dataset.postId);
 
     try{
-      const dataUrl = await generateTextImage(
-        post._mvData.text,
-        bgInfo.bgStyle,
-        bgInfo.imageUrl
-      );
+const dataUrl = await generateTextImage(
+  post._mvData.text,
+  bgInfo.bgStyle,
+  bgInfo.imageUrl,
+  post._mvData.textStyle || null
+);
 
       // textEl might have been removed meanwhile
       const currentTextEl = post.querySelector('.post-text.has-bg');
@@ -9473,7 +9776,7 @@ if(document.readyState === 'loading'){
   setTimeout(applyAll, 200);
 }
 
-/* 5) নতুন video (composer / share / edit থেকে) আসলেও apply করি */
+
 var container = document.getElementById('postsContainer');
 if(container){
   new MutationObserver(function(muts){
@@ -9502,5 +9805,23 @@ window.addEventListener('load', () => {
   }, 1200);
 });
 </script>
+
+<!-- ============================================================
+     AI DETECTION ENGINE
+============================================================ -->
+<script src="ai-detector.js"></script>
+<script>
+window.addEventListener('load', function(){
+  setTimeout(function(){
+    if (!window.MVAIDetector) return;
+
+    
+    MVAIDetector.setAPI('sightengine', '1072922910:HZgGgzR77DKWqWiy3QdhMFSzcxBcG94p');
+
+    console.log('[MV-AID] Active:', MVAIDetector.getStats());
+  }, 400);
+});
+</script>
+
 </body>
 </html>
