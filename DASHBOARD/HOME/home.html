@@ -9776,7 +9776,7 @@ if(document.readyState === 'loading'){
   setTimeout(applyAll, 200);
 }
 
-
+/* 5) নতুন video (composer / share / edit থেকে) আসলেও apply করি */
 var container = document.getElementById('postsContainer');
 if(container){
   new MutationObserver(function(muts){
@@ -9815,13 +9815,14 @@ window.addEventListener('load', function(){
   setTimeout(function(){
     if (!window.MVAIDetector) return;
 
-    
+    // ✅ এখানে আপনার key বসান
     MVAIDetector.setAPI('sightengine', '1072922910:HZgGgzR77DKWqWiy3QdhMFSzcxBcG94p');
 
     console.log('[MV-AID] Active:', MVAIDetector.getStats());
   }, 400);
 });
 </script>
-
+<!-- ============ MEDIAVERSE MOMENTS (Story System) ============ -->
+<script src="mediaverse-moments.js" defer></script>
 </body>
 </html>
