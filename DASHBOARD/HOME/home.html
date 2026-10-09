@@ -2597,7 +2597,7 @@ one decision at a time. 💜</div>
 <div class="nav-wrapper">
   <nav class="glass-navbar">
     <a href="home.html" class="nav-btn active home-btn" data-tooltip="Home"><i class="fa-solid fa-house"></i></a>
-    <a href="#followers" class="nav-btn" data-tooltip="Followers"><i class="fa-solid fa-user-group"></i></a>
+    <a href="../FOLLOWER/Freinds.html" class="nav-btn" data-tooltip="Followers"><i class="fa-solid fa-user-group"></i></a>
     <div class="create-slot"><button class="create-btn" type="button" onclick="openPostModal()"><i class="fa-solid fa-plus"></i></button></div>
     <a href="profile.html" class="nav-btn profile-btn" data-tooltip="Profile"><div class="profile-avatar"><i class="fa-solid fa-user"></i></div></a>
     <a href="#notifications" class="nav-btn notification-btn" data-tooltip="Notifications"><i class="fa-regular fa-bell"></i><span class="notification-dot"></span></a>
@@ -3166,12 +3166,6 @@ const postsContainer=document.getElementById("postsContainer");
 const mediaInput=document.getElementById("mediaInput");
 const quickMedia=document.getElementById("quickMedia");
 const quickFeeling=document.getElementById("quickFeeling");
-const openSearch=document.getElementById("openSearch");
-const searchOverlay=document.getElementById("searchOverlay");
-const searchInput=document.getElementById("searchInput");
-const closeSearch=document.getElementById("closeSearch");
-const searchResults=document.getElementById("searchResults");
-const searchHint=document.getElementById("searchHint");
 const notificationButton=document.getElementById("notificationButton");
 const notificationPanel=document.getElementById("notificationPanel");
 const notificationDot=document.getElementById("notificationDot");
@@ -5690,45 +5684,7 @@ rfNext.addEventListener('click',()=>{
 rsClose.addEventListener('click',()=>reportSuccessOverlay.classList.remove('show'));
 reportSuccessOverlay.addEventListener('click',e=>{if(e.target===reportSuccessOverlay)reportSuccessOverlay.classList.remove('show');});
 
-/* NETWORK STATUS */
-const networkStatusOverlay=document.getElementById('networkStatusOverlay');
-const networkStatusTitle=document.getElementById('networkStatusTitle');
-const networkStatusText=document.getElementById('networkStatusText');
-const networkStatusIcon=document.getElementById('networkStatusIcon');
-const networkStatusLoader=document.getElementById('networkStatusLoader');
-let networkOfflineShown=false;
-let networkRestoreTimer=null;
-function showNetworkLost(){
-  document.documentElement.classList.add('mv-network-lock'); document.body.classList.add('mv-network-lock');
-  if(!networkStatusOverlay) return;
-  networkOfflineShown=true;clearTimeout(networkRestoreTimer);
-  networkStatusOverlay.classList.remove('restored');
-  networkStatusTitle.textContent='Your internet connection was lost';
-  networkStatusText.textContent='Mediaverse is waiting for your connection to return.';
-  networkStatusIcon.innerHTML='<i class="fa-solid fa-wifi"></i>';
-  networkStatusLoader.style.display='block';
-  networkStatusOverlay.classList.add('show');
-  networkStatusOverlay.setAttribute('aria-hidden','false');
-}
-function showNetworkRestored(){
-  document.documentElement.classList.remove('mv-network-lock'); document.body.classList.remove('mv-network-lock');
-  if(!networkStatusOverlay || !networkOfflineShown) return;
-  networkStatusOverlay.classList.add('restored');
-  networkStatusTitle.textContent='Internet connection restored';
-  networkStatusText.textContent='You are back online. Mediaverse is connected again.';
-  networkStatusIcon.innerHTML='<i class="fa-solid fa-wifi"></i>';
-  networkStatusLoader.style.display='none';
-  networkRestoreTimer=setTimeout(()=>{
-    networkStatusOverlay.classList.remove('show');
-    document.documentElement.classList.remove('mv-network-lock');
-    document.body.classList.remove('mv-network-lock');
-    networkStatusOverlay.setAttribute('aria-hidden','true');
-    networkOfflineShown=false;
-  },1900);
-}
-window.addEventListener('offline',showNetworkLost,{passive:true});
-window.addEventListener('online',showNetworkRestored,{passive:true});
-if(!navigator.onLine) showNetworkLost();
+
 
 document.addEventListener('click',e=>{
   const video=e.target.closest('.comment-media-content video');
@@ -6243,70 +6199,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 });
 
-/* SEARCH */
-function openSearchModal(){searchOverlay.classList.add("show");searchInput.value="";renderSearchResults();setTimeout(()=>searchInput.focus(),100);}
-function closeSearchModal(){searchOverlay.classList.remove("show");}
-openSearch.addEventListener("click",openSearchModal);
-closeSearch.addEventListener("click",closeSearchModal);
-const searchPeople=[
-  {name:"Sorufa Begum",username:"@sorufa",id:"MV-102948",image:"https://i.pravatar.cc/150?img=32",verified:true,subtitle:"Digital creator · 24.8K followers"},
-  {name:"Sohagi Akter",username:"@sohagi",id:"MV-209331",image:"https://i.pravatar.cc/150?img=47",verified:false,subtitle:"Creator · Photography & lifestyle"},
-  {name:"Aduri Akter",username:"@aduri",id:"MV-842671",image:"https://i.pravatar.cc/150?img=59",verified:true,subtitle:"Creator · 12.4K followers"},
-  {name:"Emma Wilson",username:"@emmawilson",id:"MV-456891",image:"https://i.pravatar.cc/150?img=45",verified:true,subtitle:"Tech creator · Product designer"},
-  {name:"Daniel Lee",username:"@daniellee",id:"MV-764201",image:"https://i.pravatar.cc/150?img=14",verified:false,subtitle:"Creative thinker · Universe explorer"},
-  {name:"Olivia Chen",username:"@oliviachen",id:"MV-918332",image:"https://i.pravatar.cc/150?img=49",verified:true,subtitle:"Visual artist · 8.2K followers"}
-];
-const searchVideos=[
-  {title:"Building the Next Digital World",creator:"Sorufa Begum",duration:"12:48",image:"https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=500&q=80"},
-  {title:"The Future of Artificial Intelligence",creator:"Emma Wilson",duration:"08:21",image:"https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=500&q=80"},
-  {title:"Creating Your Digital Universe",creator:"Aduri Akter",duration:"15:02",image:"https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=500&q=80"}
-];
-const searchTrends=[
-  {title:"#ArtificialIntelligence",subtitle:"18.4K signals"},
-  {title:"#CreateTheFuture",subtitle:"12.7K signals"},
-  {title:"#DigitalDreams",subtitle:"9.3K signals"},
-  {title:"#Mediaverse",subtitle:"Growing across the universe"}
-];
-function escapeRegExp(v){return v.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");}
-function highlightSearchText(text,query){
-  if(!query) return escapeHTML(text);
-  const safeText=escapeHTML(text);
-  const regex=new RegExp(`(${escapeRegExp(query)})`,"gi");
-  return safeText.replace(regex,`<span class="search-highlight">$1</span>`);
-}
-function renderSearchResults(){
-  const query=searchInput.value.trim();
-  const nq=query.toLowerCase();
-  if(!query){searchHint.style.display="block";searchResults.innerHTML=`<div class="search-empty-state"><div class="search-empty-icon"><i class="fa-solid fa-sparkles"></i></div><strong>Explore the Mediaverse</strong><p>Search people, @usernames, IDs, videos, posts, hashtags and ideas.</p></div>`;return;}
-  searchHint.style.display="none";
-  let html="",total=0;
-  const people=searchPeople.filter(p=>[p.name,p.username,p.id,p.subtitle].join(" ").toLowerCase().includes(nq));
-  if(people.length){total+=people.length;html+=`<section class="search-section"><div class="search-section-title"><i class="fa-solid fa-user-group"></i> People</div>`;
-    people.slice(0,5).forEach(p=>{html+=`<button class="search-result search-person-result"><div class="search-result-avatar"><img src="${p.image}" alt=""></div><div class="search-result-info"><div class="search-result-title"><span>${highlightSearchText(p.name,query)}</span>${p.verified?'<i class="fa-solid fa-circle-check"></i>':''}</div><div class="search-result-subtitle">${highlightSearchText(p.username,query)} · ${highlightSearchText(p.id,query)}</div></div><span class="search-result-type">PERSON</span></button>`;});
-    html+=`</section>`;}
-  const videos=searchVideos.filter(v=>(v.title+" "+v.creator).toLowerCase().includes(nq));
-  if(videos.length){total+=videos.length;html+=`<section class="search-section"><div class="search-section-title"><i class="fa-solid fa-circle-play"></i> Video Signals</div>`;
-    videos.slice(0,4).forEach(v=>{html+=`<button class="search-result search-video-result"><div class="search-result-media"><img src="${v.image}" alt=""><div class="video-play-icon"><i class="fa-solid fa-play"></i></div></div><div class="search-result-info"><div class="search-result-title"><span>${highlightSearchText(v.title,query)}</span></div><div class="search-result-subtitle">${highlightSearchText(v.creator,query)} · ${v.duration}</div></div><span class="search-result-type">VIDEO</span></button>`;});
-    html+=`</section>`;}
-  const trends=searchTrends.filter(t=>(t.title+" "+t.subtitle).toLowerCase().includes(nq));
-  if(trends.length){total+=trends.length;html+=`<section class="search-section"><div class="search-section-title"><i class="fa-solid fa-chart-line"></i> Trending Signals</div>`;
-    trends.slice(0,4).forEach(t=>{html+=`<button class="search-result search-trend-result"><div class="search-result-avatar" style="display:grid;place-items:center;color:var(--purple);background:rgba(168,85,247,.10);"><i class="fa-solid fa-hashtag"></i></div><div class="search-result-info"><div class="search-result-title"><span>${highlightSearchText(t.title,query)}</span></div><div class="search-result-subtitle">${t.subtitle}</div></div><span class="search-result-type">TREND</span></button>`;});
-    html+=`</section>`;}
-  const postResults=Array.from(document.querySelectorAll("#postsContainer .post")).filter(p=>p.innerText.toLowerCase().includes(nq)).slice(0,5);
-  if(postResults.length){total+=postResults.length;html+=`<section class="search-section"><div class="search-section-title"><i class="fa-solid fa-satellite"></i> Signals & Posts</div>`;
-    postResults.forEach(post=>{
-      const author=post.querySelector(".post-author strong")?.innerText.trim()||"Mediaverse Creator";
-      const postText=post.querySelector(".post-text")?.innerText.trim().replace(/\s+/g," ")||"Media signal";
-      const avatar=post.querySelector(".post-avatar img")?.src||"";
-      const shortText=postText.length>65?postText.slice(0,65)+"...":postText;
-      html+=`<button class="search-result search-post-result"><div class="search-result-avatar"><img src="${avatar}" alt=""></div><div class="search-result-info"><div class="search-result-title"><span>${highlightSearchText(author,query)}</span></div><div class="search-result-subtitle">${highlightSearchText(shortText,query)}</div></div><span class="search-result-type">POST</span></button>`;
-    });
-    html+=`</section>`;}
-  if(total>0) html=`<div class="search-count">${total} signal${total!==1?"s":""} detected in the Mediaverse</div>`+html;
-  else html=`<div class="no-search-result"><i class="fa-solid fa-satellite-dish"></i><strong>No signal found</strong><span>Try another name, ID, video, hashtag or keyword.</span></div>`;
-  searchResults.innerHTML=html;
-}
-searchInput.addEventListener("input",renderSearchResults);
+
 
 function toggleNotifications(){notificationPanel.classList.toggle("show");notificationDot.style.display="none";}
 notificationButton.addEventListener("click",e=>{e.stopPropagation();toggleNotifications();});
@@ -6330,29 +6223,7 @@ document.addEventListener('contextmenu',e=>{const el=e.target.closest&&e.target.
 document.addEventListener('dragstart',e=>{const el=e.target.closest&&e.target.closest('.post-text');if(!el) e.preventDefault();});
 document.addEventListener('selectstart',e=>{const el=e.target.closest&&e.target.closest('.post-text,input,textarea');if(!el) e.preventDefault();});
 
-document.addEventListener("keydown",event=>{
-  if(event.ctrlKey&&event.key.toLowerCase()==="k"){event.preventDefault();openSearchModal();}
-  if(event.key.toLowerCase()==="n"&&!event.target.matches("input,textarea")) openPostModal();
-  if(event.key==="Escape"){
-    /* If draft dialog is showing, close it first */
-    if(composerDraftOverlay && composerDraftOverlay.classList.contains('show')){
-      composerDraftOverlay.classList.remove('show');
-      return;
-    }
-    closePostModal();closeSearchModal();closeReportFlow();closeReactionViewerModal();closeCommentReactionViewerModal();
-    closeImageViewer();closeVideoPlayer();closeEditCommentModal();closeEditHistoryModal();
-    reportSuccessOverlay.classList.remove("show");dlQualityOverlay.classList.remove("show");
-    notificationPanel.classList.remove("show");
-    tagOverlay.classList.remove('show');
-    locationOverlay.classList.remove('show');
-    feelingOverlay.classList.remove('show');
-    onlyOverlay.classList.remove('show');
-    wallpaperOverlay.classList.remove('show');
-    elPrivacyMenu.classList.remove('show');
-    closeAllReactionPopups();closeAllPostMenus();closeAllCommentMenus();
-    document.querySelectorAll('.comment-reaction-popup.show').forEach(p=>p.classList.remove('show'));
-  }
-});
+
 
 function showToast(message){
   clearTimeout(toastTimer);
@@ -11015,6 +10886,107 @@ window.addEventListener('load', function(){
   else boot();
 })();
 </script>
+<script src="../mediaverse-search.js"></script>
+<script>
+/* ============ MEDIAVERSE HOME — Search Sources ============ */
+const searchPeople = [
+  {name:"Sorufa Begum", username:"@sorufa", id:"MV-102948", image:"https://i.pravatar.cc/150?img=32", verified:true, subtitle:"Digital creator · 24.8K followers"},
+  {name:"Sohagi Akter", username:"@sohagi", id:"MV-209331", image:"https://i.pravatar.cc/150?img=47", verified:false, subtitle:"Creator · Photography & lifestyle"},
+  {name:"Aduri Akter", username:"@aduri", id:"MV-842671", image:"https://i.pravatar.cc/150?img=59", verified:true, subtitle:"Creator · 12.4K followers"},
+  {name:"Emma Wilson", username:"@emmawilson", id:"MV-456891", image:"https://i.pravatar.cc/150?img=45", verified:true, subtitle:"Tech creator · Product designer"},
+  {name:"Daniel Lee", username:"@daniellee", id:"MV-764201", image:"https://i.pravatar.cc/150?img=14", verified:false, subtitle:"Creative thinker · Universe explorer"},
+  {name:"Olivia Chen", username:"@oliviachen", id:"MV-918332", image:"https://i.pravatar.cc/150?img=49", verified:true, subtitle:"Visual artist · 8.2K followers"}
+];
 
+const searchVideos = [
+  {title:"Building the Next Digital World", creator:"Sorufa Begum", duration:"12:48", image:"https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=500&q=80"},
+  {title:"The Future of Artificial Intelligence", creator:"Emma Wilson", duration:"08:21", image:"https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=500&q=80"},
+  {title:"Creating Your Digital Universe", creator:"Aduri Akter", duration:"15:02", image:"https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=500&q=80"}
+];
+
+const searchTrends = [
+  {title:"#ArtificialIntelligence", subtitle:"18.4K signals"},
+  {title:"#CreateTheFuture", subtitle:"12.7K signals"},
+  {title:"#DigitalDreams", subtitle:"9.3K signals"},
+  {title:"#Mediaverse", subtitle:"Growing across the universe"}
+];
+
+MVSearch.init({
+  sources: [
+    /* 1. People */
+    {
+      key: 'people', label: 'People', icon: 'fa-user-group', type: 'PERSON',
+      data: searchPeople, limit: 5
+    },
+
+    /* 2. Videos */
+    {
+      key: 'videos', label: 'Video Signals', icon: 'fa-circle-play', type: 'VIDEO',
+      data: searchVideos,
+      search: (v, q) => (v.title + ' ' + v.creator).toLowerCase().includes(q),
+      render: (v, q) => `
+        <button class="search-result" type="button">
+          <div class="search-result-media">
+            <img src="${MVSearch.escapeHTML(v.image)}" alt="">
+            <div class="video-play-icon"><i class="fa-solid fa-play"></i></div>
+          </div>
+          <div class="search-result-info">
+            <div class="search-result-title"><span>${MVSearch.highlight(v.title, q)}</span></div>
+            <div class="search-result-subtitle">${MVSearch.highlight(v.creator, q)} · ${v.duration}</div>
+          </div>
+          <span class="search-result-type">VIDEO</span>
+        </button>`,
+      limit: 4
+    },
+
+    /* 3. Trends */
+    {
+      key: 'trends', label: 'Trending Signals', icon: 'fa-chart-line', type: 'TREND',
+      data: searchTrends,
+      search: (t, q) => (t.title + ' ' + t.subtitle).toLowerCase().includes(q),
+      render: (t, q) => `
+        <button class="search-result" type="button">
+          <div class="search-result-avatar" style="display:grid;place-items:center;color:var(--purple);background:rgba(168,85,247,.10);">
+            <i class="fa-solid fa-hashtag"></i>
+          </div>
+          <div class="search-result-info">
+            <div class="search-result-title"><span>${MVSearch.highlight(t.title, q)}</span></div>
+            <div class="search-result-subtitle">${t.subtitle}</div>
+          </div>
+          <span class="search-result-type">TREND</span>
+        </button>`,
+      limit: 4
+    },
+
+    /* 4. Live posts */
+    {
+      key: 'posts', label: 'Signals & Posts', icon: 'fa-satellite', type: 'POST',
+      data: () => Array.from(document.querySelectorAll('#postsContainer .post')).map(p => ({
+        el:     p,
+        author: (p.querySelector('.post-author strong')?.innerText.trim() || 'Mediaverse Creator'),
+        text:   (p.querySelector('.post-text')?.innerText.trim() || '').replace(/\s+/g, ' '),
+        avatar: p.querySelector('.post-avatar img')?.src || ''
+      })),
+      search: (p, q) => (p.author + ' ' + p.text).toLowerCase().includes(q),
+      render: (p, q) => {
+        const short = p.text.length > 65 ? p.text.slice(0, 65) + '...' : p.text;
+        return `<button class="search-result" type="button">
+          <div class="search-result-avatar"><img src="${MVSearch.escapeHTML(p.avatar)}" alt=""></div>
+          <div class="search-result-info">
+            <div class="search-result-title"><span>${MVSearch.highlight(p.author, q)}</span></div>
+            <div class="search-result-subtitle">${MVSearch.highlight(short, q)}</div>
+          </div>
+          <span class="search-result-type">POST</span>
+        </button>`;
+      },
+      limit: 5
+    }
+  ]
+});
+</script>
+<!-- ============================================================
+     NETWORK STATUS (auto-inject system)
+============================================================ -->
+<script src="../mediaverse-network.js"></script>
 </body>
 </html>
