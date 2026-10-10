@@ -1,0 +1,2099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0c18" />
+<title>MEDIAVERSE — Notifications</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+
+<style>
+/* ============================================================
+   ROOT
+============================================================ */
+:root{
+  --bg:#080914; --bg-soft:#0e1020;
+  --glass:rgba(18,20,37,.56); --glass-strong:rgba(20,23,43,.78);
+  --border:rgba(255,255,255,.10); --border-bright:rgba(255,255,255,.18);
+  --text:#f7f8ff; --muted:#9399b2;
+  --cyan:#00e5ff; --purple:#a855f7; --pink:#ff4ecd; --blue:#4d7cff;
+  --green:#35e69a; --orange:#ff9f43; --red:#ff5f7a; --yellow:#ffd43b;
+  --shadow:0 25px 80px rgba(0,0,0,.42);
+  --radius:24px; --max-width:1540px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+body{
+  min-height:100vh; font-family:"Inter",sans-serif; color:var(--text);
+  background:
+    radial-gradient(circle at 10% 0%,rgba(168,85,247,.18),transparent 25%),
+    radial-gradient(circle at 95% 15%,rgba(0,229,255,.14),transparent 26%),
+    radial-gradient(circle at 50% 100%,rgba(255,78,205,.09),transparent 35%),
+    var(--bg);
+  overflow-x:hidden; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  padding-bottom:110px;
+}
+input,textarea{user-select:text!important;-webkit-user-select:text!important;}
+
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{border-radius:20px;background:linear-gradient(var(--purple),var(--cyan));}
+
+/* ============================================================
+   AURORA + GRID
+============================================================ */
+.aurora{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-3;}
+.aurora::before,.aurora::after{content:"";position:absolute;width:600px;height:600px;border-radius:50%;filter:blur(120px);opacity:.12;animation:floatOrb 16s ease-in-out infinite;}
+.aurora::before{top:-200px;left:-150px;background:var(--purple);}
+.aurora::after{right:-220px;bottom:-250px;background:var(--cyan);animation-delay:-8s;}
+@keyframes floatOrb{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(80px,50px) scale(1.2);}}
+.grid-bg{
+  position:fixed;inset:0;z-index:-2;opacity:.18;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:55px 55px;
+  mask-image:radial-gradient(ellipse at center,black,transparent 80%);
+  -webkit-mask-image:radial-gradient(ellipse at center,black,transparent 80%);
+}
+.glass{
+  background:linear-gradient(135deg,rgba(255,255,255,.075),rgba(255,255,255,.025));
+  border:1px solid var(--border);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  box-shadow:var(--shadow);
+}
+
+/* ============================================================
+   TOP BAR
+============================================================ */
+.topbar{position:sticky;top:0;z-index:2000;width:100%;padding:12px clamp(12px,2vw,30px);
+  background:linear-gradient(to bottom,rgba(8,9,20,.88),rgba(8,9,20,.45));
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}
+.topbar-inner{width:min(1540px,100%);margin:auto;min-height:60px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 12px;border-radius:20px;}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0;cursor:pointer;text-decoration:none;}
+.brand-mark{position:relative;width:40px;height:40px;flex-shrink:0;display:grid;place-items:center;border-radius:14px;overflow:hidden;color:#fff;font-size:17px;background:linear-gradient(135deg,var(--purple),var(--cyan));box-shadow:0 0 30px rgba(168,85,247,.4);}
+.brand-mark::after{content:"";position:absolute;inset:-50%;background:linear-gradient(45deg,transparent,rgba(255,255,255,.35),transparent);animation:shine 4s linear infinite;}
+@keyframes shine{from{transform:translateX(-100%) rotate(25deg);}to{transform:translateX(100%) rotate(25deg);}}
+.brand-text{font-family:"Space Grotesk",sans-serif;font-size:18px;font-weight:800;letter-spacing:1.6px;background:linear-gradient(90deg,#fff,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.command-search{position:relative;flex:1;max-width:620px;min-width:160px;height:50px;display:flex;align-items:center;gap:10px;padding:0 10px;cursor:pointer;overflow:hidden;border-radius:18px;color:var(--muted);
+  background:linear-gradient(135deg,rgba(255,255,255,.105),rgba(255,255,255,.035)),rgba(14,16,32,.38);
+  border:1px solid rgba(255,255,255,.13);
+  backdrop-filter:blur(28px) saturate(150%);-webkit-backdrop-filter:blur(28px) saturate(150%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),inset 0 -1px 0 rgba(255,255,255,.025),0 14px 45px rgba(0,0,0,.25),0 0 35px rgba(0,229,255,.035);
+  transition:transform .3s,border-color .3s,box-shadow .3s,background .3s;}
+.command-search::before{content:"";position:absolute;top:0;left:8%;width:84%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent);opacity:.7;pointer-events:none;}
+.command-search:hover{transform:translateY(-2px);border-color:rgba(0,229,255,.24);
+  background:linear-gradient(135deg,rgba(168,85,247,.11),rgba(0,229,255,.055)),rgba(14,16,32,.44);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 16px 45px rgba(0,0,0,.28),0 0 35px rgba(0,229,255,.08),0 0 55px rgba(168,85,247,.045);}
+.search-icon-wrap{position:relative;width:32px;height:32px;flex-shrink:0;display:grid;place-items:center;border-radius:11px;color:var(--cyan);background:linear-gradient(135deg,rgba(0,229,255,.14),rgba(168,85,247,.10));border:1px solid rgba(255,255,255,.09);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 0 18px rgba(0,229,255,.06);z-index:2;}
+.search-icon-wrap i{font-size:13px;color:var(--cyan);text-shadow:0 0 14px rgba(0,229,255,.55);transition:transform .3s;}
+.command-search:hover .search-icon-wrap i{transform:scale(1.12);}
+.search-content{position:relative;z-index:2;flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.search-placeholder{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:rgba(235,237,248,.88);font-size:12px;font-weight:600;letter-spacing:.1px;}
+.search-content small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:rgba(142,149,173,.72);font-size:9px;letter-spacing:.15px;}
+.search-shortcut{position:relative;z-index:2;display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.search-shortcut span{min-width:22px;height:22px;display:grid;place-items:center;padding:0 5px;border-radius:7px;color:rgba(190,196,215,.75);font-size:8px;font-weight:700;background:linear-gradient(135deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);}
+.top-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.icon-btn{position:relative;width:40px;height:40px;flex-shrink:0;display:grid;place-items:center;border:none;cursor:pointer;border-radius:13px;color:#aeb4c8;font-size:15px;background:rgba(255,255,255,.045);transition:.25s ease;}
+.icon-btn:hover{color:#fff;transform:translateY(-2px);background:rgba(255,255,255,.09);}
+
+.icon-badge{
+  position:absolute;top:-4px;right:-4px;
+  min-width:20px;height:20px;padding:0 5px;
+  display:grid;place-items:center;
+  border-radius:10px;
+  font-size:9.5px;font-weight:900;letter-spacing:.2px;
+  color:#fff;
+  background:linear-gradient(135deg,#ff4ecd,#a855f7);
+  border:2px solid #0b0c18;
+  box-shadow:
+    0 0 12px rgba(255,78,205,.55),
+    0 0 22px rgba(255,78,205,.32),
+    inset 0 1px 0 rgba(255,255,255,.35);
+  z-index:5;
+  animation:iconBadgePop .38s cubic-bezier(.2,.9,.3,1.6);
+}
+.icon-badge.hidden{display:none;}
+@keyframes iconBadgePop{
+  0%{transform:scale(0);}
+  60%{transform:scale(1.25);}
+  100%{transform:scale(1);}
+}
+.top-avatar{width:40px;height:40px;flex-shrink:0;overflow:hidden;cursor:pointer;border-radius:13px;border:2px solid rgba(0,229,255,.5);}
+.top-avatar img{width:100%;height:100%;object-fit:cover;}
+
+/* ============================================================
+   APP LAYOUT
+============================================================ */
+.app{
+  width:min(1540px,100%);
+  margin:auto;
+  padding:14px clamp(12px,2vw,30px) 110px;
+  display:grid;
+  grid-template-columns:250px minmax(0,1fr) 315px;
+  gap:22px;
+  align-items:start;
+}
+
+/* LEFT RAIL */
+.left-rail{position:sticky;top:100px;}
+.profile-capsule{position:relative;overflow:hidden;padding:18px;border-radius:var(--radius);}
+.profile-glow{position:absolute;width:160px;height:160px;top:-70px;left:50%;transform:translateX(-50%);border-radius:50%;filter:blur(60px);background:var(--purple);opacity:.35;}
+.profile-main{position:relative;text-align:center;}
+.avatar-ring{width:82px;height:82px;padding:3px;margin:auto;border-radius:28px;background:linear-gradient(135deg,var(--cyan),var(--purple),var(--pink));}
+.avatar-ring img{width:100%;height:100%;object-fit:cover;border-radius:25px;border:4px solid #111321;}
+.profile-name{margin-top:11px;font-size:15px;font-weight:700;}
+.profile-handle{margin-top:4px;font-size:11px;color:var(--muted);}
+.profile-metrics{display:grid;grid-template-columns:repeat(3,1fr);margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07);}
+.metric strong{display:block;font-size:13px;}
+.metric span{display:block;margin-top:4px;font-size:9px;color:var(--muted);}
+.nav-card{margin-top:15px;padding:9px;border-radius:var(--radius);}
+.nav-link{display:flex;align-items:center;gap:11px;padding:12px 13px;margin-bottom:4px;cursor:pointer;text-decoration:none;border-radius:14px;color:#aeb4c8;font-size:13px;transition:.2s ease;}
+.nav-link i{width:20px;text-align:center;font-size:15px;}
+.nav-link:hover{color:white;background:rgba(255,255,255,.055);}
+.nav-link.active{color:white;background:linear-gradient(90deg,rgba(168,85,247,.2),rgba(0,229,255,.06));border:1px solid rgba(168,85,247,.15);}
+.nav-link.active i{color:var(--cyan);}
+.nav-label{margin:13px 11px 8px;font-size:9px;font-weight:700;letter-spacing:1px;color:#70768d;text-transform:uppercase;}
+.nav-link .nav-badge{
+  margin-left:auto;
+  min-width:22px;height:22px;padding:0 7px;
+  border-radius:11px;
+  display:grid;place-items:center;
+  font-size:10px;font-weight:900;color:#fff;
+  background:linear-gradient(135deg,var(--pink),var(--purple));
+  box-shadow:0 0 14px rgba(255,78,205,.4);
+}
+
+/* RIGHT RAIL */
+.right-rail{position:sticky;top:100px;display:flex;flex-direction:column;gap:16px;}
+.pulse-card{padding:17px;border-radius:var(--radius);}
+.card-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.card-heading h3{font-size:13px;}
+.card-heading button{border:none;cursor:pointer;color:var(--cyan);background:transparent;font-size:10px;}
+.trend{padding:11px 0;border-bottom:1px solid rgba(255,255,255,.055);}
+.trend:last-child{border-bottom:none;}
+.trend small{color:#737a91;font-size:9px;}
+.trend strong{display:block;margin-top:5px;font-size:11px;}
+.trend span{display:block;margin-top:4px;color:var(--muted);font-size:9px;}
+.person{display:flex;align-items:center;gap:9px;padding:8px 0;}
+.person img{width:40px;height:40px;flex-shrink:0;object-fit:cover;border-radius:13px;}
+.person-info{flex:1;min-width:0;}
+.person-info strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;}
+.person-info span{display:block;margin-top:3px;color:var(--muted);font-size:9px;}
+.follow{border:none;cursor:pointer;padding:7px 9px;border-radius:9px;color:white;font-size:9px;background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.25);transition:.25s ease;flex-shrink:0;}
+.follow:hover{background:rgba(168,85,247,.25);}
+.follow.following{color:var(--cyan);background:rgba(0,229,255,.08);border-color:rgba(0,229,255,.2);}
+
+/* ============================================================
+   NOTIFICATION MAIN
+============================================================ */
+.notif-main{min-width:0;}
+
+/* ⭐ PAGE HEAD : TITLE + SETTINGS  (1st bar) */
+.notif-page-head{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:13px 16px;
+  border-radius:22px;
+  background:linear-gradient(135deg,rgba(255,255,255,.075),rgba(255,255,255,.018));
+  border:1px solid rgba(255,255,255,.10);
+  backdrop-filter:blur(22px) saturate(160%);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 12px 32px rgba(0,0,0,.18);
+  margin-bottom:12px;
+  overflow:hidden;
+}
+.notif-page-head::before{
+  content:"";position:absolute;top:0;left:8%;width:84%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent);
+  opacity:.75;pointer-events:none;
+}
+.notif-page-head::after{
+  content:"";position:absolute;right:-70px;top:-80px;
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(168,85,247,.30),transparent 70%);
+  filter:blur(34px);pointer-events:none;
+}
+.notif-page-title{
+  position:relative;z-index:2;
+  display:flex;align-items:center;gap:12px;min-width:0;
+}
+.notif-page-title .title-icon{
+  width:44px;height:44px;flex:0 0 44px;
+  display:grid;place-items:center;border-radius:15px;
+  font-size:17px;color:#fff;
+  background:linear-gradient(135deg,var(--purple),var(--cyan));
+  box-shadow:
+    0 0 26px rgba(168,85,247,.36),
+    inset 0 1px 0 rgba(255,255,255,.28);
+}
+.notif-page-title .title-copy{min-width:0;}
+.notif-page-title h2{
+  font-family:"Space Grotesk",sans-serif;
+  font-size:16px;font-weight:800;letter-spacing:.5px;
+  background:linear-gradient(90deg,#ffffff,var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.notif-page-title .title-copy > span{
+  display:block;margin-top:3px;
+  font-size:10.5px;color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.notif-page-actions{
+  position:relative;z-index:2;
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+
+/* ⭐ TOOLBAR : FILTER TABS + MARK-ALL (2nd bar) */
+.notif-toolbar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:0;
+  min-width:0;
+}
+
+/* ⭐ FILTER TABS */
+.notif-tabs{
+  flex:1 1 auto;
+  min-width:0;
+  display:flex;gap:6px;margin-top:0;padding:8px;
+  border-radius:22px;overflow-x:auto;scrollbar-width:none;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.018));
+  border:1px solid rgba(255,255,255,.10);
+  backdrop-filter:blur(22px) saturate(160%);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 12px 32px rgba(0,0,0,.18);
+  position:relative;
+}
+.notif-tabs::before{
+  content:"";position:absolute;top:0;left:8%;width:84%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent);
+  opacity:.75;pointer-events:none;
+}
+.notif-tabs::-webkit-scrollbar{display:none;}
+.notif-tab{
+  flex:0 0 auto;padding:10px 16px;border-radius:14px;border:none;cursor:pointer;
+  font:700 11.5px inherit;letter-spacing:.2px;color:#a3abc3;
+  background:transparent;
+  display:inline-flex;align-items:center;gap:7px;
+  transition:all .25s cubic-bezier(.2,.9,.3,1.4);
+  position:relative;
+}
+.notif-tab i{font-size:12px;}
+.notif-tab:hover{color:#fff;background:rgba(255,255,255,.06);}
+.notif-tab.active{
+  color:#fff;
+  background:linear-gradient(135deg,rgba(168,85,247,.32),rgba(0,229,255,.18));
+  box-shadow:
+    0 6px 22px rgba(168,85,247,.28),
+    inset 0 1px 0 rgba(255,255,255,.20),
+    inset 0 -1px 0 rgba(0,0,0,.15);
+}
+.notif-tab .tab-count{
+  display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;
+  border-radius:10px;font-size:9.5px;font-weight:900;
+  background:rgba(255,255,255,.10);color:#dde3f5;
+  transition:.2s ease;
+}
+.notif-tab.active .tab-count{
+  background:rgba(255,255,255,.24);color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.30);
+}
+
+/* ⭐ TOOL BUTTONS (mark all read) */
+
+
+.tool-icon-btn{
+  position:relative;
+  width:38px;height:38px;
+  border-radius:13px;
+  border:1px solid rgba(255,255,255,.11);
+  background:linear-gradient(135deg,rgba(255,255,255,.075),rgba(255,255,255,.022));
+  color:#b9c1d6;
+  cursor:pointer;
+  display:grid;place-items:center;
+  font-size:13px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 6px 16px rgba(0,0,0,.14);
+  transition:transform .25s cubic-bezier(.2,.9,.3,1.4),
+             background .25s ease,
+             border-color .25s ease,
+             color .25s ease,
+             box-shadow .25s ease;
+}
+.tool-icon-btn:hover{
+  color:#fff;
+  transform:translateY(-2px);
+  border-color:rgba(0,229,255,.28);
+  background:linear-gradient(135deg,rgba(0,229,255,.13),rgba(168,85,247,.08));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 10px 22px rgba(0,0,0,.24),
+    0 0 22px rgba(0,229,255,.14);
+}
+.tool-icon-btn:active{transform:scale(.94);}
+.tool-icon-btn i{transition:transform .3s ease;}
+.tool-icon-btn:hover i{transform:scale(1.10);}
+
+.tool-icon-btn.mark-all:hover{
+  border-color:rgba(53,230,154,.30);
+  background:linear-gradient(135deg,rgba(53,230,154,.13),rgba(0,229,255,.07));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 10px 22px rgba(0,0,0,.24),
+    0 0 22px rgba(53,230,154,.16);
+}
+.tool-icon-btn.settings:hover{
+  border-color:rgba(168,85,247,.32);
+  background:linear-gradient(135deg,rgba(168,85,247,.14),rgba(255,78,205,.08));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 10px 22px rgba(0,0,0,.24),
+    0 0 22px rgba(168,85,247,.18);
+}
+
+/* ============================================================
+   SECTION HEAD
+============================================================ */
+.notif-section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 6px 12px;
+  color:#7d84a0;font-size:10px;font-weight:800;
+  letter-spacing:1.2px;text-transform:uppercase;
+}
+.notif-section-head i{color:var(--cyan);margin-right:7px;font-size:10px;}
+.notif-section-head .sec-actions{display:flex;gap:6px;}
+.notif-section-head .sec-actions button{
+  border:none;background:transparent;color:#7d84a0;
+  cursor:pointer;font:700 9.5px inherit;
+  padding:5px 10px;border-radius:9px;
+  transition:.2s ease;
+}
+.notif-section-head .sec-actions button:hover{color:var(--cyan);background:rgba(0,229,255,.06);}
+
+/* ============================================================
+   NOTIFICATION CARD
+============================================================ */
+.notif-list{display:flex;flex-direction:column;gap:10px;}
+
+.notif-item{
+  position:relative;display:flex;gap:14px;padding:16px 18px;
+  border-radius:20px;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.075),rgba(255,255,255,.018));
+  border:1px solid rgba(255,255,255,.085);
+  backdrop-filter:blur(22px) saturate(160%);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);
+  box-shadow:
+    0 6px 22px rgba(0,0,0,.16),
+    inset 0 1px 0 rgba(255,255,255,.10);
+  cursor:pointer;
+  transition:
+    transform .28s cubic-bezier(.2,.9,.3,1.4),
+    background .25s ease,
+    border-color .25s ease,
+    box-shadow .28s ease;
+  overflow:visible;
+}
+.notif-item::before{
+  content:"";position:absolute;top:0;left:10%;width:70%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);
+  opacity:.7;pointer-events:none;
+  border-radius:20px 20px 0 0;
+}
+.notif-item:hover{
+  transform:translateY(-2px);
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.105),rgba(255,255,255,.028));
+  border-color:rgba(0,229,255,.20);
+  box-shadow:
+    0 14px 38px rgba(0,0,0,.28),
+    0 0 26px rgba(0,229,255,.06),
+    inset 0 1px 0 rgba(255,255,255,.14);
+}
+.notif-item.opened{
+  border-color:rgba(0,229,255,.45);
+  box-shadow:
+    0 16px 42px rgba(0,0,0,.32),
+    0 0 34px rgba(0,229,255,.18),
+    inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.notif-item.menu-open{
+  z-index:200;
+  transform:none;
+  border-color:rgba(168,85,247,.30);
+  box-shadow:
+    0 18px 46px rgba(0,0,0,.36),
+    0 0 30px rgba(168,85,247,.10),
+    inset 0 1px 0 rgba(255,255,255,.16);
+}
+
+.notif-item.unread{
+  background:
+    radial-gradient(circle at 0% 0%,rgba(0,229,255,.10),transparent 55%),
+    radial-gradient(circle at 100% 100%,rgba(168,85,247,.08),transparent 55%),
+    linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.024));
+  border-color:rgba(0,229,255,.22);
+  box-shadow:
+    0 10px 32px rgba(0,0,0,.22),
+    0 0 26px rgba(0,229,255,.08),
+    inset 0 1px 0 rgba(255,255,255,.16);
+}
+.notif-item.unread::after{
+  content:"";position:absolute;left:0;top:20%;bottom:20%;
+  width:3px;border-radius:0 4px 4px 0;
+  background:linear-gradient(180deg,var(--cyan),var(--purple));
+  box-shadow:0 0 14px rgba(0,229,255,.55);
+}
+
+.notif-item.danger.unread{
+  border-color:rgba(255,95,122,.28);
+  background:
+    radial-gradient(circle at 0% 0%,rgba(255,95,122,.12),transparent 55%),
+    radial-gradient(circle at 100% 100%,rgba(255,159,67,.09),transparent 55%),
+    linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.024));
+}
+.notif-item.danger.unread::after{
+  background:linear-gradient(180deg,#ff9f43,#ff5f7a);
+  box-shadow:0 0 14px rgba(255,95,122,.60);
+}
+.notif-item.success.unread{
+  border-color:rgba(53,230,154,.28);
+  background:
+    radial-gradient(circle at 0% 0%,rgba(53,230,154,.12),transparent 55%),
+    radial-gradient(circle at 100% 100%,rgba(0,229,255,.08),transparent 55%),
+    linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.024));
+}
+.notif-item.success.unread::after{
+  background:linear-gradient(180deg,#35e69a,#00e5ff);
+  box-shadow:0 0 14px rgba(53,230,154,.60);
+}
+
+/* AVATAR */
+.notif-avatar-wrap{position:relative;flex-shrink:0;width:56px;height:56px;}
+.notif-avatar{
+  width:100%;height:100%;border-radius:18px;object-fit:cover;
+  border:1.5px solid rgba(255,255,255,.12);
+  box-shadow:0 8px 22px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.10);
+  background:linear-gradient(135deg,rgba(168,85,247,.35),rgba(0,229,255,.25));
+}
+.notif-type-badge{
+  position:absolute;right:-5px;bottom:-5px;
+  width:26px;height:26px;border-radius:10px;
+  display:grid;place-items:center;font-size:11px;color:#fff;
+  background:linear-gradient(135deg,var(--purple),var(--cyan));
+  border:2.5px solid #0a0c18;
+  box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(0,229,255,.28);
+}
+.notif-type-badge.type-reaction{background:linear-gradient(135deg,#ff6bcb,#a855f7);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(255,107,203,.32);}
+.notif-type-badge.type-comment{background:linear-gradient(135deg,#00e5ff,#4d7cff);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(0,229,255,.32);}
+.notif-type-badge.type-follow{background:linear-gradient(135deg,#35e69a,#00e5ff);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(53,230,154,.32);}
+.notif-type-badge.type-mention{background:linear-gradient(135deg,#a855f7,#ff4ecd);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(168,85,247,.32);}
+.notif-type-badge.type-share{background:linear-gradient(135deg,#ff9f43,#ff4ecd);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(255,159,67,.32);}
+.notif-type-badge.type-system{background:linear-gradient(135deg,#4d7cff,#a855f7);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(77,124,255,.32);}
+.notif-type-badge.type-birthday{background:linear-gradient(135deg,#ffd43b,#ff9f43);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(255,212,59,.36);}
+.notif-type-badge.type-live{background:linear-gradient(135deg,#ff4ecd,#ff5f7a);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(255,78,205,.36);}
+.notif-type-badge.type-milestone{background:linear-gradient(135deg,#35e69a,#4d7cff);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(53,230,154,.32);}
+.notif-type-badge.type-memory{background:linear-gradient(135deg,#ff9f43,#ffd43b);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(255,159,67,.32);}
+
+.notif-type-badge.type-report{background:linear-gradient(135deg,#35e69a,#00e5ff);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(53,230,154,.34);}
+.notif-type-badge.type-warning{background:linear-gradient(135deg,#ff9f43,#ff5f7a);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(255,95,122,.36);}
+.notif-type-badge.type-support{background:linear-gradient(135deg,#4d7cff,#00e5ff);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(77,124,255,.34);}
+.notif-type-badge.type-copyright{background:linear-gradient(135deg,#ffd43b,#ff9f43);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(255,212,59,.36);}
+.notif-type-badge.type-appeal{background:linear-gradient(135deg,#35e69a,#4d7cff);box-shadow:0 5px 14px rgba(0,0,0,.42),0 0 16px rgba(53,230,154,.34);}
+
+/* CONTENT */
+.notif-content{flex:1;min-width:0;padding-right:36px;}
+.notif-text{
+  font-size:13px;line-height:1.6;color:#dfe5f7;
+  word-break:break-word;
+  letter-spacing:.05px;
+}
+.notif-text b{color:#fff;font-weight:700;}
+.notif-text .notif-highlight{color:var(--cyan);font-weight:800;text-shadow:0 0 12px rgba(0,229,255,.30);}
+.notif-text .notif-time{color:#7d84a0;font-weight:600;font-size:11px;margin-left:6px;}
+
+.notif-sub{
+  margin-top:6px;font-size:11.5px;color:#9ca3ba;line-height:1.55;
+  overflow:hidden;text-overflow:ellipsis;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+  word-break:break-word;
+}
+.notif-sub em{
+  color:#b6bed3;font-style:normal;font-weight:600;
+  padding:3px 9px;border-radius:8px;
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.06);
+  display:inline-block;
+  margin-top:2px;
+}
+
+.notif-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:7px;padding:4px 10px;
+  border-radius:9px;
+  font-size:9.5px;font-weight:800;letter-spacing:.5px;
+  color:var(--cyan);
+  background:rgba(0,229,255,.07);
+  border:1px solid rgba(0,229,255,.16);
+}
+.notif-chip i{font-size:9px;}
+.notif-chip.warn{color:#ffb27a;background:rgba(255,159,67,.09);border-color:rgba(255,159,67,.22);}
+.notif-chip.ok{color:#55e7ad;background:rgba(53,230,154,.09);border-color:rgba(53,230,154,.22);}
+.notif-chip.bad{color:#ff8da0;background:rgba(255,95,122,.09);border-color:rgba(255,95,122,.22);}
+
+/* THUMB */
+.notif-thumb{
+  width:60px;height:60px;flex-shrink:0;
+  border-radius:14px;overflow:hidden;
+  background:linear-gradient(135deg,rgba(168,85,247,.32),rgba(0,229,255,.22));
+  position:relative;
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 8px 20px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.notif-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.notif-thumb .play-tag{
+  position:absolute;inset:0;display:grid;place-items:center;
+  background:rgba(0,0,0,.42);color:#fff;font-size:15px;
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+}
+.notif-thumb .strike{
+  position:absolute;inset:0;display:grid;place-items:center;
+  background:rgba(255,95,122,.28);color:#fff;font-size:16px;
+}
+.notif-thumb.thumb-fallback{
+  background:linear-gradient(135deg,rgba(168,85,247,.35),rgba(0,229,255,.25));
+  display:grid;place-items:center;
+}
+.notif-thumb.thumb-fallback::after{
+  content:"✦";
+  color:rgba(255,255,255,.75);
+  font-size:18px;line-height:1;
+}
+
+/* ACTIONS */
+.notif-actions{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;}
+.notif-act{
+  border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.018));
+  color:#d5dbed;padding:8px 14px;border-radius:11px;
+  font:700 11px inherit;cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  transition:.2s ease;
+}
+.notif-act:hover{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.20);transform:translateY(-1px);}
+.notif-act i{font-size:10.5px;}
+.notif-act.accept{
+  color:#fff;
+  background:linear-gradient(135deg,rgba(168,85,247,.50),rgba(0,229,255,.36));
+  border-color:rgba(168,85,247,.50);
+  box-shadow:
+    0 6px 18px rgba(168,85,247,.28),
+    inset 0 1px 0 rgba(255,255,255,.24);
+}
+.notif-act.accept:hover{background:linear-gradient(135deg,rgba(168,85,247,.70),rgba(0,229,255,.50));box-shadow:0 10px 26px rgba(168,85,247,.36),inset 0 1px 0 rgba(255,255,255,.30);}
+.notif-act.decline{
+  color:#c9cfe0;
+  background:rgba(255,255,255,.03);
+}
+.notif-act.decline:hover{color:#ff8a9a;border-color:rgba(255,95,130,.28);background:rgba(255,95,130,.08);}
+.notif-act.following{
+  color:var(--cyan);
+  background:rgba(0,229,255,.10);
+  border-color:rgba(0,229,255,.28);
+  box-shadow:0 0 16px rgba(0,229,255,.10);
+}
+.notif-act.danger{
+  color:#ffb3bf;
+  background:rgba(255,95,122,.08);
+  border-color:rgba(255,95,122,.26);
+}
+.notif-act.danger:hover{color:#fff;background:rgba(255,95,122,.22);border-color:rgba(255,95,122,.45);}
+.notif-act.ghost{color:#b9c1d6;background:rgba(255,255,255,.03);}
+
+/* ============================================================
+   3-DOT MENU
+============================================================ */
+.notif-menu-wrap{position:absolute;top:14px;right:14px;z-index:60;}
+.notif-more{
+  width:32px;height:32px;border:none;background:rgba(255,255,255,.045);
+  color:#8a92ab;cursor:pointer;border-radius:11px;
+  display:grid;place-items:center;font-size:13px;
+  border:1px solid transparent;
+  opacity:0;
+  transition:opacity .22s ease, background .22s ease, color .22s ease, border-color .22s ease, transform .22s ease;
+}
+.notif-item:hover .notif-more,
+.notif-item:focus-within .notif-more,
+.notif-item.menu-open .notif-more,
+.notif-more.active{
+  opacity:1;
+  color:#c9d1e8;
+  background:rgba(255,255,255,.085);
+  border-color:rgba(255,255,255,.10);
+}
+.notif-more:hover{
+  background:rgba(255,255,255,.16) !important;
+  color:#fff !important;
+  border-color:rgba(255,255,255,.20) !important;
+  transform:scale(1.06);
+}
+.notif-more.active{
+  background:linear-gradient(135deg,rgba(168,85,247,.28),rgba(0,229,255,.20)) !important;
+  color:#fff !important;
+  border-color:rgba(168,85,247,.40) !important;
+  box-shadow:0 0 18px rgba(168,85,247,.28);
+}
+@media (hover:none){
+  .notif-more{opacity:1;}
+}
+
+.notif-menu{
+  position:absolute;top:calc(100% + 10px);right:0;
+  min-width:258px;max-width:min(310px, calc(100vw - 28px));
+  padding:7px;border-radius:16px;
+  display:none;z-index:999;
+  background:
+    radial-gradient(circle at 0% 0%,rgba(168,85,247,.12),transparent 42%),
+    linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.035)),
+    rgba(16,18,34,.985);
+  border:1px solid var(--border-bright);
+  backdrop-filter:blur(34px) saturate(190%);
+  -webkit-backdrop-filter:blur(34px) saturate(190%);
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.68),
+    0 0 0 1px rgba(0,229,255,.05),
+    inset 0 1px 0 rgba(255,255,255,.18);
+  animation:menuShow .24s cubic-bezier(.2,.9,.3,1.3);
+  transform-origin:top right;
+  overflow:hidden;
+  isolation:isolate;
+}
+.notif-menu::before{
+  content:"";position:absolute;top:0;left:12%;width:76%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,229,255,.45),transparent);
+  opacity:.85;pointer-events:none;
+}
+.notif-menu.show{display:block;}
+
+.notif-menu.flip-up{
+  top:auto;
+  bottom:calc(100% + 10px);
+  transform-origin:bottom right;
+  animation:menuShowUp .24s cubic-bezier(.2,.9,.3,1.3);
+  box-shadow:
+    0 -30px 80px rgba(0,0,0,.68),
+    0 0 0 1px rgba(0,229,255,.05),
+    inset 0 1px 0 rgba(255,255,255,.18);
+}
+.notif-menu.flip-up::before{
+  top:auto;bottom:0;
+  background:linear-gradient(90deg,transparent,rgba(168,85,247,.42),transparent);
+}
+@keyframes menuShow{
+  from{opacity:0;transform:translateY(-8px) scale(.94);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+@keyframes menuShowUp{
+  from{opacity:0;transform:translateY(8px) scale(.94);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+
+.notif-menu-head{
+  padding:8px 12px 9px;
+  font-size:9.5px;font-weight:900;letter-spacing:1.2px;
+  text-transform:uppercase;color:#7d84a0;
+  display:flex;align-items:center;gap:7px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  margin-bottom:6px;
+}
+.notif-menu-head i{color:var(--cyan);font-size:10px;}
+
+.notif-menu-item{
+  width:100%;display:flex;align-items:flex-start;gap:12px;
+  padding:11px 12px;border:none;cursor:pointer;border-radius:12px;
+  color:#cfd3e3;font:600 12px inherit;
+  text-align:left;background:transparent;
+  transition:.2s cubic-bezier(.2,.9,.3,1.4);
+}
+.notif-menu-item:hover{
+  background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.03));
+  color:#fff;
+  transform:translateX(3px);
+}
+.notif-menu-item .mi-icon{
+  width:34px;height:34px;flex:0 0 34px;
+  display:grid;place-items:center;
+  border-radius:11px;
+  font-size:14px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.09);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  transition:.2s ease;
+}
+.notif-menu-item .mi-info{flex:1;min-width:0;padding-top:1px;}
+.notif-menu-item .mi-title{
+  display:block;font-size:12px;font-weight:700;color:#eef2ff;
+  letter-spacing:.15px;
+}
+.notif-menu-item .mi-desc{
+  display:block;margin-top:2px;
+  font-size:9.5px;font-weight:500;color:#7d84a0;
+  line-height:1.35;
+}
+.notif-menu-item:hover .mi-title{color:#fff;}
+.notif-menu-item:hover .mi-desc{color:#a7b0c8;}
+
+.notif-menu-item.mi-read .mi-icon{color:var(--cyan);background:rgba(0,229,255,.08);border-color:rgba(0,229,255,.18);}
+.notif-menu-item.mi-mute .mi-icon{color:var(--orange);background:rgba(255,159,67,.09);border-color:rgba(255,159,67,.20);}
+.notif-menu-item.mi-remove .mi-icon{color:#ff6b81;background:rgba(255,95,130,.09);border-color:rgba(255,95,130,.20);}
+.notif-menu-item.mi-remove .mi-title{color:#ffaab7;}
+.notif-menu-item.mi-pin .mi-icon{color:var(--yellow);background:rgba(255,212,59,.10);border-color:rgba(255,212,59,.22);}
+.notif-menu-item.mi-more-actions .mi-icon{color:var(--purple);background:rgba(168,85,247,.10);border-color:rgba(168,85,247,.22);}
+
+.notif-menu-item.mi-mute-user .mi-icon{color:#ff8a9a;background:rgba(255,95,130,.10);border-color:rgba(255,95,130,.24);}
+.notif-menu-item.mi-mute-user:hover{background:linear-gradient(135deg,rgba(255,95,130,.14),rgba(255,95,130,.04));}
+.notif-menu-item.mi-appeal .mi-icon{color:var(--green);background:rgba(53,230,154,.10);border-color:rgba(53,230,154,.24);}
+.notif-menu-item.mi-ticket .mi-icon{color:var(--blue);background:rgba(77,124,255,.10);border-color:rgba(77,124,255,.24);}
+
+.notif-menu-divider{
+  height:1px;margin:6px 10px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.09),transparent);
+}
+
+/* ============================================================
+   DAY DIVIDER
+============================================================ */
+.notif-day-divider{
+  display:flex;align-items:center;gap:12px;
+  padding:24px 6px 10px;
+  color:#7d84a0;font-size:10px;font-weight:800;
+  letter-spacing:1.4px;text-transform:uppercase;
+}
+.notif-day-divider::before,.notif-day-divider::after{
+  content:"";flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);
+}
+.notif-day-divider span{padding:0 6px;display:inline-flex;align-items:center;gap:7px;}
+.notif-day-divider span::before{
+  content:"";width:5px;height:5px;border-radius:50%;
+  background:var(--cyan);box-shadow:0 0 10px var(--cyan);
+}
+
+/* ============================================================
+   EMPTY STATE
+============================================================ */
+.notif-empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:70px 22px;gap:16px;text-align:center;
+  border-radius:24px;
+  background:linear-gradient(135deg,rgba(255,255,255,.05),rgba(255,255,255,.015));
+  border:1px dashed rgba(255,255,255,.10);
+}
+.notif-empty-icon{
+  width:80px;height:80px;border-radius:26px;display:grid;place-items:center;
+  color:var(--cyan);font-size:30px;
+  background:linear-gradient(135deg,rgba(0,229,255,.13),rgba(168,85,247,.10));
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:
+    0 0 46px rgba(0,229,255,.14),
+    inset 0 1px 0 rgba(255,255,255,.16);
+  animation:notifEmptyFloat 3.2s ease-in-out infinite;
+}
+@keyframes notifEmptyFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+.notif-empty h3{font-family:"Space Grotesk",sans-serif;font-size:17px;letter-spacing:.2px;}
+.notif-empty p{max-width:380px;color:var(--muted);font-size:12px;line-height:1.65;}
+
+/* ============================================================
+   MOBILE DOCK NAV
+============================================================ */
+.nav-wrapper{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);width:auto;max-width:95vw;z-index:999;}
+.glass-navbar{position:relative;display:flex;align-items:center;justify-content:center;gap:14px;padding:12px 24px;border-radius:28px;overflow:visible;background:linear-gradient(115deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.06) 35%,rgba(255,255,255,.025) 100%);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);box-shadow:0 22px 60px rgba(0,0,0,.40),0 6px 20px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.20),inset 0 -1px 0 rgba(255,255,255,.025);transition:padding .3s ease,gap .3s ease;}
+.glass-navbar::before{content:"";position:absolute;top:0;left:10%;width:42%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.58),transparent);opacity:.70;pointer-events:none;}
+.glass-navbar::after{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle at 20% 0%,rgba(255,255,255,.08),transparent 32%);pointer-events:none;}
+.nav-btn{position:relative;width:54px;height:54px;flex:0 0 54px;border:none;border-radius:18px;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;z-index:3;text-decoration:none;font-family:inherit;transition:color .25s ease,background .25s ease,transform .25s ease,box-shadow .25s ease;}
+.nav-btn:hover{color:rgba(255,255,255,.95);background:rgba(255,255,255,.055);transform:translateY(-2px);}
+.nav-btn:active{transform:scale(.94);}
+.nav-btn.active{color:#eaffff;background:linear-gradient(135deg,rgba(96,231,255,.22),rgba(135,103,255,.16));box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 18px rgba(0,0,0,.15),0 0 30px rgba(0,229,255,.06);}
+.nav-btn.active i{filter:drop-shadow(0 0 10px rgba(100,233,255,.45));}
+.nav-btn.active.notif-btn::after{content:"";position:absolute;bottom:6px;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green),0 0 24px rgba(73,245,154,.50);animation:dotPulse 2.2s ease-in-out infinite;}
+
+.nav-badge-count{
+  position:absolute;top:-3px;right:-3px;
+  min-width:22px;height:22px;padding:0 6px;
+  display:grid;place-items:center;
+  border-radius:11px;
+  font-size:10px;font-weight:900;letter-spacing:.2px;
+  color:#fff;
+  background:linear-gradient(135deg,#ff4ecd,#a855f7);
+  border:2.5px solid #0b0c18;
+  box-shadow:
+    0 0 12px rgba(255,78,205,.55),
+    0 0 22px rgba(255,78,205,.32),
+    inset 0 1px 0 rgba(255,255,255,.35);
+  z-index:6;
+  animation:iconBadgePop .38s cubic-bezier(.2,.9,.3,1.6);
+}
+.nav-badge-count.hidden{display:none;}
+
+.profile-btn{overflow:visible;position:relative;}
+.profile-avatar{position:relative;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(170,220,255,.85));color:#121522;font-size:14px;border:2px solid rgba(255,255,255,.22);box-shadow:0 5px 14px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.60);transition:box-shadow .3s ease,border-color .3s ease;}
+.create-slot{width:64px;height:64px;flex:0 0 64px;display:flex;align-items:center;justify-content:center;position:relative;z-index:5;}
+.create-slot::before{content:"";position:absolute;width:68px;height:68px;border-radius:50%;background:radial-gradient(circle,rgba(100,233,255,.16),transparent 68%);filter:blur(13px);}
+.create-btn{position:relative;width:56px;height:56px;border:none;border-radius:20px;cursor:pointer;color:white;font-size:22px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#5de8ff 0%,#7a91ff 45%,#a978ff 100%);border:1px solid rgba(255,255,255,.30);box-shadow:0 10px 24px rgba(86,150,255,.22),inset 0 1px 0 rgba(255,255,255,.45),inset 0 -2px 8px rgba(75,45,160,.20);transform:translateY(-2px);transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s ease;}
+.create-btn::before{content:"";position:absolute;top:5px;left:9px;width:24px;height:9px;border-radius:50%;background:rgba(255,255,255,.30);filter:blur(3px);transform:rotate(-18deg);}
+.create-btn i{position:relative;z-index:2;text-shadow:0 2px 7px rgba(0,0,0,.18);}
+.create-btn:hover{transform:translateY(-4px) scale(1.045);box-shadow:0 15px 32px rgba(91,161,255,.28),0 0 24px rgba(113,226,255,.10),inset 0 1px 0 rgba(255,255,255,.48);}
+.create-btn:active{transform:scale(.94);}
+.nav-btn[data-tooltip]::before{content:attr(data-tooltip);position:absolute;left:50%;bottom:calc(100% + 14px);transform:translateX(-50%) translateY(4px);padding:6px 12px;border-radius:9px;background:rgba(13,15,27,.80);border:1px solid rgba(255,255,255,.10);color:rgba(255,255,255,.86);font-size:10px;font-weight:500;white-space:nowrap;opacity:0;pointer-events:none;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 8px 20px rgba(0,0,0,.22);transition:opacity .2s ease,transform .2s ease;}
+.nav-btn:hover::before{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ============================================================
+   TOPBAR NOTIFY PANEL
+============================================================ */
+.notify-panel{position:fixed;top:80px;right:24px;z-index:4000;width:min(380px,calc(100% - 32px));display:none;padding:12px;border-radius:20px;background:linear-gradient(135deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border:1px solid var(--border);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:var(--shadow);max-height:80vh;overflow-y:auto;}
+.notify-panel.show{display:block;}
+.notify-head{display:flex;justify-content:space-between;align-items:center;padding:4px 4px 10px;}
+.notify-head strong{font-size:13px;}
+.notify-head button{border:none;cursor:pointer;color:var(--cyan);background:transparent;font-size:10px;}
+.notification{display:flex;gap:10px;padding:9px;cursor:pointer;border-radius:14px;transition:.2s ease;}
+.notification:hover{background:rgba(255,255,255,.05);}
+.notification img{width:40px;height:40px;flex-shrink:0;border-radius:12px;object-fit:cover;}
+.notification p{color:#cfd3e1;font-size:11px;line-height:1.5;}
+.notification small{display:block;margin-top:3px;color:var(--muted);font-size:9px;}
+
+/* ============================================================
+   OVERLAY / SEARCH
+============================================================ */
+.overlay{position:fixed;inset:0;z-index:5000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(4,5,12,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+.overlay.show{display:flex;}
+.search-modal{width:min(820px,calc(100% - 24px));border-radius:25px;overflow:hidden;position:fixed !important;top:12px !important;left:50% !important;transform:translateX(-50%) !important;z-index:999999 !important;margin:0 !important;}
+.search-top{display:flex;align-items:center;gap:10px;padding:16px;}
+.search-top i{color:var(--cyan);font-size:16px;}
+.search-top input{flex:1;border:none;outline:none;color:white;background:transparent;font-family:inherit;font-size:15px;min-width:0;}
+.search-top input::placeholder{color:#747b91;}
+.search-hint{padding:14px 18px;color:var(--muted);font-size:11px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0;}
+.search-results{max-height:68vh;overflow-y:auto;padding:0 16px 18px;}
+.search-results:empty{display:none;}
+.search-section{margin-top:8px;padding:10px 6px 4px;}
+.search-section-title{display:flex;align-items:center;gap:7px;margin:0 6px 8px;color:#747b92;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;}
+.search-section-title i{color:var(--cyan);font-size:10px;}
+.search-result{display:flex;align-items:center;gap:11px;width:100%;padding:10px;border:none;cursor:pointer;text-align:left;border-radius:16px;color:white;font-family:inherit;background:transparent;transition:transform .2s ease,background .2s ease,box-shadow .2s ease;}
+.search-result:hover{transform:translateX(3px);background:linear-gradient(135deg,rgba(168,85,247,.12),rgba(0,229,255,.055));box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);}
+.search-result-avatar{position:relative;width:43px;height:43px;flex-shrink:0;overflow:hidden;border-radius:14px;border:1px solid rgba(255,255,255,.10);}
+.search-result-avatar img{width:100%;height:100%;object-fit:cover;}
+.search-result-media{position:relative;width:68px;height:44px;flex-shrink:0;overflow:hidden;border-radius:12px;background:rgba(255,255,255,.05);}
+.search-result-media img{width:100%;height:100%;object-fit:cover;}
+.search-result-media::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(168,85,247,.15),rgba(0,229,255,.08));}
+.video-play-icon{position:absolute;top:50%;left:50%;z-index:2;transform:translate(-50%,-50%);width:24px;height:24px;display:grid;place-items:center;border-radius:50%;color:white;font-size:8px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.search-result-info{flex:1;min-width:0;}
+.search-result-title{display:flex;align-items:center;gap:5px;overflow:hidden;font-size:12px;font-weight:700;}
+.search-result-title span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.search-result-title i{color:var(--cyan);font-size:10px;flex-shrink:0;}
+.search-result-subtitle{overflow:hidden;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.4;text-overflow:ellipsis;white-space:nowrap;}
+.search-result-type{flex-shrink:0;padding:5px 7px;border-radius:8px;color:var(--cyan);font-size:8px;font-weight:700;background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.10);}
+.search-highlight{color:var(--cyan);font-weight:800;}
+.search-empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:38px 20px;text-align:center;}
+.search-empty-icon{width:58px;height:58px;display:grid;place-items:center;margin-bottom:13px;border-radius:20px;color:var(--cyan);font-size:20px;background:linear-gradient(135deg,rgba(168,85,247,.16),rgba(0,229,255,.10));border:1px solid rgba(255,255,255,.10);box-shadow:0 0 35px rgba(0,229,255,.06);}
+.search-empty-state strong{font-size:13px;}
+.search-empty-state p{max-width:300px;margin-top:7px;color:var(--muted);font-size:10px;line-height:1.6;}
+.no-search-result{display:flex;flex-direction:column;align-items:center;padding:40px 20px;text-align:center;}
+.no-search-result i{margin-bottom:12px;color:#747b91;font-size:25px;}
+.no-search-result strong{font-size:13px;}
+.no-search-result span{margin-top:6px;color:var(--muted);font-size:10px;}
+.search-count{margin:8px 8px 4px;color:var(--muted);font-size:9px;}
+.close{width:38px;height:38px;border:none;cursor:pointer;border-radius:12px;color:var(--muted);background:rgba(255,255,255,.06);transition:.25s ease;display:grid;place-items:center;}
+.close:hover{background:rgba(255,255,255,.12);color:white;}
+
+/* ============================================================
+   TOAST
+============================================================ */
+.toast{position:fixed;left:50%;bottom:24px;z-index:10000;transform:translate(-50%,120px);opacity:0;pointer-events:none;padding:12px 18px;border-radius:14px;color:#fff;font-size:12px;transition:.35s ease;background:rgba(18,20,37,.88);border:1px solid rgba(255,255,255,.10);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);max-width:90%;text-align:center;}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+
+/* ============================================================
+   NETWORK
+============================================================ */
+.network-status-overlay{position:fixed;inset:0;z-index:12000;display:flex;align-items:center!important;justify-content:center;padding:18px!important;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s ease;background:rgba(4,6,15,.34);backdrop-filter:blur(10px) saturate(120%);-webkit-backdrop-filter:blur(10px) saturate(120%);}
+.network-status-overlay.show{opacity:1;visibility:visible;}
+.network-status-card{width:min(430px,100%);display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:18px;background:linear-gradient(135deg,rgba(255,95,130,.13),rgba(168,85,247,.08)),rgba(15,17,31,.88);border:1px solid rgba(255,255,255,.10);box-shadow:0 22px 60px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.13);transform:translateY(14px) scale(.96);transition:transform .3s cubic-bezier(.2,.9,.3,1.2);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);}
+.network-status-overlay.show .network-status-card{transform:translateY(0) scale(1);}
+.network-status-icon{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:12px;color:#ff8da0;background:rgba(255,95,130,.10);border:1px solid rgba(255,95,130,.18);}
+.network-status-copy{min-width:0;flex:1;}
+.network-status-copy strong{display:block;color:#fff;font-size:11px;font-weight:800;}
+.network-status-copy span{display:block;margin-top:3px;color:#9aa2ba;font-size:9px;line-height:1.45;}
+.network-status-loader{width:24px;height:24px;flex:0 0 24px;border-radius:50%;border:2px solid rgba(255,255,255,.10);border-top-color:#ff7b91;animation:networkSpin .8s linear infinite;}
+.network-status-overlay.restored .network-status-card{background:linear-gradient(135deg,rgba(53,230,154,.13),rgba(0,229,255,.07)),rgba(15,17,31,.88);}
+.network-status-overlay.restored .network-status-icon{color:#55e7ad;background:rgba(53,230,154,.10);border-color:rgba(53,230,154,.18);}
+.network-status-overlay.restored .network-status-loader{border-color:rgba(53,230,154,.22);border-top-color:#53e6ad;animation:none;}
+@keyframes networkSpin{to{transform:rotate(360deg)}}
+@keyframes dotPulse{0%,100%{transform:scale(.85);opacity:1;}60%{transform:scale(1.4);opacity:.6;}}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width:1200px){
+  .app{grid-template-columns:230px minmax(0,1fr) 280px;}
+}
+@media (max-width:1050px){
+  .app{grid-template-columns:230px minmax(0,1fr);}
+  .right-rail{display:none;}
+}
+
+@media (max-width:820px){
+  .glass-navbar{gap:10px;padding:10px 18px;border-radius:24px;}
+  .nav-btn{width:48px;height:48px;flex:0 0 48px;font-size:18px;border-radius:16px;}
+  .create-slot{width:58px;height:58px;flex:0 0 58px;}
+  .create-btn{width:52px;height:52px;font-size:20px;border-radius:18px;}
+  .profile-avatar{width:36px;height:36px;font-size:13px;}
+}
+@media (max-width:768px){
+  .topbar{padding:8px 8px;}
+  .topbar-inner{min-height:52px;padding:4px 8px;gap:8px;border-radius:18px;}
+  .brand-text{display:none;}
+  .brand-mark{width:36px;height:36px;font-size:15px;border-radius:12px;}
+  .command-search{height:44px;min-width:120px;border-radius:15px;padding:0 8px;gap:8px;}
+  .search-icon-wrap{width:28px;height:28px;}
+  .search-placeholder{font-size:11px;}
+  .search-content small{display:none;}
+  .top-actions .icon-btn:first-child{display:none;}
+  .icon-btn{width:36px;height:36px;font-size:13px;}
+  .icon-badge{min-width:18px;height:18px;font-size:9px;padding:0 4px;}
+  .top-avatar{width:36px;height:36px;}
+  .app{display:block;padding:10px 10px 100px;}
+  .left-rail{display:none;}
+  .notify-panel{right:12px;width:calc(100% - 24px);top:72px;}
+  .search-modal{width:calc(100% - 16px) !important;}
+  .notif-item{padding:13px 14px;gap:11px;border-radius:16px;}
+  .notif-avatar-wrap{width:48px;height:48px;}
+  .notif-type-badge{width:22px;height:22px;font-size:9.5px;border-radius:8px;border-width:2px;}
+  .notif-text{font-size:12px;}
+  .notif-sub{font-size:10.5px;}
+  .notif-thumb{width:52px;height:52px;border-radius:12px;}
+  .notif-tab{padding:9px 13px;font-size:11px;}
+  .notif-tab .tab-count{min-width:18px;height:18px;font-size:9px;}
+  .notif-menu{min-width:240px;}
+}
+
+@media (max-width:900px){
+  .tool-icon-btn{width:36px;height:36px;font-size:12px;border-radius:12px;}
+}
+@media (max-width:640px){
+  .notif-toolbar{flex-wrap:wrap;gap:8px;}
+  .notif-toolbar .notif-tabs{flex:1 1 100%;}
+}
+
+@media (max-width:600px){
+  .nav-wrapper{width:calc(100% - 18px);max-width:100%;bottom:12px;}
+  .glass-navbar{gap:8px;padding:8px 14px;border-radius:22px;justify-content:space-evenly;}
+  .nav-btn{width:44px;height:44px;flex:0 0 44px;font-size:16px;border-radius:14px;}
+  .create-slot{width:52px;height:52px;flex:0 0 52px;}
+  .create-btn{width:46px;height:46px;font-size:18px;transform:translateY(0);}
+  .profile-avatar{width:32px;height:32px;font-size:12px;}
+  .nav-badge-count{min-width:18px;height:18px;font-size:8.5px;padding:0 4px;top:-4px;right:-4px;}
+  .toast{bottom:80px;}
+}
+@media (max-width:480px){
+  :root{--radius:18px;}
+  .topbar{padding:6px 6px;}
+  .topbar-inner{min-height:46px;padding:3px 6px;gap:6px;border-radius:14px;}
+  .brand-mark{width:32px;height:32px;font-size:13px;}
+  .command-search{height:38px;min-width:80px;border-radius:12px;}
+  .icon-btn{width:32px;height:32px;font-size:12px;}
+  .icon-badge{min-width:16px;height:16px;font-size:8px;padding:0 3px;}
+  .top-avatar{width:32px;height:32px;}
+  .app{padding:8px 8px 90px;}
+
+  .notif-page-head{padding:11px 12px;border-radius:18px;margin-bottom:10px;gap:10px;}
+  .notif-page-title{gap:10px;}
+  .notif-page-title .title-icon{width:38px;height:38px;flex:0 0 38px;font-size:15px;border-radius:13px;}
+  .notif-page-title h2{font-size:14px;}
+  .notif-page-title .title-copy > span{font-size:9.5px;margin-top:2px;}
+
+  .notif-tabs{padding:6px;gap:4px;border-radius:18px;}
+
+  .tool-icon-btn{width:34px;height:34px;font-size:12px;border-radius:11px;}
+  .notif-tab{padding:8px 12px;font-size:10.5px;border-radius:12px;}
+  .notif-tab .tab-count{font-size:8.5px;min-width:16px;height:16px;}
+  .notif-item{padding:12px 13px;border-radius:15px;gap:10px;}
+  .notif-avatar-wrap{width:44px;height:44px;}
+  .notif-avatar{border-radius:14px;}
+  .notif-type-badge{width:21px;height:21px;font-size:9px;border-radius:8px;border-width:2px;right:-4px;bottom:-4px;}
+  .notif-text{font-size:11.5px;}
+  .notif-sub{font-size:10px;}
+  .notif-thumb{width:46px;height:46px;border-radius:11px;}
+  .notif-act{padding:7px 12px;font-size:10.5px;border-radius:10px;}
+  .notif-menu{min-width:232px;max-width:calc(100vw - 32px);}
+  .notif-menu-item{padding:10px 11px;}
+  .notif-menu-item .mi-icon{width:30px;height:30px;flex-basis:30px;font-size:12.5px;border-radius:10px;}
+  .notif-menu-item .mi-title{font-size:11.5px;}
+  .notif-menu-item .mi-desc{font-size:9px;}
+}
+@media (max-width:420px){
+  .nav-wrapper{width:calc(100% - 12px);bottom:8px;}
+  .glass-navbar{gap:6px;padding:6px 10px;border-radius:20px;}
+  .nav-btn{width:40px;height:40px;flex:0 0 40px;font-size:14px;border-radius:12px;}
+  .create-slot{width:46px;height:46px;flex:0 0 46px;}
+  .create-btn{width:42px;height:42px;font-size:16px;}
+  .profile-avatar{width:28px;height:28px;font-size:10px;}
+  .notif-content{padding-right:28px;}
+}
+@media (max-width:360px){
+  .brand-mark{width:28px;height:28px;font-size:11px;}
+  .command-search{height:34px;min-width:60px;}
+  .icon-btn{width:28px;height:28px;font-size:10px;}
+  .icon-badge{min-width:15px;height:15px;font-size:7.5px;padding:0 3px;}
+  .top-avatar{width:28px;height:28px;}
+  .notif-thumb{display:none;}
+  .notif-page-title .title-copy > span{display:none;}
+}
+
+/* Light theme */
+html[data-mv-theme="light"] body,body[data-mv-theme="light"]{
+  --bg:#f5f7fb;--bg-soft:#ffffff;--glass:rgba(255,255,255,.78);--glass-strong:rgba(255,255,255,.94);
+  --border:rgba(25,35,60,.11);--border-bright:rgba(25,35,60,.18);
+  --text:#182033;--muted:#687189;--shadow:0 20px 55px rgba(25,35,60,.12);
+  background:radial-gradient(circle at 10% 0%,rgba(168,85,247,.10),transparent 25%),radial-gradient(circle at 95% 15%,rgba(0,180,220,.09),transparent 26%),#f5f7fb;color:var(--text);
+}
+html[data-mv-theme="light"] .glass{background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(246,248,253,.80));border-color:rgba(25,35,60,.10);}
+html[data-mv-theme="light"] .notif-item{background:linear-gradient(135deg,rgba(25,35,60,.03),rgba(25,35,60,.008));border-color:rgba(25,35,60,.09);}
+html[data-mv-theme="light"] .notif-text{color:#3a435a;}
+html[data-mv-theme="light"] .notif-text b{color:#101828;}
+html[data-mv-theme="light"] .grid-bg{filter:invert(1);opacity:.08;}
+html[data-mv-theme="light"] .notif-menu{
+  background:
+    radial-gradient(circle at 0% 0%,rgba(168,85,247,.08),transparent 42%),
+    linear-gradient(135deg,rgba(255,255,255,.98),rgba(246,248,253,.96)),
+    #ffffff;
+  border-color:rgba(25,35,60,.14);
+}
+html[data-mv-theme="light"] .notif-menu-item .mi-title{color:#1b2338;}
+html[data-mv-theme="light"] .notif-menu-item .mi-desc{color:#687189;}
+html[data-mv-theme="light"] .notif-menu-head{color:#687189;}
+html[data-mv-theme="light"] .notif-page-head{
+  background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(246,248,253,.82));
+  border-color:rgba(25,35,60,.10);
+}
+html[data-mv-theme="light"] .notif-page-title h2{
+  background:linear-gradient(90deg,#101828,#0a92ad);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+html[data-mv-theme="light"] .notif-page-title .title-copy > span{color:#687189;}
+</style>
+
+<!-- ============================================================
+     NOTIFICATION REACTION WEBP BADGES — CSS
+============================================================ -->
+<style id="mv-notif-reaction-webp-style">
+.notif-type-badge.type-reaction{
+  background:transparent;
+  border:none;
+  box-shadow:none;
+  width:28px;
+  height:28px;
+  right:-6px;
+  bottom:-6px;
+  border-radius:50%;
+  padding:0;
+  overflow:visible;
+  display:grid;
+  place-items:center;
+  animation:notifReactionBadgePop .5s cubic-bezier(.2,.9,.3,1.6);
+}
+.notif-type-badge.type-reaction img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+  pointer-events:none;
+  -webkit-user-drag:none;
+  user-select:none;
+  -webkit-user-select:none;
+  filter:drop-shadow(0 3px 7px rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(255,78,205,.22));
+}
+.notif-type-badge.type-reaction .reaction-emoji{
+  font-size:16px;
+  line-height:1;
+  display:grid;
+  place-items:center;
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  background:linear-gradient(135deg,#ff6bcb,#a855f7);
+  box-shadow:0 4px 12px rgba(0,0,0,.45),0 0 14px rgba(255,107,203,.35);
+  filter:none;
+}
+@keyframes notifReactionBadgePop{
+  0%  {transform:scale(0) rotate(-35deg);}
+  55% {transform:scale(1.18) rotate(8deg);}
+  80% {transform:scale(.95) rotate(-3deg);}
+  100%{transform:scale(1) rotate(0);}
+}
+@media (max-width:768px){
+  .notif-type-badge.type-reaction{width:26px;height:26px;right:-5px;bottom:-5px;}
+  .notif-type-badge.type-reaction .reaction-emoji{font-size:14px;}
+}
+@media (max-width:480px){
+  .notif-type-badge.type-reaction{width:24px;height:24px;right:-5px;bottom:-5px;}
+  .notif-type-badge.type-reaction .reaction-emoji{font-size:13px;}
+}
+</style>
+
+<!-- ============================================================
+     EARLY IMAGE FALLBACK ENGINE
+     Runs in <head> so it is ready BEFORE any <img> is parsed.
+     Fixes: broken avatars, broken thumbnails, missing reaction webp.
+============================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  var REACTION_EMOJI = {
+    like: '👍', dislike: '👎', love: '❤️', haha: '😂',
+    wow: '😮', sad: '😢', angry: '😡', fire: '🔥'
+  };
+
+  var AVATAR_FALLBACK = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+      '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#00e5ff"/>' +
+      '</linearGradient></defs>' +
+      '<rect width="100" height="100" fill="url(#g)"/>' +
+      '<circle cx="50" cy="38" r="16" fill="rgba(255,255,255,.92)"/>' +
+      '<path d="M18 92c4-19 17-28 32-28s28 9 32 28z" fill="rgba(255,255,255,.92)"/>' +
+    '</svg>'
+  );
+
+  function fixImage(img) {
+    if (!img || img.tagName !== 'IMG') return;
+    if (img.dataset.mvFallback === '1') return;
+    img.dataset.mvFallback = '1';
+
+    /* 1) reaction badge (reactions/*.webp) → emoji */
+    var badge = img.closest && img.closest('.notif-type-badge.type-reaction');
+    if (badge) {
+      var type = badge.dataset.reaction || 'love';
+      badge.innerHTML = '<span class="reaction-emoji">' +
+        (REACTION_EMOJI[type] || '❤️') + '</span>';
+      return;
+    }
+
+    /* 2) post / video thumbnail → gradient placeholder */
+    var thumb = img.closest && img.closest('.notif-thumb');
+    if (thumb) {
+      img.style.display = 'none';
+      thumb.classList.add('thumb-fallback');
+      return;
+    }
+
+    /* 3) search result media → hide, keep gradient */
+    if (img.closest && img.closest('.search-result-media')) {
+      img.style.display = 'none';
+      return;
+    }
+
+    /* 4) search result avatar → hide */
+    if (img.closest && img.closest('.search-result-avatar')) {
+      img.style.display = 'none';
+      return;
+    }
+
+    /* 5) everything else (avatars) → pretty SVG avatar */
+    if (img.src !== AVATAR_FALLBACK) img.src = AVATAR_FALLBACK;
+  }
+
+  /* Capture-phase error listener catches EVERY broken <img> on the page */
+  document.addEventListener('error', function (e) {
+    var t = e.target;
+    if (t && t.tagName === 'IMG') fixImage(t);
+  }, true);
+
+  function sweep() {
+    var imgs = document.querySelectorAll('img');
+    for (var i = 0; i < imgs.length; i++) {
+      var im = imgs[i];
+      try {
+        if (im.complete && im.naturalWidth === 0) fixImage(im);
+      } catch (err) {}
+    }
+  }
+
+  window.mvFixBrokenImages = sweep;
+  window.mvFixImage = fixImage;
+
+  function boot() {
+    sweep();
+    setTimeout(sweep, 300);
+    setTimeout(sweep, 900);
+    setTimeout(sweep, 2000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+  window.addEventListener('load', boot);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) sweep();
+  });
+})();
+</script>
+</head>
+<body>
+
+<div class="aurora"></div>
+<div class="grid-bg"></div>
+
+<!-- ================= TOP BAR ================= -->
+<header class="topbar">
+  <div class="topbar-inner glass">
+    <a href="../HOME/home.html" class="brand">
+      <div class="brand-mark"><i class="fa-solid fa-infinity"></i></div>
+      <div class="brand-text">MEDIAVERSE</div>
+    </a>
+    <div class="command-search glass" id="openSearch">
+      <div class="search-icon-wrap"><i class="fa-solid fa-magnifying-glass"></i></div>
+      <div class="search-content">
+        <span class="search-placeholder">Search the Mediaverse...</span>
+        <small>People, creators, ideas &amp; worlds</small>
+      </div>
+      <div class="search-shortcut"><span>CTRL</span><span>K</span></div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="quickCreate" title="Create"><i class="fa-solid fa-plus"></i></button>
+      <button class="icon-btn" title="Messages" onclick="showToast('Messages will be connected soon')"><i class="fa-regular fa-paper-plane"></i></button>
+      <button class="icon-btn" id="notificationButton" title="Notifications">
+        <i class="fa-regular fa-bell"></i>
+        <span class="icon-badge hidden" id="topbarBadge"></span>
+      </button>
+      <div class="top-avatar"><img src="https://i.pravatar.cc/150?img=12" alt="Profile"></div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= APP ================= -->
+<main class="app">
+
+  <!-- LEFT RAIL -->
+  <aside class="left-rail">
+    <div class="profile-capsule glass">
+      <div class="profile-glow"></div>
+      <div class="profile-main">
+        <div class="avatar-ring"><img src="https://i.pravatar.cc/150?img=12" alt="Profile"></div>
+        <div class="profile-name">Mediaverse User</div>
+        <div class="profile-handle">@mediaverseuser</div>
+        <div class="profile-metrics">
+          <div class="metric"><strong>128</strong><span>Moments</span></div>
+          <div class="metric"><strong>2.4K</strong><span>Reach</span></div>
+          <div class="metric"><strong>892</strong><span>Circle</span></div>
+        </div>
+      </div>
+    </div>
+    <nav class="nav-card glass">
+      <a href="../HOME/home.html" class="nav-link"><i class="fa-solid fa-orbit"></i> My Universe</a>
+      <a href="#" class="nav-link"><i class="fa-solid fa-compass"></i> Discover</a>
+      <a href="../FOLLOWER/Freinds.html" class="nav-link"><i class="fa-solid fa-user-group"></i> My Circle</a>
+      <a href="Notification.html" class="nav-link active"><i class="fa-regular fa-bell"></i> Notifications <span class="nav-badge" id="railBadge" style="display:none;"></span></a>
+      <div class="nav-label">Library</div>
+      <a href="#" class="nav-link"><i class="fa-solid fa-bookmark"></i> Saved Worlds</a>
+      <a href="#" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> Memory Trail</a>
+      <a href="#" class="nav-link"><i class="fa-solid fa-gear"></i> Control Center</a>
+    </nav>
+  </aside>
+
+  <!-- NOTIFICATION MAIN -->
+  <section class="notif-main">
+
+    <!-- ⭐ BAR 1 : PAGE TITLE + SETTINGS -->
+    <div class="notif-page-head">
+      <div class="notif-page-title">
+        <div class="title-icon"><i class="fa-regular fa-bell"></i></div>
+        <div class="title-copy">
+          <h2>Your Notifications</h2>
+          <span>Everything happening across your universe, in one place</span>
+        </div>
+      </div>
+<div class="notif-page-actions">
+  <button class="tool-icon-btn mark-all" id="markAllRead" type="button" title="Mark all as read" aria-label="Mark all as read">
+    <i class="fa-solid fa-check-double"></i>
+  </button>
+  <button class="tool-icon-btn settings" id="notifSettings" type="button" title="Notification Settings" aria-label="Notification settings">
+    <i class="fa-solid fa-sliders"></i>
+  </button>
+</div>
+    </div>
+
+    <!-- ⭐ BAR 2 : FILTER TABS + MARK ALL READ -->
+<!-- ⭐ BAR 2 : FILTER TABS -->
+<div class="notif-toolbar">
+<nav class="notif-tabs" id="notifTabs">
+  <button class="notif-tab active" data-filter="all"><i class="fa-solid fa-layer-group"></i> All <span class="tab-count" data-count-for="all"></span></button>
+  <button class="notif-tab" data-filter="unread"><i class="fa-solid fa-circle-dot"></i> Unread <span class="tab-count" data-count-for="unread"></span></button>
+  <button class="notif-tab" data-filter="requests"><i class="fa-solid fa-user-plus"></i> Requests <span class="tab-count" data-count-for="requests"></span></button>
+  <button class="notif-tab" data-filter="mentions"><i class="fa-solid fa-at"></i> Mentions <span class="tab-count" data-count-for="mentions"></span></button>
+  <button class="notif-tab" data-filter="reactions"><i class="fa-solid fa-heart"></i> Reactions <span class="tab-count" data-count-for="reactions"></span></button>
+  <button class="notif-tab" data-filter="comments"><i class="fa-regular fa-comment"></i> Comments <span class="tab-count" data-count-for="comments"></span></button>
+  <button class="notif-tab" data-filter="reports"><i class="fa-solid fa-flag"></i> Reports <span class="tab-count" data-count-for="reports"></span></button>
+  <button class="notif-tab" data-filter="support"><i class="fa-solid fa-headset"></i> Support <span class="tab-count" data-count-for="support"></span></button>
+  <button class="notif-tab" data-filter="system"><i class="fa-solid fa-shield-halved"></i> System</button>
+</nav>
+</div>
+
+    <!-- NOTIFICATION LIST -->
+    <div id="notifListContainer">
+
+      <!-- TODAY -->
+      <div class="notif-day-divider"><span>Today</span></div>
+
+      <div class="notif-list">
+
+        <!-- ⭐ FRIEND REQUEST -->
+        <article class="notif-item unread" data-type="requests" data-time="3m">
+          <div class="notif-avatar-wrap">
+            <img class="notif-avatar" src="https://i.pravatar.cc/150?img=47" alt="">
+            <span class="notif-type-badge type-follow"><i class="fa-solid fa-user-plus"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Aduri Akter</b> sent you a friend request <span class="notif-time">· 3m ago</span></div>
+            <div class="notif-sub">Digital creator · 12.4K followers · @aduri · 24 mutual friends</div>
+            <div class="notif-actions">
+              <button class="notif-act accept" data-request-action="accept"><i class="fa-solid fa-check"></i> Accept</button>
+              <button class="notif-act decline" data-request-action="decline"><i class="fa-solid fa-xmark"></i> Decline</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Friend Request Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <button class="notif-menu-item mi-pin"><span class="mi-icon"><i class="fa-solid fa-thumbtack"></i></span><span class="mi-info"><span class="mi-title">Pin request</span><span class="mi-desc">Keep at the top of your list</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- REACTION — Emma Wilson -->
+        <article class="notif-item unread" data-type="reactions" data-time="2m">
+          <div class="notif-avatar-wrap">
+            <img class="notif-avatar" src="https://i.pravatar.cc/150?img=45" alt="">
+            <span class="notif-type-badge type-reaction" data-reaction="love">
+              <img src="reactions/love.webp" alt="Love" draggable="false">
+            </span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Emma Wilson</b> and <b>14 others</b> reacted to your post <span class="notif-time">· 2m ago</span></div>
+            <div class="notif-sub"><em>"Building tomorrow starts with one idea today…"</em></div>
+          </div>
+          <div class="notif-thumb"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=200&q=80" alt=""></div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Post Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <button class="notif-menu-item mi-mute"><span class="mi-icon"><i class="fa-solid fa-bell-slash"></i></span><span class="mi-info"><span class="mi-title">Mute this post</span><span class="mi-desc">Stop alerts for this post</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- COMMENT REPLY -->
+        <article class="notif-item unread" data-type="comments" data-time="8m">
+          <div class="notif-avatar-wrap">
+            <img class="notif-avatar" src="https://i.pravatar.cc/150?img=32" alt="">
+            <span class="notif-type-badge type-comment"><i class="fa-regular fa-comment"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Sorufa Begum</b> replied to your comment <span class="notif-time">· 8m ago</span></div>
+            <div class="notif-sub">"Totally agree — that's such a fresh perspective on it! 💡"</div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Thread Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <button class="notif-menu-item mi-mute"><span class="mi-icon"><i class="fa-solid fa-bell-slash"></i></span><span class="mi-info"><span class="mi-title">Mute this thread</span><span class="mi-desc">Stop alerts for this conversation</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- ⭐ FRIEND REQUEST 2 -->
+        <article class="notif-item unread" data-type="requests" data-time="18m">
+          <div class="notif-avatar-wrap">
+            <img class="notif-avatar" src="https://i.pravatar.cc/150?img=22" alt="">
+            <span class="notif-type-badge type-follow"><i class="fa-solid fa-user-plus"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Priya Saha</b> sent you a friend request <span class="notif-time">· 18m ago</span></div>
+            <div class="notif-sub">Photographer · 3.8K followers · @priyasaha · 7 mutual friends</div>
+            <div class="notif-actions">
+              <button class="notif-act accept" data-request-action="accept"><i class="fa-solid fa-check"></i> Accept</button>
+              <button class="notif-act decline" data-request-action="decline"><i class="fa-solid fa-xmark"></i> Decline</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Friend Request Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <button class="notif-menu-item mi-pin"><span class="mi-icon"><i class="fa-solid fa-thumbtack"></i></span><span class="mi-info"><span class="mi-title">Pin request</span><span class="mi-desc">Keep at the top of your list</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- MENTION -->
+        <article class="notif-item unread" data-type="mentions" data-time="24m">
+          <div class="notif-avatar-wrap">
+            <img class="notif-avatar" src="https://i.pravatar.cc/150?img=14" alt="">
+            <span class="notif-type-badge type-mention"><i class="fa-solid fa-at"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Daniel Lee</b> mentioned you in a post <span class="notif-time">· 24m ago</span></div>
+            <div class="notif-sub">"Big shoutout to <span class="notif-highlight">@mediaverseuser</span> for the inspiration behind this build 🚀"</div>
+            <div class="notif-actions">
+              <button class="notif-act accept"><i class="fa-solid fa-reply"></i> Reply</button>
+              <button class="notif-act"><i class="fa-solid fa-up-right-from-square"></i> View post</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Mention Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <button class="notif-menu-item mi-mute"><span class="mi-icon"><i class="fa-solid fa-bell-slash"></i></span><span class="mi-info"><span class="mi-title">Mute mentions</span><span class="mi-desc">Stop @ mention alerts from this user</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- ⭐ REPORT REVIEWED -->
+        <article class="notif-item unread success" data-type="reports" data-time="1h">
+          <div class="notif-avatar-wrap">
+            <div class="notif-avatar" style="display:grid;place-items:center;background:linear-gradient(135deg,#35e69a,#00e5ff);color:#04121a;font-size:22px;"><i class="fa-solid fa-clipboard-check"></i></div>
+            <span class="notif-type-badge type-report"><i class="fa-solid fa-flag"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Report Result</b> · Your report has been reviewed <span class="notif-time">· 1h ago</span></div>
+            <div class="notif-sub">Thank you for helping keep Mediaverse safe. Our moderation team reviewed the comment you reported and took appropriate action against the account.</div>
+            <div class="notif-chip ok"><i class="fa-solid fa-circle-check"></i> CASE #RPT-84721 · ACTION TAKEN</div>
+            <div class="notif-actions">
+              <button class="notif-act accept"><i class="fa-solid fa-file-lines"></i> View decision</button>
+              <button class="notif-act ghost"><i class="fa-solid fa-flag"></i> Report another</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Report Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <button class="notif-menu-item mi-ticket"><span class="mi-icon"><i class="fa-solid fa-headset"></i></span><span class="mi-info"><span class="mi-title">Contact support</span><span class="mi-desc">Open a ticket about this case</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- ⭐ SUPPORT CENTER REPLY -->
+        <article class="notif-item unread" data-type="support" data-time="2h">
+          <div class="notif-avatar-wrap">
+            <div class="notif-avatar" style="display:grid;place-items:center;background:linear-gradient(135deg,#4d7cff,#00e5ff);color:#fff;font-size:21px;"><i class="fa-solid fa-headset"></i></div>
+            <span class="notif-type-badge type-support"><i class="fa-solid fa-comment-dots"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Support Center</b> replied to your ticket <span class="notif-time">· 2h ago</span></div>
+            <div class="notif-sub">"Hi there! We've processed your account recovery request. Please check your email inbox for the next verification steps. Let us know if you need anything else 💙"</div>
+            <div class="notif-chip"><i class="fa-solid fa-ticket"></i> TICKET #MV-84729 · OPEN</div>
+            <div class="notif-actions">
+              <button class="notif-act accept"><i class="fa-solid fa-reply"></i> View reply</button>
+              <button class="notif-act ghost"><i class="fa-solid fa-circle-check"></i> Close ticket</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Support Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <button class="notif-menu-item mi-ticket"><span class="mi-icon"><i class="fa-solid fa-ticket"></i></span><span class="mi-info"><span class="mi-title">Open ticket</span><span class="mi-desc">Go to the support conversation</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- SHARE -->
+        <article class="notif-item unread" data-type="reactions" data-time="2h">
+          <div class="notif-avatar-wrap">
+            <img class="notif-avatar" src="https://i.pravatar.cc/150?img=59" alt="">
+            <span class="notif-type-badge type-share"><i class="fa-solid fa-arrow-up-from-bracket"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Sohagi Akter</b> shared your post with <b>3 friends</b> <span class="notif-time">· 2h ago</span></div>
+            <div class="notif-sub"><em>"The future belongs to people who are curious…"</em></div>
+          </div>
+          <div class="notif-thumb"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=200&q=80" alt=""></div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Share Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- MILESTONE -->
+        <article class="notif-item unread" data-type="system" data-time="3h">
+          <div class="notif-avatar-wrap">
+            <div class="notif-avatar" style="display:grid;place-items:center;background:linear-gradient(135deg,#35e69a,#4d7cff);color:#fff;font-size:22px;"><i class="fa-solid fa-trophy"></i></div>
+            <span class="notif-type-badge type-milestone"><i class="fa-solid fa-star"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Milestone Unlocked</b> 🏆 You reached <b>10K followers</b> <span class="notif-time">· 3h ago</span></div>
+            <div class="notif-sub">Your circle grew by 240% this month. Keep creating amazing posts!</div>
+            <div class="notif-actions">
+              <button class="notif-act accept"><i class="fa-solid fa-share-nodes"></i> Share milestone</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Milestone Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- ⭐ CONTENT REMOVED (DANGER) -->
+        <article class="notif-item unread danger" data-type="reports" data-time="4h">
+          <div class="notif-avatar-wrap">
+            <div class="notif-avatar" style="display:grid;place-items:center;background:linear-gradient(135deg,#ff9f43,#ff5f7a);color:#fff;font-size:20px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <span class="notif-type-badge type-warning"><i class="fa-solid fa-ban"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Content Removed</b> · Your video <b>"Digital Dreams"</b> was removed <span class="notif-time">· 4h ago</span></div>
+            <div class="notif-sub">This video was removed for violating our Community Guidelines on <b>Spam &amp; Deceptive Practices</b>. You can appeal this decision within 7 days.</div>
+            <div class="notif-chip bad"><i class="fa-solid fa-shield-halved"></i> CASE #MOD-51208 · REMOVED</div>
+            <div class="notif-actions">
+              <button class="notif-act danger"><i class="fa-solid fa-scale-balanced"></i> Appeal decision</button>
+              <button class="notif-act ghost"><i class="fa-solid fa-book"></i> Learn more</button>
+            </div>
+          </div>
+          <div class="notif-thumb"><img src="https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?auto=format&fit=crop&w=200&q=80" alt=""><div class="strike"><i class="fa-solid fa-ban"></i></div></div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Moderation Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <button class="notif-menu-item mi-appeal"><span class="mi-icon"><i class="fa-solid fa-scale-balanced"></i></span><span class="mi-info"><span class="mi-title">Appeal this decision</span><span class="mi-desc">Request a manual review within 7 days</span></span></button>
+              <button class="notif-menu-item mi-ticket"><span class="mi-icon"><i class="fa-solid fa-headset"></i></span><span class="mi-info"><span class="mi-title">Contact support</span><span class="mi-desc">Talk to a human about this case</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- SYSTEM SECURITY -->
+        <article class="notif-item unread" data-type="system" data-time="4h">
+          <div class="notif-avatar-wrap">
+            <div class="notif-avatar" style="display:grid;place-items:center;background:linear-gradient(135deg,#4d7cff,#a855f7);color:#fff;font-size:20px;"><i class="fa-solid fa-shield-halved"></i></div>
+            <span class="notif-type-badge type-system"><i class="fa-solid fa-lock"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Mediaverse Security</b> · New login detected <span class="notif-time">· 4h ago</span></div>
+            <div class="notif-sub">A new device signed into your account from Dhaka, Bangladesh. If this wasn't you, please secure your account immediately.</div>
+            <div class="notif-actions">
+              <button class="notif-act accept"><i class="fa-solid fa-shield"></i> Secure account</button>
+              <button class="notif-act"><i class="fa-solid fa-eye"></i> Review activity</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Security Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- LIVE -->
+        <article class="notif-item unread" data-type="reactions" data-time="5h">
+          <div class="notif-avatar-wrap">
+            <img class="notif-avatar" src="https://i.pravatar.cc/150?img=49" alt="">
+            <span class="notif-type-badge type-live"><i class="fa-solid fa-satellite-dish"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Olivia Chen</b> is live now — <span class="notif-highlight">"Designing the Future of Digital Art"</span> <span class="notif-time">· 5h ago</span></div>
+            <div class="notif-sub">2.8K watching · Join now to be part of the conversation</div>
+            <div class="notif-actions">
+              <button class="notif-act accept"><i class="fa-solid fa-play"></i> Join live</button>
+            </div>
+          </div>
+          <div class="notif-thumb"><img src="https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=200&q=80" alt=""><div class="play-tag"><i class="fa-solid fa-play"></i></div></div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Live Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- BIRTHDAY -->
+        <article class="notif-item unread" data-type="system" data-time="6h">
+          <div class="notif-avatar-wrap">
+            <img class="notif-avatar" src="https://i.pravatar.cc/150?img=33" alt="">
+            <span class="notif-type-badge type-birthday"><i class="fa-solid fa-cake-candles"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Rafi Ahmed</b>'s birthday is today 🎂 <span class="notif-time">· 6h ago</span></div>
+            <div class="notif-sub">Send your wishes and make their day brighter!</div>
+            <div class="notif-actions">
+              <button class="notif-act accept"><i class="fa-solid fa-cake-candles"></i> Send wish</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Birthday Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- COMMENT -->
+        <article class="notif-item unread" data-type="comments" data-time="7h">
+          <div class="notif-avatar-wrap">
+            <img class="notif-avatar" src="https://i.pravatar.cc/150?img=36" alt="">
+            <span class="notif-type-badge type-comment"><i class="fa-regular fa-comment"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Nusrat Jahan</b> commented on your post <span class="notif-time">· 7h ago</span></div>
+            <div class="notif-sub">"This resonates so much with me. The quiet progress is the real progress. 💜"</div>
+            <div class="notif-actions">
+              <button class="notif-act accept"><i class="fa-solid fa-reply"></i> Reply</button>
+              <button class="notif-act"><i class="fa-solid fa-heart"></i> React</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Comment Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <button class="notif-menu-item mi-mute"><span class="mi-icon"><i class="fa-solid fa-bell-slash"></i></span><span class="mi-info"><span class="mi-title">Mute this post</span><span class="mi-desc">Stop comment alerts for this post</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- MEMORY -->
+        <article class="notif-item unread" data-type="system" data-time="8h">
+          <div class="notif-avatar-wrap">
+            <div class="notif-avatar" style="display:grid;place-items:center;background:linear-gradient(135deg,#ff9f43,#ffd43b);color:#fff;font-size:20px;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <span class="notif-type-badge type-memory"><i class="fa-solid fa-star"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Memory Reminder</b> · <b>1 year ago today</b> <span class="notif-time">· 8h ago</span></div>
+            <div class="notif-sub">You shared a post that reached 12K+ creators. Relive the moment ✨</div>
+            <div class="notif-actions">
+              <button class="notif-act accept"><i class="fa-solid fa-images"></i> View memory</button>
+              <button class="notif-act"><i class="fa-solid fa-share-nodes"></i> Share</button>
+            </div>
+          </div>
+          <div class="notif-thumb"><img src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=200&q=80" alt=""></div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Memory Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- FOLLOW -->
+        <article class="notif-item unread" data-type="requests" data-time="9h">
+          <div class="notif-avatar-wrap">
+            <img class="notif-avatar" src="https://i.pravatar.cc/150?img=15" alt="">
+            <span class="notif-type-badge type-follow"><i class="fa-solid fa-user-plus"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Ibrahim Khan</b> started following you <span class="notif-time">· 9h ago</span></div>
+            <div class="notif-sub">Product designer · @ibrahimk · 5 mutual friends</div>
+            <div class="notif-actions">
+              <button class="notif-act accept" data-follow-back><i class="fa-solid fa-user-plus"></i> Follow back</button>
+              <button class="notif-act decline"><i class="fa-solid fa-xmark"></i> Ignore</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Follow Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <!-- YESTERDAY -->
+      <div class="notif-day-divider"><span>Yesterday</span></div>
+
+      <div class="notif-list">
+
+        <!-- REACTION — Tasnim Chowdhury (Fire) -->
+        <article class="notif-item" data-type="reactions" data-time="1d">
+          <div class="notif-avatar-wrap">
+            <img class="notif-avatar" src="https://i.pravatar.cc/150?img=44" alt="">
+            <span class="notif-type-badge type-reaction" data-reaction="fire">
+              <img src="reactions/fire.webp" alt="Fire" draggable="false">
+            </span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Tasnim Chowdhury</b> and <b>8 others</b> reacted to your photo <span class="notif-time">· 1d ago</span></div>
+            <div class="notif-sub">Mostly with <span class="notif-highlight">🔥 Fire</span> and <span class="notif-highlight">❤️ Love</span></div>
+          </div>
+          <div class="notif-thumb"><img src="https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?auto=format&fit=crop&w=200&q=80" alt=""></div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Reaction Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <button class="notif-menu-item mi-mute"><span class="mi-icon"><i class="fa-solid fa-bell-slash"></i></span><span class="mi-info"><span class="mi-title">Mute this post</span><span class="mi-desc">Stop reaction alerts for this post</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <article class="notif-item" data-type="mentions" data-time="1d">
+          <div class="notif-avatar-wrap">
+            <img class="notif-avatar" src="https://i.pravatar.cc/150?img=12" alt="">
+            <span class="notif-type-badge type-mention"><i class="fa-solid fa-at"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Mediaverse Team</b> mentioned you in a comment <span class="notif-time">· 1d ago</span></div>
+            <div class="notif-sub">"Congratulations <span class="notif-highlight">@mediaverseuser</span>, you're among our Top 100 creators this week! 🎉"</div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Mention Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- ⭐ COPYRIGHT CLAIM -->
+        <article class="notif-item" data-type="reports" data-time="1d">
+          <div class="notif-avatar-wrap">
+            <div class="notif-avatar" style="display:grid;place-items:center;background:linear-gradient(135deg,#ffd43b,#ff9f43);color:#221604;font-size:20px;"><i class="fa-regular fa-copyright"></i></div>
+            <span class="notif-type-badge type-copyright"><i class="fa-solid fa-gavel"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Copyright Claim</b> · Your video received a claim <span class="notif-time">· 1d ago</span></div>
+            <div class="notif-sub">A rights holder has claimed audio content in your video <b>"Midnight Frames"</b>. Your video is still visible, but monetization is on hold.</div>
+            <div class="notif-chip warn"><i class="fa-solid fa-gavel"></i> CLAIM #CR-40219 · PENDING</div>
+            <div class="notif-actions">
+              <button class="notif-act accept"><i class="fa-solid fa-file-lines"></i> View claim</button>
+              <button class="notif-act ghost"><i class="fa-solid fa-scale-balanced"></i> Dispute</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Copyright Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <button class="notif-menu-item mi-appeal"><span class="mi-icon"><i class="fa-solid fa-scale-balanced"></i></span><span class="mi-info"><span class="mi-title">File a dispute</span><span class="mi-desc">Challenge this copyright claim</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- ⭐ REPORT — NO VIOLATION -->
+        <article class="notif-item" data-type="reports" data-time="1d">
+          <div class="notif-avatar-wrap">
+            <div class="notif-avatar" style="display:grid;place-items:center;background:linear-gradient(135deg,#4d7cff,#a855f7);color:#fff;font-size:20px;"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+            <span class="notif-type-badge type-report"><i class="fa-solid fa-flag"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Report Update</b> · We found no violation <span class="notif-time">· 1d ago</span></div>
+            <div class="notif-sub">After careful review, the content you reported doesn't violate our Community Guidelines. Thank you for your patience and for helping keep the community safe.</div>
+            <div class="notif-chip"><i class="fa-solid fa-circle-info"></i> CASE #RPT-84502 · NO ACTION</div>
+            <div class="notif-actions">
+              <button class="notif-act accept"><i class="fa-solid fa-file-lines"></i> View details</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Report Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <button class="notif-menu-item mi-ticket"><span class="mi-icon"><i class="fa-solid fa-headset"></i></span><span class="mi-info"><span class="mi-title">Contact support</span><span class="mi-desc">Open a ticket about this case</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <!-- EARLIER -->
+      <div class="notif-day-divider"><span>Earlier this week</span></div>
+
+      <div class="notif-list">
+
+        <article class="notif-item" data-type="system" data-time="3d">
+          <div class="notif-avatar-wrap">
+            <div class="notif-avatar" style="display:grid;place-items:center;background:linear-gradient(135deg,#35e69a,#00e5ff);color:#fff;font-size:20px;"><i class="fa-solid fa-chart-line"></i></div>
+            <span class="notif-type-badge type-system"><i class="fa-solid fa-star"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Weekly Creator Report</b> is ready <span class="notif-time">· 3d ago</span></div>
+            <div class="notif-sub">Your posts reached <b>12,482 creators</b> this week — up 24% from last week. 📈</div>
+            <div class="notif-actions">
+              <button class="notif-act accept"><i class="fa-solid fa-chart-line"></i> View report</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Report Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- ⭐ APPEAL APPROVED -->
+        <article class="notif-item" data-type="reports" data-time="3d">
+          <div class="notif-avatar-wrap">
+            <div class="notif-avatar" style="display:grid;place-items:center;background:linear-gradient(135deg,#35e69a,#4d7cff);color:#04121a;font-size:20px;"><i class="fa-solid fa-rotate-left"></i></div>
+            <span class="notif-type-badge type-appeal"><i class="fa-solid fa-circle-check"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Appeal Approved</b> ✅ Your content has been restored <span class="notif-time">· 3d ago</span></div>
+            <div class="notif-sub">We reviewed your appeal and restored your post <b>"The Quiet Progress"</b>. Thank you for your patience — it's live on your profile again.</div>
+            <div class="notif-chip ok"><i class="fa-solid fa-circle-check"></i> APPEAL #APL-22871 · APPROVED</div>
+            <div class="notif-actions">
+              <button class="notif-act accept"><i class="fa-solid fa-up-right-from-square"></i> View post</button>
+              <button class="notif-act ghost"><i class="fa-solid fa-share-nodes"></i> Share</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Appeal Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <button class="notif-menu-item mi-ticket"><span class="mi-icon"><i class="fa-solid fa-headset"></i></span><span class="mi-info"><span class="mi-title">Contact support</span><span class="mi-desc">Follow up on this appeal</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- REACTION — Rifat Hossain (Love) -->
+        <article class="notif-item" data-type="reactions" data-time="4d">
+          <div class="notif-avatar-wrap">
+            <img class="notif-avatar" src="https://i.pravatar.cc/150?img=51" alt="">
+            <span class="notif-type-badge type-reaction" data-reaction="love">
+              <img src="reactions/love.webp" alt="Love" draggable="false">
+            </span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Rifat Hossain</b> and <b>32 others</b> reacted to your video <span class="notif-time">· 4d ago</span></div>
+            <div class="notif-sub"><em>"A small visual journey through light, motion and colour…"</em></div>
+          </div>
+          <div class="notif-thumb"><img src="https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?auto=format&fit=crop&w=200&q=80" alt=""><div class="play-tag"><i class="fa-solid fa-play"></i></div></div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Reaction Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- ⭐ TICKET RESOLVED -->
+        <article class="notif-item" data-type="support" data-time="4d">
+          <div class="notif-avatar-wrap">
+            <div class="notif-avatar" style="display:grid;place-items:center;background:linear-gradient(135deg,#4d7cff,#a855f7);color:#fff;font-size:20px;"><i class="fa-solid fa-circle-check"></i></div>
+            <span class="notif-type-badge type-support"><i class="fa-solid fa-ticket"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Ticket Resolved</b> · Your support request has been closed <span class="notif-time">· 4d ago</span></div>
+            <div class="notif-sub">Your verified badge application was approved. Congratulations! You can now enjoy all verified creator features across Mediaverse.</div>
+            <div class="notif-chip ok"><i class="fa-solid fa-circle-check"></i> TICKET #MV-72115 · RESOLVED</div>
+            <div class="notif-actions">
+              <button class="notif-act accept"><i class="fa-solid fa-star"></i> Rate support</button>
+              <button class="notif-act ghost"><i class="fa-solid fa-ticket"></i> Reopen</button>
+            </div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Support Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <button class="notif-menu-item mi-ticket"><span class="mi-icon"><i class="fa-solid fa-ticket"></i></span><span class="mi-info"><span class="mi-title">View ticket history</span><span class="mi-desc">See the full conversation</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+        <!-- ⭐ TICKET RECEIVED -->
+        <article class="notif-item" data-type="support" data-time="5d">
+          <div class="notif-avatar-wrap">
+            <div class="notif-avatar" style="display:grid;place-items:center;background:linear-gradient(135deg,#00e5ff,#4d7cff);color:#04121a;font-size:20px;"><i class="fa-solid fa-inbox"></i></div>
+            <span class="notif-type-badge type-support"><i class="fa-solid fa-envelope-open-text"></i></span>
+          </div>
+          <div class="notif-content">
+            <div class="notif-text"><b>Ticket Received</b> · We've received your request <span class="notif-time">· 5d ago</span></div>
+            <div class="notif-sub">Our support team will review your report within 24–48 hours and reply here. You'll get a notification as soon as we have an update.</div>
+            <div class="notif-chip"><i class="fa-solid fa-hourglass-half"></i> TICKET #MV-91034 · PENDING</div>
+          </div>
+          <div class="notif-menu-wrap">
+            <button class="notif-more" aria-label="Options"><i class="fa-solid fa-ellipsis"></i></button>
+            <div class="notif-menu">
+              <div class="notif-menu-head"><i class="fa-solid fa-sliders"></i> Support Options</div>
+              <button class="notif-menu-item mi-read"><span class="mi-icon"><i class="fa-solid fa-check"></i></span><span class="mi-info"><span class="mi-title">Mark as read</span><span class="mi-desc">Remove the unread indicator</span></span></button>
+              <div class="notif-menu-divider"></div>
+              <button class="notif-menu-item mi-remove"><span class="mi-icon"><i class="fa-solid fa-xmark"></i></span><span class="mi-info"><span class="mi-title">Remove notification</span><span class="mi-desc">Hide it from your list</span></span></button>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- RIGHT RAIL -->
+  <aside class="right-rail">
+    <section class="pulse-card glass">
+      <div class="card-heading"><h3>Notification Insights</h3><button>Details</button></div>
+      <div class="trend"><small>This Week</small><strong>+248% engagement</strong><span>2,412 new posts reached you</span></div>
+      <div class="trend"><small>Most Active</small><strong>Reactions</strong><span>48% of all notifications</span></div>
+      <div class="trend"><small>Peak Time</small><strong>8 PM – 10 PM</strong><span>Highest activity window</span></div>
+    </section>
+
+    <section class="pulse-card glass">
+      <div class="card-heading"><h3>Friend Requests</h3><button>See all</button></div>
+      <div class="person"><img src="https://i.pravatar.cc/100?img=47" alt=""><div class="person-info"><strong>Aduri Akter</strong><span>24 mutual friends</span></div><button class="follow">Accept</button></div>
+      <div class="person"><img src="https://i.pravatar.cc/100?img=22" alt=""><div class="person-info"><strong>Priya Saha</strong><span>7 mutual friends</span></div><button class="follow">Accept</button></div>
+      <div class="person"><img src="https://i.pravatar.cc/100?img=15" alt=""><div class="person-info"><strong>Ibrahim Khan</strong><span>5 mutual friends</span></div><button class="follow">Accept</button></div>
+    </section>
+
+    <section class="pulse-card glass">
+      <div class="card-heading"><h3>Suggested to Follow</h3><button>See all</button></div>
+      <div class="person"><img src="https://i.pravatar.cc/100?img=27" alt=""><div class="person-info"><strong>Nusrat Jahan</strong><span>Reacts to your posts</span></div><button class="follow">Follow</button></div>
+      <div class="person"><img src="https://i.pravatar.cc/100?img=33" alt=""><div class="person-info"><strong>Rafi Ahmed</strong><span>Follows you</span></div><button class="follow">Follow</button></div>
+      <div class="person"><img src="https://i.pravatar.cc/100?img=44" alt=""><div class="person-info"><strong>Tasnim Chowdhury</strong><span>Active in your circle</span></div><button class="follow">Follow</button></div>
+    </section>
+  </aside>
+
+</main>
+
+<!-- ================= MOBILE DOCK NAV ================= -->
+<div class="nav-wrapper">
+  <nav class="glass-navbar">
+    <a href="../HOME/home.html" class="nav-btn home-btn" data-tooltip="Home"><i class="fa-solid fa-house"></i></a>
+    <a href="../FOLLOWER/Freinds.html" class="nav-btn" data-tooltip="Followers"><i class="fa-solid fa-user-group"></i></a>
+    <div class="create-slot"><button class="create-btn" type="button" onclick="showToast('Create flow coming soon')"><i class="fa-solid fa-plus"></i></button></div>
+    <a href="profile.html" class="nav-btn profile-btn" data-tooltip="Profile"><div class="profile-avatar"><i class="fa-solid fa-user"></i></div></a>
+    <a href="notification.html" class="nav-btn notif-btn active" data-tooltip="Notifications">
+      <i class="fa-regular fa-bell"></i>
+      <span class="nav-badge-count hidden" id="dockBadge"></span>
+    </a>
+    <a href="#settings" class="nav-btn" data-tooltip="Settings"><i class="fa-solid fa-gear"></i></a>
+  </nav>
+</div>
+
+<!-- ================= TOPBAR NOTIFY PANEL ================= -->
+<div class="notify-panel glass" id="notificationPanel">
+  <div class="notify-head"><strong>Latest Signals</strong><button id="markRead">Mark read</button></div>
+  <div class="notification"><img src="https://i.pravatar.cc/100?img=47" alt=""><div><p><strong>Aduri Akter</strong> sent you a friend request</p><small>3 minutes ago</small></div></div>
+  <div class="notification"><img src="https://i.pravatar.cc/100?img=45" alt=""><div><p><strong>Emma Wilson</strong> reacted to your latest post ❤️</p><small>5 minutes ago</small></div></div>
+  <div class="notification"><img src="https://i.pravatar.cc/100?img=32" alt=""><div><p><strong>Sorufa Begum</strong> replied to your comment</p><small>12 minutes ago</small></div></div>
+</div>
+
+<!-- ================= SEARCH MODAL ================= -->
+<div class="overlay" id="searchOverlay">
+  <div class="search-modal glass">
+    <div class="search-top">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="searchInput" placeholder="Search Mediaverse..." autocomplete="off">
+      <button class="close" id="closeSearch"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="search-hint" id="searchHint">Search people, @usernames, posts, videos and ideas across your universe.</div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<!-- ================= NETWORK STATUS ================= -->
+<div class="network-status-overlay" id="networkStatusOverlay" aria-hidden="true">
+  <div class="network-status-card glass" id="networkStatusCard">
+    <div class="network-status-icon" id="networkStatusIcon"><i class="fa-solid fa-wifi"></i></div>
+    <div class="network-status-copy">
+      <strong id="networkStatusTitle">Your internet connection was lost</strong>
+      <span id="networkStatusText">Mediaverse is waiting for your connection to return.</span>
+    </div>
+    <div class="network-status-loader" id="networkStatusLoader"></div>
+  </div>
+</div>
+
+<!-- ================= TOAST ================= -->
+<div class="toast glass" id="toast">Done</div>
+
+<!-- ================= EXTERNAL SCRIPTS ================= -->
+<script src="mediaverse-theme.js"></script>
+<script src="notification-count.js"></script>  <!-- ⭐ NEW -->
+<script src="../mediaverse-search.js"></script>
+<script src="notification.js"></script>
+<script src="../mediaverse-network.js"></script>
+
+</body>
+</html>
